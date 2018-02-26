@@ -7,7 +7,7 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoom
     using Microsoft.Azure.SignalR;
     using Microsoft.Extensions.Configuration;
 
-    [Route("api/signalr")]
+    [Route("api/auth")]
     public class SignalRController : Controller
     {
         private readonly SignalRService _signalr;

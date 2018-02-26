@@ -198,7 +198,7 @@
                 }(signalR.TransportType.WebSockets);
             }
 
-            getAccessToken(`/api/signalr/chat?uid=${username}`)
+            getAccessToken(`/api/auth/chat?uid=${username}`)
                 .then(function(endpoint) {
                     accessToken = endpoint.accessToken;
                     return startConnection(endpoint.serviceUrl, bindConnectionMessage);

@@ -20,7 +20,7 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoom
                     factory.AddDebug();
                 })
                 .UseKestrel()
-                .UseUrls("http://*:5050/")
+                .UseUrls("http://*:5000/")
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()
                 .Build()

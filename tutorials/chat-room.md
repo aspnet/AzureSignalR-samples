@@ -16,7 +16,7 @@ Then send something and everyone in the room can see it:
 
 ![chat-room-2](images/chat-room-2.png)
 
-The code sample can be found [here](../samples/ChatRoomLocal). Let's do it step by step.
+The code sample can be found [here](../samples/ChatRoomLocal/). Let's do it step by step.
 
 1.  First create a ASP.NET Core web application.
 
@@ -77,7 +77,7 @@ The code sample can be found [here](../samples/ChatRoomLocal). Let's do it step 
 
 4.  The last step is to create the UI of the chat room. In this sample, we use HTML and javascript to build a web application.
 
-    Copy the HTML and script files from [wwwroot](../samples/ChatRoomLocal/wwwroot) of the sample project to the `wwwroot` folder of your project.
+    Copy the HTML and script files from [wwwroot](../samples/ChatRoomLocal/wwwroot/) of the sample project to the `wwwroot` folder of your project.
     Add the following code to `Startup.cs` to make the application serve the pages:
 
     ```cs
