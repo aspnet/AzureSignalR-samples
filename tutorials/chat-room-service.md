@@ -16,7 +16,7 @@ First let's create a SignalR service on Azure.
 
    ![signalr-2](images/signalr-2.png)
 
-   Resource name will also be used as the DNS name of your service point. So you'll get a `<resource_name>.<location>.cloudapp.azure.com` that your application can connect to.
+   Resource name will also be used as the DNS name of your service endpoint. So you'll get a `<resource_name>.<location>.cloudapp.azure.com` that your application can connect to.
 
    Select a pricing tier. There're two pricing tiers:
    
@@ -37,7 +37,7 @@ HostName=<service_endpoint>;AccessKey=<access_key>;
 
 ## Update Chat Room to Use Azure SignalR Service
 
-Then let's update the chat room sample to use Azure SignalR Service.
+Then let's update the chat room sample to use the new service you just created.
 
 The full sample code can be found [here](../samples/ChatRoom/). Let's look at the key changes:
 
@@ -52,8 +52,7 @@ The full sample code can be found [here](../samples/ChatRoom/). Let's look at th
 
     public void Configure(IApplicationBuilder app, IHostingEnvironment env)
     {
-        app.UseMvc();
-        app.UseFileServer();
+        ...
         app.UseAzureSignalR(Configuration[Constants.AzureSignalRConnectionStringKey],
             builder => 
             { 
@@ -68,9 +67,9 @@ The full sample code can be found [here](../samples/ChatRoom/). Let's look at th
     <PackageReference Include="Microsoft.Azure.SignalR" Version="1.0.0-preview1-t000" />
     ```
 
-2.  Add an [AuthController.cs](../samples/ChatRoom/Controllers/AuthController.cs) that provides an API to let client do the authentication.
+2.  Add an [AuthController.cs](../samples/ChatRoom/Controllers/AuthController.cs) that provides an API for authentication.
 
-    The connection string is used for server code to connect to the service. For client, usually there will be additional authentication needed, so Azure SignalR Service gives you the flexibility to implement your own authentication. A client doesn't directly connect to the service using connection string, instead your application need to implement an API that does the authentication and issues a token to client. Client will use this token to connect to the service.
+    The connection string is used for server code to connect to the service. For client, usually there are additional authentication needed, so Azure SignalR Service gives you the flexibility to implement your own authentication. A client doesn't directly connect to the service using connection string, instead your application need to implement an API that does the authentication and issues a token to the client. Client then use this token to connect to the service.
 
     In this sample, we do no authentication but directly issue the token. You can implement a real authentication in your own project.
 
@@ -93,7 +92,7 @@ The full sample code can be found [here](../samples/ChatRoom/). Let's look at th
 
     Here you can see there is `GenerateClientToken()` in the service SDK that helps you issue the token from the connection string once you finish the authentication.
 
-    Also besides the token, this API also returns the service url so that the client knows where to connect.
+    Also besides the token, this API returns the service url so that the client knows where to connect.
 
 3.  In [index.html](../samples/ChatRoom/wwwroot/index.html), change the logic to first call authentication API to get back the service url and token:
 
@@ -128,7 +127,7 @@ The full sample code can be found [here](../samples/ChatRoom/). Let's look at th
         .catch(onConnectionError);
     ```
 
-    And then connect to service using the token:
+    And then connect to service with the token:
 
     ```js
     var connection = new signalR.HubConnection(url, { transport: transport, uid: username, accessToken: () => accessToken });
@@ -144,6 +143,6 @@ dotnet build
 dotnet run
 ```
 
-You can see the app runs as usual, just instead of hosting a SignalR runtime by itself, it connects to the SignalR service running on Azure.
+You can see the application runs as usual, just instead of hosting a SignalR runtime by itself, it connects to the SignalR service running on Azure.
 
-In this tutorial you have learned how to use Azure SignalR Service to replace your self-hosted SignalR runtime. But still need a web server to host your hub logic. In next tutorial you'll learn how to use other Azure services to host your hub logic so you can get everything running on cloud.
+In this tutorial you have learned how to use Azure SignalR Service to replace your self-hosted SignalR runtime. But you still need a web server to host your hub logic. In next tutorial you'll learn how to use other Azure services to host your hub logic so you can get everything running on cloud.
