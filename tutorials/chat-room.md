@@ -16,6 +16,8 @@ Then send something and everyone in the room can see it:
 
 ![chat-room-2](images/chat-room-2.png)
 
+The code sample can be found [here](../samples/ChatRoomLocal). Let's do it step by step.
+
 1.  First create a ASP.NET Core web application.
 
     ```
