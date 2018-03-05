@@ -33,6 +33,7 @@ RUN dotnet publish -c Release -o out
 ```
 
 Then copy the build output into `app` folder and set the entrypoint:
+
 ```docker
 # build runtime image
 FROM microsoft/aspnetcore:2.0
@@ -62,7 +63,7 @@ docker push <acr_name>.azurecr.io/chatdemo
 First create an Azure Web App:
 
 ```
-az group create --name <resource_group_name> --location "East US"
+az group create --name <resource_group_name> --location CentralUS
 az appservice plan create --name <plan_name> --resource-group <resource_group_name> --sku S1 --is-linux
 az webapp create \
    --resource-group <resource_group_name> --plan <plan_name> --name <app_name> \
@@ -75,6 +76,7 @@ This creates a web app with nginx image.
 
 
 Then update the web app with the chat room image:
+
 ```
 az webapp config container set \
    --resource-group <resource_group_name> --name <app_name> \
@@ -83,7 +85,8 @@ az webapp config container set \
    --docker-registry-server-user <acr_name> \
    --docker-registry-server-password <acr_password>
 az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> --setting PORT=5000
-az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> --setting AzureSignalRConnectionString=<connection_string>
+az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> \
+   --setting AzureSignalRConnectionString=<connection_string>
 ```
 
 Now open `http://<app_name>.azurewebsites.net` and you will see your chat room running on Azure.
@@ -91,3 +94,98 @@ Now open `http://<app_name>.azurewebsites.net` and you will see your chat room r
 > Since https is not supported on SignalR yet, it's required to use http to access the web site (and chrome has some issues in sending data over non secure web site, you have to use Edge for now). This issue should be gone after https support is added.
 
 ## Integrate with Azure Functions
+
+One common scenario in real-time application is server end will produce messages and publish them to clients. In such scenario, you may use Azure function as the producer of the messages.
+One benefit of using Azure function is that you can run your code on-demand without having to manage the underlying infrastructure. As a result, it's not possible to run SignalR on Azure functions, because your code only runs on-demand and cannot maintain long connections with clients.
+But Azure SignalR Service, this becomes possible since the service already manages the connections for you.
+
+Now let's see how to generate some messages using Azure functions and publishes to the chat room using the service.
+
+The sample project can be found [here](../samples/Timer/), let's see how it works.
+
+The core logic of the function is in [TimerFunction.cs](../samples/Timer/TimerFunction.cs):
+
+```cs
+var connectionString = Environment.GetEnvironmentVariable("AzureSignalRConnectionString");
+var proxy = SignalRService.CreateHubProxy(connectionString, "chat");
+await proxy.All.InvokeAsync("broadcastMessage", new object[] { "_BROADCAST_", $"Current time is: {DateTime.Now}" });
+```
+
+You can see in the service SDK there is a `SignalRService.CreateHubProxy()` method that creates a `HubProxy` object from the connection string. `HubProxy` implements `IHubClients<>` interface so you can access all connected clients using the same API of SignalR.
+
+In this sample we simply get the current time and broadcast it to all clients.
+
+Then in [function.json](../samples/Timer/TimerFunction/function.json) we set the function to use timer trigger so it will get called every one minute:
+
+```json
+{
+  "bindings": [
+    {
+      "type": "timerTrigger",
+      "schedule": "0 * * * * *",
+      "useMonitor": true,
+      "runOnStartup": false,
+      "name": "myTimer"
+    }
+  ],
+  "disabled": false,
+  "scriptFile": "../Timer.dll",
+  "entryPoint": "Timer.TimerFunction.Run"
+}
+```
+
+To build and deploy the Azure function, first create a function app:
+
+```
+az group create --name <resource_group_name> --location CentralUS
+az storage account create --resource-group <resource_group_name> --name <storage_account_name> --location CentralUS --sku Standard_LR
+az functionapp create --resource-group <resource_group_name> --name <function_name> --consumption-plan-location CentralUS --storage-account <storage_account_name>
+```
+
+Then configure the deployment source to local git:
+
+```
+az functionapp deployment source config-local-git --resource-group <resource_group_name> --name <function_name>
+```
+
+In the output, you'll see the url to the git repository:
+
+```json
+{
+  "url": "https://<user_name>@<deploy_git_url>"
+}
+```
+
+Then config the deployment credentials:
+
+```
+az functionapp deployment user set --user-name <user_name> --password <password>
+```
+
+Then build function app:
+
+```
+nuget restore
+msbuild /p:Configuration=Release
+```
+
+Deploy it using git:
+
+```
+cd bin\Release\net461
+git init
+git remote add origin <deploy_git_url>
+git add -A
+git commit -m "init commit"
+git push origin master
+```
+
+Finally set the connection string to the application settings:
+```
+az functionapp config appsettings set --resource-group <resource_group_name> --name <app_name> \
+   --setting AzureSignalRConnectionString=<connection_string>
+```
+
+Now after you log into the chat room, you'll see a broadcast of current time every one minute.
+
+In this tutorial you have learned how to use Azure services with SignalR service together to build real-time applications. So far our tutorials are based on some modern technologies like .NET Core and Azure functions, you may have existing codebase based on .NET Framework, in next tutorial you'll learn how to use SignalR service in .NET Framework so that you can still reuse your existing codebase.
