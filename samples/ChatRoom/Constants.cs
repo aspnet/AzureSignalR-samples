@@ -5,6 +5,6 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoom
 {
     internal static class Constants
     {
-        public const string AzureSignalRConnectionStringKey = "AzureSignalR:ConnectionString";
+        public const string AzureSignalRConnectionStringKey = "AzureSignalRConnectionString";
     }
 }

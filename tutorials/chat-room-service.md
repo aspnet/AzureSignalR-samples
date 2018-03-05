@@ -41,7 +41,7 @@ Then let's update the chat room sample to use the new service you just created.
 
 The full sample code can be found [here](../samples/ChatRoom/). Let's look at the key changes:
 
-1.  In [Startup.cs](../samples/ChatRoom/Startup.cs), instead of calling `AddSignalR()` and `UseSignalR()`, you need to call `AddSignalRService()` and `UseSignalRService()` and pass in connection string to make the application connect the service instead of hosting SignalR by itself.
+1.  In [Startup.cs](../samples/ChatRoom/Startup.cs), instead of calling `AddSignalR()` and `UseSignalR()`, you need to call `AddSignalRService()` and `UseSignalRService()` and pass in connection string to make the application connect to the service instead of hosting SignalR by itself.
 
     ```cs
     public void ConfigureServices(IServiceCollection services)
@@ -71,7 +71,7 @@ The full sample code can be found [here](../samples/ChatRoom/). Let's look at th
 
     The connection string is used for server code to connect to the service. For client, usually there are additional authentication needed, so Azure SignalR Service gives you the flexibility to implement your own authentication. A client doesn't directly connect to the service using connection string, instead your application need to implement an API that does the authentication and issues a token to the client. Client then use this token to connect to the service.
 
-    In this sample, we do no authentication but directly issue the token. You can implement a real authentication in your own project.
+    In this sample, we simply do no authentication and directly issue the token. You can implement a real authentication in your own project.
 
     ```cs
     [HttpGet("{hubName}")]
@@ -138,7 +138,7 @@ Other than these changes, everything else remains the same, you can still use th
 Now let's build and run the app (you need to first set connect string as an environment variable).
 
 ```
-export AzureSignalR:ConnectionString=<connection_string>
+export AzureSignalRConnectionString=<connection_string>
 dotnet build
 dotnet run
 ```
