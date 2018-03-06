@@ -8,20 +8,20 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoom
     using Microsoft.Extensions.Configuration;
 
     [Route("api/auth")]
-    public class SignalRController : Controller
+    public class AuthController : Controller
     {
-        private readonly SignalRService _signalr;
+        private readonly SignalRService _service;
 
-        public SignalRController(IConfiguration config)
+        public AuthController(IConfiguration config)
         {
-            _signalr = SignalRService.CreateFromConnectionString(config[Constants.AzureSignalRConnectionStringKey]);
+            _service = SignalRService.CreateFromConnectionString(config[Constants.AzureSignalRConnectionStringKey]);
         }
 
         [HttpGet("{hubName}")]
         public IActionResult GenerateJwtBearer(string hubName, [FromQuery] string uid)
         {
-            var serviceUrl = $"{_signalr.GetClientUrl(hubName)}&uid={uid}";
-            var accessToken = _signalr.GenerateClientToken(hubName, new[]
+            var serviceUrl = $"{_service.GetClientUrl(hubName)}&uid={uid}";
+            var accessToken = _service.GenerateClientToken(hubName, new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, uid)
             });

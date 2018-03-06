@@ -138,8 +138,10 @@ To build and deploy the Azure function, first create a function app:
 
 ```
 az group create --name <resource_group_name> --location CentralUS
-az storage account create --resource-group <resource_group_name> --name <storage_account_name> --location CentralUS --sku Standard_LR
-az functionapp create --resource-group <resource_group_name> --name <function_name> --consumption-plan-location CentralUS --storage-account <storage_account_name>
+az storage account create --resource-group <resource_group_name> --name <storage_account_name> \
+   --location CentralUS --sku Standard_LR
+az functionapp create --resource-group <resource_group_name> --name <function_name> \
+   --consumption-plan-location CentralUS --storage-account <storage_account_name>
 ```
 
 Then configure the deployment source to local git:
@@ -188,4 +190,8 @@ az functionapp config appsettings set --resource-group <resource_group_name> --n
 
 Now after you log into the chat room, you'll see a broadcast of current time every one minute.
 
-In this tutorial you have learned how to use Azure services with SignalR service together to build real-time applications. So far our tutorials are based on some modern technologies like .NET Core and Azure functions, you may have existing codebase based on .NET Framework, in next tutorial you'll learn how to use SignalR service in .NET Framework so that you can still reuse your existing codebase.
+> You can see in the function code it directly calls to `HubProxy.All.InvokeAsync()`, instead of calling to `BroadcastMessage()` of the hub.
+That means the call directly goes to clients through SignalR service, without need to go to the web server (which hosts the hub).
+So if your application only needs to broadcast message to clients, you don't even need to host the hub logic in a web server.
+
+In this tutorial you have learned how to use Azure services with SignalR service together to build real-time applications. So far our tutorials are based on some modern technologies like .NET Core and Azure functions, you may have existing codebase based on .NET Framework. In next tutorial you'll learn how to use SignalR service in .NET Framework so that you can still reuse your existing codebase.
