@@ -17,7 +17,9 @@ Now let's create the same chat room using ASP.NET:
 
 1.  Create an ASP.NET Web Application (.NET Framework) in Visual Studio.
 
-2.  Add a [Startup.cs](../samples/ChatRoomAspNet/App_Start/Startup.cs) to connect to SignalR service when startup:
+2.  Add nuget package "Microsoft.Azure.SignalR.Owin" and "Microsoft.Own.Host.SystemWeb".
+
+3.  Add a [Startup.cs](../samples/ChatRoomAspNet/App_Start/Startup.cs) to connect to SignalR service when startup:
 
     ```cs
     public class Startup
@@ -33,7 +35,7 @@ Now let's create the same chat room using ASP.NET:
     }
     ```
 
-3.  Add [Chat](../samples/ChatRoomAspNet/Hub/Chat.cs) hub class:
+4.  Add [Chat](../samples/ChatRoomAspNet/Hub/Chat.cs) hub class:
 
     ```cs
     public class Chat : Hub
@@ -50,7 +52,7 @@ Now let's create the same chat room using ASP.NET:
     }
     ```
 
-4.  Add [AuthController.cs](../samples/ChatRoomAspNet/Controllers/AuthController.cs) to implement auth API:
+5.  Add [AuthController.cs](../samples/ChatRoomAspNet/Controllers/AuthController.cs) to implement auth API:
 
     ```cs
     [RoutePrefix("api/auth")]
@@ -76,7 +78,7 @@ Now let's create the same chat room using ASP.NET:
     }
     ```
 
-5.  Copy the same UI files (html, scripts and css) into the project folder.
+6.  Copy the same UI files (html, scripts and css) into the project folder.
 
 The full code sample can be found [here](../samples/ChatRoomAspNet).
 
@@ -95,3 +97,40 @@ msbuild
 > <add key="AzureSignalRConnectionString" value="<connection_string>" />
 > ```
 
+## Deploy to Azure
+
+The we can deploy the application to Azure Web App.
+
+1.  Create a web app:
+
+    ```
+    az group create --name <resource_group_name> --location CentralUS
+    az appservice plan create --name <plan_name> --resource-group <resource_group_name> --sku S1
+    az webapp create --resource-group <resource_group_name> --plan <plan_name> --name <app_name>
+    ```
+
+2.  Config deployment source and credential:
+
+    ```
+    az webapp deployment source config-local-git --resource-group <resource_group_name> --name <app_name>
+    az webapp deployment user set --user-name <user_name> --password <password>
+    ```
+
+3.  Deploy using git:
+
+    ```
+    git init
+    git remote add origin <deploy_git_url>
+    git add -A
+    git commit -m "init commit"
+    git push origin master
+    ```
+
+4.  Finally set the connection string in app settings:
+
+    ```
+    az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> \
+       --setting AzureSignalRConnectionString=<connection_string>
+    ```
+
+Now open the site in your browser and you'll see the chat room running on Azure.
