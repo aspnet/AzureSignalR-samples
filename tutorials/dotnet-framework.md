@@ -89,7 +89,7 @@ You can also build and run it through command-line:
 ```
 nuget restore
 msbuild
-%ProgramFiles(x86)%\IIS Express\iisexpress.exe" /path:<project_folder>
+"%ProgramFiles(x86)%\IIS Express\iisexpress.exe" /path:<project_folder>
 ```
 
 > You need to set the connection string in [web.config](../samples/ChatRoomAspNet/Web.config) when run in local:
