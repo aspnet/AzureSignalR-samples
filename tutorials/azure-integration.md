@@ -91,8 +91,6 @@ az webapp config appsettings set --resource-group <resource_group_name> --name <
 
 Now open `http://<app_name>.azurewebsites.net` and you will see your chat room running on Azure.
 
-> Since https is not supported on SignalR yet, it's required to use http to access the web site (and chrome has some issues in sending data over non secure web site, you have to use Edge for now). This issue should be gone after https support is added.
-
 ## Integrate with Azure Functions
 
 One common scenario in real-time application is server end will produce messages and publish them to clients. In such scenario, you may use Azure function as the producer of the messages.
