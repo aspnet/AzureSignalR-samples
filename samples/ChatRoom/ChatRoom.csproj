@@ -2,19 +2,20 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <IsPackable>false</IsPackable>
+    <RootNamespace>Microsoft.Azure.SignalR.Samples.ChatRoom</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.0-preview1-27982" />
-    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.1.0-preview1-27982" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.1.0-preview1-27982" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.0-preview1-27982" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.1.0-preview1-27982" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="2.1.0-preview1-27982" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="2.1.0-preview1-27982" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.1.0-preview1-27982" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.1.0-preview1-27982" />
-    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.0.0-preview1-t000" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.0-preview2-30131" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.1.0-preview2-30131" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.1.0-preview2-30131" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.0-preview2-30131" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.1.0-preview2-30131" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="2.1.0-preview2-30131" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="2.1.0-preview2-30131" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.1.0-preview2-30131" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.1.0-preview2-30131" />
+    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.0.0-preview-10000" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.1" />
   </ItemGroup>
 </Project>

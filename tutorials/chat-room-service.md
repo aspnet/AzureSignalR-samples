@@ -32,7 +32,7 @@ After your service is ready, go to the Keys page of your service instance and yo
 The connection string is the form of the following:
 
 ```
-HostName=<service_endpoint>;AccessKey=<access_key>;
+Endpoint=<service_endpoint>;AccessKey=<access_key>;
 ```
 
 ## Update Chat Room to Use Azure SignalR Service
@@ -41,7 +41,7 @@ Then let's update the chat room sample to use the new service you just created.
 
 The full sample code can be found [here](../samples/ChatRoom/). Let's look at the key changes:
 
-1.  In [Startup.cs](../samples/ChatRoom/Startup.cs), instead of calling `AddSignalR()` and `UseSignalR()`, you need to call `AddSignalRService()` and `UseSignalRService()` and pass in connection string to make the application connect to the service instead of hosting SignalR by itself.
+1.  In [Startup.cs](../samples/ChatRoom/Startup.cs), instead of calling `AddSignalR()` and `UseSignalR()`, you need to call `AddAzureSignalR()` and `UseAzureSignalR()` and pass in connection string to make the application connect to the service instead of hosting SignalR by itself.
 
     ```cs
     public void ConfigureServices(IServiceCollection services)
@@ -64,7 +64,7 @@ The full sample code can be found [here](../samples/ChatRoom/). Let's look at th
     You also need to reference the service SDK before using these APIs:
 
     ```xml
-    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.0.0-preview1-t000" />
+    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.0.0-preview-10000" />
     ```
 
 2.  Add an [AuthController.cs](../samples/ChatRoom/Controllers/AuthController.cs) that provides an API for authentication.
@@ -77,8 +77,8 @@ The full sample code can be found [here](../samples/ChatRoom/). Let's look at th
     [HttpGet("{hubName}")]
     public IActionResult GenerateJwtBearer(string hubName, [FromQuery] string uid)
     {
-        var serviceUrl = $"{_signalr.GetClientUrl(hubName)}&uid={uid}";
-        var accessToken = _signalr.GenerateClientToken(hubName, new[]
+        var serviceUrl = _endpointProvider.GetClientEndpoint(hubName);
+        var accessToken =_tokenProvider.GenerateClientAccessToken(hubName, new[]
         {
             new Claim(ClaimTypes.NameIdentifier, uid)
         });
@@ -90,7 +90,7 @@ The full sample code can be found [here](../samples/ChatRoom/). Let's look at th
     }
     ```
 
-    Here you can see there is `GenerateClientToken()` in the service SDK that helps you issue the token from the connection string once you finish the authentication.
+    Here you can see there is `GenerateClientAccessToken()` in the service SDK that helps you issue the token from the connection string once you finish the authentication.
 
     Also besides the token, this API returns the service url so that the client knows where to connect.
 
@@ -130,7 +130,7 @@ The full sample code can be found [here](../samples/ChatRoom/). Let's look at th
     And then connect to service with the token:
 
     ```js
-    var connection = new signalR.HubConnection(url, { transport: transport, uid: username, accessToken: () => accessToken });
+    var connection = new signalR.HubConnection(url, { transport: transport, accessToken: () => accessToken });
     ```
 
 Other than these changes, everything else remains the same, you can still use the hub interface you're already familiar with to write business logic.

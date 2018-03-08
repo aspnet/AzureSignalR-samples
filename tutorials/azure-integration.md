@@ -54,8 +54,8 @@ After you test the image, push it to a Docker register (here we use [Azure Conta
 
 ```
 docker login <acr_name>.azurecr.io
-docker tag chatdemo <acr_name>.azurecr.io/chatdemo
-docker push <acr_name>.azurecr.io/chatdemo
+docker tag chatroom <acr_name>.azurecr.io/chatroom
+docker push <acr_name>.azurecr.io/chatroom
 ```
 
 ### Deploy to Azure Web App
@@ -107,11 +107,11 @@ The core logic of the function is in [TimerFunction.cs](../samples/Timer/TimerFu
 
 ```cs
 var connectionString = Environment.GetEnvironmentVariable("AzureSignalRConnectionString");
-var proxy = SignalRService.CreateHubProxy(connectionString, "chat");
-await proxy.All.InvokeAsync("broadcastMessage", new object[] { "_BROADCAST_", $"Current time is: {DateTime.Now}" });
+var proxy = CloudSignalR.CreateHubProxyFromConnectionString(connectionString, "chat");
+await proxy.Clients.All.SendAsync("broadcastMessage", new object[] { "_BROADCAST_", $"Current time is: {DateTime.Now}" });
 ```
 
-You can see in the service SDK there is a `SignalRService.CreateHubProxy()` method that creates a `HubProxy` object from the connection string. `HubProxy` implements `IHubClients<>` interface so you can access all connected clients using the same API of SignalR.
+You can see in the service SDK there is a `CloudSignalR.CreateHubProxyFromConnectionString()` method that creates a `HubProxy` object from the connection string. `HubProxy.Clients` implements `IHubClients<>` interface so you can access all connected clients using the same API of SignalR.
 
 In this sample we simply get the current time and broadcast it to all clients.
 
@@ -190,7 +190,7 @@ az functionapp config appsettings set --resource-group <resource_group_name> --n
 
 Now after you log into the chat room, you'll see a broadcast of current time every one minute.
 
-> You can see in the function code it directly calls to `HubProxy.All.InvokeAsync()`, instead of calling to `BroadcastMessage()` of the hub.
+> You can see in the function code it directly calls to `HubProxy.Clients.All.SendAsync()`, instead of calling to `BroadcastMessage()` of the hub.
 That means the call directly goes to clients through SignalR service, without need to go to the web server (which hosts the hub).
 So if your application only needs to broadcast message to clients, you don't even need to host the hub logic in a web server.
 
