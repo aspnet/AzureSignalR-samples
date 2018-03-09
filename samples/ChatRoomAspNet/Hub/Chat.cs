@@ -8,12 +8,12 @@ namespace ChatRoomAspNet
     {
         public void BroadcastMessage(string name, string message)
         {
-            Clients.All.InvokeAsync("broadcastMessage", name, message);
+            Clients.All.SendAsync("broadcastMessage", name, message);
         }
 
         public void Echo(string name, string message)
         {
-            Clients.Client(Context.ConnectionId).InvokeAsync("echo", name, message + " (echo from server)");
+            Clients.Client(Context.ConnectionId).SendAsync("echo", name, message + " (echo from server)");
         }
     }
 }

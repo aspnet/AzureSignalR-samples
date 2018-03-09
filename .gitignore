@@ -4,3 +4,4 @@ obj/
 .vscode/
 packages/
 **.csproj.user
+**/Properties/

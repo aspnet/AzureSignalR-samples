@@ -47,140 +47,137 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Authentication, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNetCore.Authentication.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.AspNetCore.Authentication.dll</HintPath>
+      <HintPath>packages\Microsoft.AspNetCore.Authentication.2.1.0-preview2-30131\lib\netstandard2.0\Microsoft.AspNetCore.Authentication.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNetCore.Authentication.Abstractions, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNetCore.Authentication.Abstractions.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.AspNetCore.Authentication.Abstractions.dll</HintPath>
+      <HintPath>packages\Microsoft.AspNetCore.Authentication.Abstractions.2.1.0-preview2-30186\lib\netstandard2.0\Microsoft.AspNetCore.Authentication.Abstractions.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNetCore.Authentication.Core, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNetCore.Authentication.Core.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.AspNetCore.Authentication.Core.dll</HintPath>
+      <HintPath>packages\Microsoft.AspNetCore.Authentication.Core.2.1.0-preview2-30131\lib\netstandard2.0\Microsoft.AspNetCore.Authentication.Core.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNetCore.Authentication.JwtBearer, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNetCore.Authentication.JwtBearer.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll</HintPath>
+      <HintPath>packages\Microsoft.AspNetCore.Authentication.JwtBearer.2.1.0-preview2-30131\lib\netstandard2.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNetCore.Authorization, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNetCore.Authorization.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.AspNetCore.Authorization.dll</HintPath>
+      <HintPath>packages\Microsoft.AspNetCore.Authorization.2.1.0-preview2-30186\lib\netstandard2.0\Microsoft.AspNetCore.Authorization.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNetCore.Authorization.Policy, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNetCore.Authorization.Policy.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.AspNetCore.Authorization.Policy.dll</HintPath>
+      <HintPath>packages\Microsoft.AspNetCore.Authorization.Policy.2.1.0-preview2-30186\lib\netstandard2.0\Microsoft.AspNetCore.Authorization.Policy.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNetCore.Cryptography.Internal, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNetCore.Cryptography.Internal.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.AspNetCore.Cryptography.Internal.dll</HintPath>
+      <HintPath>packages\Microsoft.AspNetCore.Cryptography.Internal.2.1.0-preview2-30131\lib\netstandard2.0\Microsoft.AspNetCore.Cryptography.Internal.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNetCore.DataProtection, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNetCore.DataProtection.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.AspNetCore.DataProtection.dll</HintPath>
+      <HintPath>packages\Microsoft.AspNetCore.DataProtection.2.1.0-preview2-30131\lib\netstandard2.0\Microsoft.AspNetCore.DataProtection.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNetCore.DataProtection.Abstractions, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNetCore.DataProtection.Abstractions.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.AspNetCore.DataProtection.Abstractions.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AspNetCore.Dispatcher, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNetCore.Dispatcher.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.AspNetCore.Dispatcher.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AspNetCore.Dispatcher.Abstractions, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNetCore.Dispatcher.Abstractions.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.AspNetCore.Dispatcher.Abstractions.dll</HintPath>
+      <HintPath>packages\Microsoft.AspNetCore.DataProtection.Abstractions.2.1.0-preview2-30131\lib\netstandard2.0\Microsoft.AspNetCore.DataProtection.Abstractions.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNetCore.Hosting.Abstractions.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.AspNetCore.Hosting.Abstractions.dll</HintPath>
+      <HintPath>packages\Microsoft.AspNetCore.Hosting.Abstractions.2.1.0-preview2-30186\lib\netstandard2.0\Microsoft.AspNetCore.Hosting.Abstractions.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNetCore.Hosting.Server.Abstractions.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.AspNetCore.Hosting.Server.Abstractions.dll</HintPath>
+      <HintPath>packages\Microsoft.AspNetCore.Hosting.Server.Abstractions.2.1.0-preview2-30186\lib\netstandard2.0\Microsoft.AspNetCore.Hosting.Server.Abstractions.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNetCore.Http, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNetCore.Http.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.AspNetCore.Http.dll</HintPath>
+      <HintPath>packages\Microsoft.AspNetCore.Http.2.1.0-preview2-30131\lib\netstandard2.0\Microsoft.AspNetCore.Http.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNetCore.Http.Abstractions.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.AspNetCore.Http.Abstractions.dll</HintPath>
+      <HintPath>packages\Microsoft.AspNetCore.Http.Abstractions.2.1.0-preview2-30186\lib\netstandard2.0\Microsoft.AspNetCore.Http.Abstractions.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNetCore.Http.Extensions, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNetCore.Http.Extensions.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.AspNetCore.Http.Extensions.dll</HintPath>
+      <HintPath>packages\Microsoft.AspNetCore.Http.Extensions.2.1.0-preview2-30186\lib\netstandard2.0\Microsoft.AspNetCore.Http.Extensions.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNetCore.Http.Features, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNetCore.Http.Features.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.AspNetCore.Http.Features.dll</HintPath>
+      <HintPath>packages\Microsoft.AspNetCore.Http.Features.2.1.0-preview2-30186\lib\netstandard2.0\Microsoft.AspNetCore.Http.Features.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNetCore.Protocols.Abstractions, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.AspNetCore.Protocols.Abstractions.2.1.0-preview2-30186\lib\netstandard2.0\Microsoft.AspNetCore.Protocols.Abstractions.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNetCore.Routing, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNetCore.Routing.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.AspNetCore.Routing.dll</HintPath>
+      <HintPath>packages\Microsoft.AspNetCore.Routing.2.1.0-preview2-30186\lib\netstandard2.0\Microsoft.AspNetCore.Routing.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNetCore.Routing.Abstractions.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.AspNetCore.Routing.Abstractions.dll</HintPath>
+      <HintPath>packages\Microsoft.AspNetCore.Routing.Abstractions.2.1.0-preview2-30186\lib\netstandard2.0\Microsoft.AspNetCore.Routing.Abstractions.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNetCore.SignalR, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNetCore.SignalR.1.0.0-preview1-t000\lib\netstandard2.0\Microsoft.AspNetCore.SignalR.dll</HintPath>
+      <HintPath>packages\Microsoft.AspNetCore.SignalR.1.0.0-preview2-30186\lib\netstandard2.0\Microsoft.AspNetCore.SignalR.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNetCore.SignalR.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNetCore.SignalR.Common.1.0.0-preview1-t000\lib\netstandard2.0\Microsoft.AspNetCore.SignalR.Common.dll</HintPath>
+      <HintPath>packages\Microsoft.AspNetCore.SignalR.Common.1.0.0-preview2-30186\lib\netstandard2.0\Microsoft.AspNetCore.SignalR.Common.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNetCore.SignalR.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNetCore.SignalR.Core.1.0.0-preview1-t000\lib\netstandard2.0\Microsoft.AspNetCore.SignalR.Core.dll</HintPath>
+      <HintPath>packages\Microsoft.AspNetCore.SignalR.Core.1.0.0-preview2-30186\lib\netstandard2.0\Microsoft.AspNetCore.SignalR.Core.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNetCore.Sockets, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNetCore.Sockets.1.0.0-preview1-t000\lib\netstandard2.0\Microsoft.AspNetCore.Sockets.dll</HintPath>
+      <HintPath>packages\Microsoft.AspNetCore.Sockets.1.0.0-preview2-30186\lib\netstandard2.0\Microsoft.AspNetCore.Sockets.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNetCore.Sockets.Abstractions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNetCore.Sockets.Abstractions.1.0.0-preview1-t000\lib\netstandard2.0\Microsoft.AspNetCore.Sockets.Abstractions.dll</HintPath>
+      <HintPath>packages\Microsoft.AspNetCore.Sockets.Abstractions.1.0.0-preview2-30186\lib\netstandard2.0\Microsoft.AspNetCore.Sockets.Abstractions.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNetCore.Sockets.Client.Http, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNetCore.Sockets.Client.Http.1.0.0-preview1-t000\lib\netstandard2.0\Microsoft.AspNetCore.Sockets.Client.Http.dll</HintPath>
+      <HintPath>packages\Microsoft.AspNetCore.Sockets.Client.Http.1.0.0-preview2-30186\lib\netstandard2.0\Microsoft.AspNetCore.Sockets.Client.Http.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNetCore.Sockets.Common.Http, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNetCore.Sockets.Common.Http.1.0.0-preview1-t000\lib\netstandard2.0\Microsoft.AspNetCore.Sockets.Common.Http.dll</HintPath>
+      <HintPath>packages\Microsoft.AspNetCore.Sockets.Common.Http.1.0.0-preview2-30186\lib\netstandard2.0\Microsoft.AspNetCore.Sockets.Common.Http.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNetCore.Sockets.Http, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNetCore.Sockets.Http.1.0.0-preview1-t000\lib\netstandard2.0\Microsoft.AspNetCore.Sockets.Http.dll</HintPath>
+      <HintPath>packages\Microsoft.AspNetCore.Sockets.Http.1.0.0-preview2-30186\lib\netstandard2.0\Microsoft.AspNetCore.Sockets.Http.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNetCore.WebSockets, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNetCore.WebSockets.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.AspNetCore.WebSockets.dll</HintPath>
+      <HintPath>packages\Microsoft.AspNetCore.WebSockets.2.1.0-preview2-30186\lib\netstandard2.0\Microsoft.AspNetCore.WebSockets.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNetCore.WebUtilities, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.AspNetCore.WebUtilities.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.AspNetCore.WebUtilities.dll</HintPath>
+      <HintPath>packages\Microsoft.AspNetCore.WebUtilities.2.1.0-preview2-30131\lib\netstandard2.0\Microsoft.AspNetCore.WebUtilities.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Azure.SignalR, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Azure.SignalR.1.0.0-preview1-t000\lib\netstandard2.0\Microsoft.Azure.SignalR.dll</HintPath>
+      <HintPath>packages\Microsoft.Azure.SignalR.1.0.0-preview-10000\lib\netstandard2.0\Microsoft.Azure.SignalR.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Azure.SignalR.Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Azure.SignalR.Owin.1.0.0-preview1-t000\lib\net461\Microsoft.Azure.SignalR.Owin.dll</HintPath>
+      <HintPath>packages\Microsoft.Azure.SignalR.Owin.1.0.0-preview-10000\lib\net461\Microsoft.Azure.SignalR.Owin.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=1.0.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.7\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Extensions.Configuration, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Extensions.Configuration.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.Extensions.Configuration.dll</HintPath>
+      <HintPath>packages\Microsoft.Extensions.Configuration.2.1.0-preview2-30131\lib\netstandard2.0\Microsoft.Extensions.Configuration.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Extensions.Configuration.Abstractions, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Extensions.Configuration.Abstractions.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.Extensions.Configuration.Abstractions.dll</HintPath>
+      <HintPath>packages\Microsoft.Extensions.Configuration.Abstractions.2.1.0-preview2-30186\lib\netstandard2.0\Microsoft.Extensions.Configuration.Abstractions.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Extensions.Configuration.Binder, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Extensions.Configuration.Binder.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.Extensions.Configuration.Binder.dll</HintPath>
+      <HintPath>packages\Microsoft.Extensions.Configuration.Binder.2.1.0-preview2-30131\lib\netstandard2.0\Microsoft.Extensions.Configuration.Binder.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Extensions.DependencyInjection, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Extensions.DependencyInjection.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.Extensions.DependencyInjection.dll</HintPath>
+      <HintPath>packages\Microsoft.Extensions.DependencyInjection.2.1.0-preview2-30131\lib\netstandard2.0\Microsoft.Extensions.DependencyInjection.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Extensions.DependencyInjection.Abstractions.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+      <HintPath>packages\Microsoft.Extensions.DependencyInjection.Abstractions.2.1.0-preview2-30186\lib\netstandard2.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Extensions.FileProviders.Abstractions, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Extensions.FileProviders.Abstractions.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.Extensions.FileProviders.Abstractions.dll</HintPath>
+      <HintPath>packages\Microsoft.Extensions.FileProviders.Abstractions.2.1.0-preview2-30186\lib\netstandard2.0\Microsoft.Extensions.FileProviders.Abstractions.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Extensions.Hosting.Abstractions, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Extensions.Hosting.Abstractions.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.Extensions.Hosting.Abstractions.dll</HintPath>
+      <HintPath>packages\Microsoft.Extensions.Hosting.Abstractions.2.1.0-preview2-30186\lib\netstandard2.0\Microsoft.Extensions.Hosting.Abstractions.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Extensions.Logging, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Extensions.Logging.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.Extensions.Logging.dll</HintPath>
+      <HintPath>packages\Microsoft.Extensions.Logging.2.1.0-preview2-30131\lib\netstandard2.0\Microsoft.Extensions.Logging.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Extensions.Logging.Abstractions.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
+      <HintPath>packages\Microsoft.Extensions.Logging.Abstractions.2.1.0-preview2-30186\lib\netstandard2.0\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Extensions.ObjectPool, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Extensions.ObjectPool.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.Extensions.ObjectPool.dll</HintPath>
+      <HintPath>packages\Microsoft.Extensions.ObjectPool.2.1.0-preview2-30186\lib\netstandard2.0\Microsoft.Extensions.ObjectPool.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Extensions.Options, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Extensions.Options.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.Extensions.Options.dll</HintPath>
+      <HintPath>packages\Microsoft.Extensions.Options.2.1.0-preview2-30186\lib\netstandard2.0\Microsoft.Extensions.Options.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Extensions.Primitives, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Extensions.Primitives.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.Extensions.Primitives.dll</HintPath>
+      <HintPath>packages\Microsoft.Extensions.Primitives.2.1.0-preview2-30186\lib\netstandard2.0\Microsoft.Extensions.Primitives.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Extensions.WebEncoders, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Extensions.WebEncoders.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.Extensions.WebEncoders.dll</HintPath>
+      <HintPath>packages\Microsoft.Extensions.WebEncoders.2.1.0-preview2-30131\lib\netstandard2.0\Microsoft.Extensions.WebEncoders.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.IdentityModel.Logging, Version=5.2.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.IdentityModel.Logging.5.2.1\lib\net451\Microsoft.IdentityModel.Logging.dll</HintPath>
@@ -195,7 +192,7 @@
       <HintPath>packages\Microsoft.IdentityModel.Tokens.5.2.1\lib\net451\Microsoft.IdentityModel.Tokens.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Net.Http.Headers, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Net.Http.Headers.2.1.0-preview1-27982\lib\netstandard2.0\Microsoft.Net.Http.Headers.dll</HintPath>
+      <HintPath>packages\Microsoft.Net.Http.Headers.2.1.0-preview2-30186\lib\netstandard2.0\Microsoft.Net.Http.Headers.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Owin, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.Owin.4.0.0\lib\net451\Microsoft.Owin.dll</HintPath>
@@ -208,7 +205,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Win32.Registry, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Win32.Registry.4.5.0-preview1-26102-01\lib\net461\Microsoft.Win32.Registry.dll</HintPath>
+      <HintPath>packages\Microsoft.Win32.Registry.4.5.0-preview2-26130-01\lib\net461\Microsoft.Win32.Registry.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>packages\Newtonsoft.Json.10.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -222,10 +219,10 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>packages\System.Buffers.4.5.0-preview1-26102-01\lib\netstandard2.0\System.Buffers.dll</HintPath>
+      <HintPath>packages\System.Buffers.4.5.0-preview2-26130-01\lib\netstandard2.0\System.Buffers.dll</HintPath>
     </Reference>
     <Reference Include="System.Buffers.Primitives, Version=0.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\System.Buffers.Primitives.0.1.0-e180104-2\lib\netstandard1.1\System.Buffers.Primitives.dll</HintPath>
+      <HintPath>packages\System.Buffers.Primitives.0.1.0-preview2-180130-1\lib\netstandard1.1\System.Buffers.Primitives.dll</HintPath>
     </Reference>
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Console">
@@ -263,10 +260,10 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.IO.Pipelines, Version=0.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\System.IO.Pipelines.0.1.0-e180104-2\lib\netstandard1.1\System.IO.Pipelines.dll</HintPath>
+      <HintPath>packages\System.IO.Pipelines.0.1.0-preview2-180130-1\lib\netstandard2.0\System.IO.Pipelines.dll</HintPath>
     </Reference>
     <Reference Include="System.Memory, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>packages\System.Memory.4.5.0-preview1-26102-01\lib\netstandard2.0\System.Memory.dll</HintPath>
+      <HintPath>packages\System.Memory.4.5.0-preview2-26130-01\lib\netstandard2.0\System.Memory.dll</HintPath>
     </Reference>
     <Reference Include="System.Net" />
     <Reference Include="System.Net.Http">
@@ -277,12 +274,15 @@
       <HintPath>packages\System.Net.Sockets.4.3.0\lib\net46\System.Net.Sockets.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Net.WebSockets.WebSocketProtocol, Version=4.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.Net.WebSockets.WebSocketProtocol.4.5.0-preview2-26130-01\lib\netstandard2.0\System.Net.WebSockets.WebSocketProtocol.dll</HintPath>
+    </Reference>
     <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>packages\System.Numerics.Vectors.4.5.0-preview1-26102-01\lib\net46\System.Numerics.Vectors.dll</HintPath>
+      <HintPath>packages\System.Numerics.Vectors.4.5.0-preview2-26130-01\lib\net46\System.Numerics.Vectors.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>packages\System.Runtime.CompilerServices.Unsafe.4.5.0-preview1-26102-01\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+      <HintPath>packages\System.Runtime.CompilerServices.Unsafe.4.5.0-preview2-26130-01\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.InteropServices.RuntimeInformation">
       <HintPath>packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
@@ -290,7 +290,7 @@
     </Reference>
     <Reference Include="System.Security" />
     <Reference Include="System.Security.AccessControl, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>packages\System.Security.AccessControl.4.5.0-preview1-26102-01\lib\net461\System.Security.AccessControl.dll</HintPath>
+      <HintPath>packages\System.Security.AccessControl.4.5.0-preview2-26130-01\lib\net461\System.Security.AccessControl.dll</HintPath>
     </Reference>
     <Reference Include="System.Security.Cryptography.Algorithms">
       <HintPath>packages\System.Security.Cryptography.Algorithms.4.3.0\lib\net461\System.Security.Cryptography.Algorithms.dll</HintPath>
@@ -309,22 +309,28 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Security.Cryptography.Xml, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>packages\System.Security.Cryptography.Xml.4.5.0-preview1-26102-01\lib\net461\System.Security.Cryptography.Xml.dll</HintPath>
+      <HintPath>packages\System.Security.Cryptography.Xml.4.5.0-preview2-26130-01\lib\net461\System.Security.Cryptography.Xml.dll</HintPath>
     </Reference>
     <Reference Include="System.Security.Permissions, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>packages\System.Security.Permissions.4.5.0-preview1-26102-01\lib\net461\System.Security.Permissions.dll</HintPath>
+      <HintPath>packages\System.Security.Permissions.4.5.0-preview2-26130-01\lib\net461\System.Security.Permissions.dll</HintPath>
     </Reference>
     <Reference Include="System.Security.Principal.Windows, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>packages\System.Security.Principal.Windows.4.5.0-preview1-26102-01\lib\net461\System.Security.Principal.Windows.dll</HintPath>
+      <HintPath>packages\System.Security.Principal.Windows.4.5.0-preview2-26130-01\lib\net461\System.Security.Principal.Windows.dll</HintPath>
     </Reference>
     <Reference Include="System.Text.Encodings.Web, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>packages\System.Text.Encodings.Web.4.5.0-preview1-26102-01\lib\netstandard2.0\System.Text.Encodings.Web.dll</HintPath>
+      <HintPath>packages\System.Text.Encodings.Web.4.5.0-preview2-26130-01\lib\netstandard2.0\System.Text.Encodings.Web.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Text.Encodings.Web.Utf8, Version=0.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>packages\System.Text.Encodings.Web.Utf8.0.1.0-preview2-180130-1\lib\netstandard1.1\System.Text.Encodings.Web.Utf8.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Text.Primitives, Version=0.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>packages\System.Text.Primitives.0.1.0-preview2-180130-1\lib\netstandard1.1\System.Text.Primitives.dll</HintPath>
     </Reference>
     <Reference Include="System.Threading.Channels, Version=4.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>packages\System.Threading.Channels.4.5.0-preview1-26102-01\lib\netstandard2.0\System.Threading.Channels.dll</HintPath>
+      <HintPath>packages\System.Threading.Channels.4.5.0-preview2-26130-01\lib\netstandard2.0\System.Threading.Channels.dll</HintPath>
     </Reference>
-    <Reference Include="System.Threading.Tasks.Extensions, Version=4.1.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>packages\System.Threading.Tasks.Extensions.4.5.0-preview2-25707-02\lib\netstandard2.0\System.Threading.Tasks.Extensions.dll</HintPath>
+    <Reference Include="System.Threading.Tasks.Extensions, Version=4.1.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.Threading.Tasks.Extensions.4.5.0-preview2-26130-01\lib\netstandard2.0\System.Threading.Tasks.Extensions.dll</HintPath>
     </Reference>
     <Reference Include="System.Transactions" />
     <Reference Include="System.ValueTuple">
@@ -445,11 +451,11 @@
     <Content Include="scripts\bootstrap.min.js" />
     <Content Include="scripts\jquery-1.10.2.js" />
     <Content Include="scripts\jquery-1.10.2.min.js" />
-    <Content Include="scripts\signalr-client.js" />
-    <Content Include="scripts\signalr-client.min.js" />
-    <Content Include="scripts\signalr-clientES5.js" />
-    <Content Include="scripts\signalr-clientES5.min.js" />
-    <Content Include="Web.config" />
+    <Content Include="scripts\signalr.js" />
+    <Content Include="scripts\signalr.min.js" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </Content>
@@ -468,7 +474,9 @@
     <Content Include="fonts\glyphicons-halflings-regular.eot" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
