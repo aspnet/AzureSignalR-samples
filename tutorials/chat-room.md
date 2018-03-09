@@ -29,18 +29,18 @@ The code sample can be found [here](../samples/ChatRoomLocal/). Let's do it step
 2.  Create a `Chat.cs` that defines a `Chat` hub class.
 
     ```cs
-    using Microsoft.AspNetCore.SignalR;
-
     public class Chat : Hub
     {
-        public void broadcastMessage(string name, string message)
+        using Microsoft.AspNetCore.SignalR;
+
+        public void BroadcastMessage(string name, string message)
         {
-            Clients.All.InvokeAsync("broadcastMessage", name, message);
+            Clients.All.SendAsync("broadcastMessage", name, message);
         }
 
-        public void echo(string name, string message)
+        public void Echo(string name, string message)
         {
-            Clients.Client(Context.ConnectionId).InvokeAsync("echo", name, message + " (echo from server)");
+            Clients.Client(Context.ConnectionId).SendAsync("echo", name, message + " (echo from server)");
         }
     }
     ```
@@ -48,10 +48,10 @@ The code sample can be found [here](../samples/ChatRoomLocal/). Let's do it step
     > You need to reference the SignalR SDK before using the APIs:
     >
     > ```xml
-    > <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-preview1-t000" />
+    > <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-preview2-30186" />
     > ```
 
-    Hub is the core concept in SignalR which exposes a set of methods that can be called from client. Here we define two methods: `broadcast()` which broadcasts the message to all clients and `echo()` which sends the message back to the caller.
+    Hub is the core concept in SignalR which exposes a set of methods that can be called from client. Here we define two methods: `Broadcast()` which broadcasts the message to all clients and `Echo()` which sends the message back to the caller.
 
     In each method you can see there is a `Clients` interface that gives you access to all connected clients so you can directly call back to these clients.
 

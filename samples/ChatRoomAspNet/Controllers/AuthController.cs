@@ -10,14 +10,15 @@ namespace ChatRoomAspNet.Controllers
     [RoutePrefix("api/auth")]
     public class AuthController : ApiController
     {
-        private readonly static SignalRService _service = SignalRService.CreateFromConnectionString(ConfigurationManager.AppSettings["AzureSignalRConnectionString"]);
+        private static readonly EndpointProvider EndpointProvider = CloudSignalR.CreateEndpointProviderFromConnectionString(ConfigurationManager.AppSettings["AzureSignalRConnectionString"]);
+        private static readonly TokenProvider TokenProvider = CloudSignalR.CreateTokenProviderFromConnectionString(ConfigurationManager.AppSettings["AzureSignalRConnectionString"]);
 
         [HttpGet]
         [Route("{hubName}")]
         public IHttpActionResult GenerateJwtBearer(string hubName, [FromUri] string uid = null)
         {
-            var serviceUrl = $"{_service.GetClientUrl(hubName)}&uid={uid}";
-            var accessToken = _service.GenerateClientToken(hubName, new[]
+            var serviceUrl = EndpointProvider.GetClientEndpoint(hubName);
+            var accessToken = TokenProvider.GenerateClientAccessToken(hubName, new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, uid)
             });
