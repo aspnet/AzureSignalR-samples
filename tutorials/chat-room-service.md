@@ -16,7 +16,7 @@ First let's create a SignalR service on Azure.
 
    ![signalr-2](images/signalr-2.png)
 
-   Resource name will also be used as the DNS name of your service endpoint. So you'll get a `<resource_name>.<location>.cloudapp.azure.com` that your application can connect to.
+   Resource name will also be used as the DNS name of your service endpoint. So you'll get a `<resource_name>.service.signalr.net` that your application can connect to.
 
    Select a pricing tier. There're two pricing tiers:
    

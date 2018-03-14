@@ -89,7 +89,7 @@ az webapp config appsettings set --resource-group <resource_group_name> --name <
    --setting AzureSignalRConnectionString=<connection_string>
 ```
 
-Now open `http://<app_name>.azurewebsites.net` and you will see your chat room running on Azure.
+Now open `https://<app_name>.azurewebsites.net` and you will see your chat room running on Azure.
 
 ## Integrate with Azure Functions
 
