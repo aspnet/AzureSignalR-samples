@@ -59,24 +59,24 @@ textarea:focus {
     word-wrap: break-word;
 }
 
-    .message-content.pull-left:before {
-        width: 0;
-        height: 0;
-        display: inline-block;
-        float: left;
-        border-top: 10px solid transparent;
-        border-bottom: 10px solid transparent;
-        border-right: 10px solid #b2e281;
-        margin: 15px 0;
-    }
+.message-content.pull-left:before {
+    width: 0;
+    height: 0;
+    display: inline-block;
+    float: left;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    border-right: 10px solid #b2e281;
+    margin: 15px 0;
+}
 
-    .message-content.pull-right:after {
-        width: 0;
-        height: 0;
-        display: inline-block;
-        float: right;
-        border-top: 10px solid transparent;
-        border-bottom: 10px solid transparent;
-        border-left: 10px solid #b2e281;
-        margin: 15px 0;
-    }
+.message-content.pull-right:after {
+    width: 0;
+    height: 0;
+    display: inline-block;
+    float: right;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    border-left: 10px solid #b2e281;
+    margin: 15px 0;
+}
