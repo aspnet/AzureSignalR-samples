@@ -91,6 +91,37 @@ az webapp config appsettings set --resource-group <resource_group_name> --name <
 
 Now open `https://<app_name>.azurewebsites.net` and you will see your chat room running on Azure.
 
+> Web App now supports .NET Core 2.0, so you can directly deploy to Web App without Docker:
+> 1.  Create a web app:
+>     ```
+>     az group create --name <resource_group_name> --location CentralUS
+>     az appservice plan create --name <plan_name> --resource-group <resource_group_name> --sku S1 --is-linux
+>     az webapp create \
+>        --resource-group <resource_group_name> --plan <plan_name> --name <app_name> \
+>        --runtime "DOTNETCORE|2.0"
+>     ```
+>
+> 2.  Config deployment source and credential:
+>     ```
+>     az webapp deployment source config-local-git --resource-group <resource_group_name> --name <app_name>
+>     az webapp deployment user set --user-name <user_name> --password <password>
+>     ```
+>
+> 3.  Deploy using git:
+>     ```
+>     git init
+>     git remote add origin <deploy_git_url>
+>     git add -A
+>     git commit -m "init commit"
+>     git push origin master
+>     ```
+> 4. Update config
+>     ```
+>     az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> --setting PORT=5000
+>     az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> \
+>        --setting AzureSignalRConnectionString=<connection_string>
+>     ```
+
 ## Integrate with Azure Functions
 
 One common scenario in real-time application is server end will produce messages and publish them to clients. In such scenario, you may use Azure function as the producer of the messages.

@@ -64,7 +64,7 @@ The full sample code can be found [here](../samples/ChatRoom/). Let's look at th
     You also need to reference the service SDK before using these APIs:
 
     ```xml
-    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.0.0-preview-10000" />
+    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.0.0-preview-10001" />
     ```
 
 2.  Add an [AuthController.cs](../samples/ChatRoom/Controllers/AuthController.cs) that provides an API for authentication.
