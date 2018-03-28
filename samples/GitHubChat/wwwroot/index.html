@@ -43,21 +43,13 @@
     <!--Add script to update the page and send messages.-->
     <script type="text/javascript">
         document.addEventListener('DOMContentLoaded', function () {
-
-            function generateRandomName() {
-                return Math.random().toString(36).substring(2, 10);
-            }
-
-            // Get the user name and store it to prepend to messages.
-            var username = generateRandomName();
-            var promptMessage = 'Enter your name:';
-            do {
-                username = prompt(promptMessage, username);
-                if (!username || username.startsWith('_') || username.indexOf('<') > -1 || username.indexOf('>') > -1) {
-                    username = '';
-                    promptMessage = 'Invalid input. Enter your name:';
+            function getCookie(key) {
+                var cookies = document.cookie.split(';').map(c => c.trim());
+                for (var i = 0; i < cookies.length; i++) {
+                    if (cookies[i].startsWith(key + '=')) return unescape(cookies[i].slice(key.length + 1));
                 }
-            } while(!username)
+                return '';
+            }
 
             // Set initial focus to message input box.
             var messageInput = document.getElementById('message');
@@ -83,17 +75,20 @@
                 return entry;
             }
 
+            function appendMessage(encodedName, encodedMsg) {
+                var messageEntry = createMessageEntry(encodedName, encodedMsg);
+                var messageBox = document.getElementById('messages');
+                messageBox.appendChild(messageEntry);
+                messageBox.scrollTop = messageBox.scrollHeight;
+            }
+
             function bindConnectionMessage(connection) {
                 var messageCallback = function(name, message) {
                     if (!message) return;
                     // Html encode display name and message.
                     var encodedName = name;
                     var encodedMsg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                    var messageEntry = createMessageEntry(encodedName, encodedMsg);
-                                
-                    var messageBox = document.getElementById('messages');
-                    messageBox.appendChild(messageEntry);
-                    messageBox.scrollTop = messageBox.scrollHeight;
+                    appendMessage(encodedName, encodedMsg);
                 };
                 // Create a function that the hub can call to broadcast messages.
                 connection.on('broadcastMessage', messageCallback);
@@ -103,11 +98,12 @@
 
             function onConnected(connection) {
                 console.log('connection started');
-                connection.send('broadcastMessage', '_SYSTEM_', username + ' JOINED');
                 document.getElementById('sendmessage').addEventListener('click', function (event) {
                     // Call the broadcastMessage method on the hub.
                     if (messageInput.value) {
-                        connection.send('broadcastMessage', username, messageInput.value);
+                        connection
+                            .invoke('broadcastMessage', messageInput.value)
+                            .catch(e => appendMessage('_BROADCAST_', e.message));
                     }
 
                     // Clear text box and reset focus for next comment.
@@ -124,7 +120,7 @@
                 });
                 document.getElementById('echo').addEventListener('click', function (event) {
                     // Call the echo method on the hub.
-                    connection.send('echo', username, messageInput.value);
+                    connection.send('echo', messageInput.value);
 
                     // Clear text box and reset focus for next comment.
                     messageInput.value = '';
@@ -149,7 +145,7 @@
             function startConnection(url, configureConnection) {
                 return function start(transport) {
                     console.log(`Starting connection using ${signalR.TransportType[transport]} transport`);
-                    var connection = new signalR.HubConnection(url, { transport: transport });
+                    var connection = new signalR.HubConnection(url, { transport: transport, accessTokenFactory: () => accessToken });
                     if (configureConnection && typeof configureConnection === 'function') {
                         configureConnection(connection);
                     }
@@ -169,9 +165,14 @@
                 }(signalR.TransportType.WebSockets);
             }
 
-            startConnection('/chat', bindConnectionMessage)
-                .then(onConnected)
-                .catch(onConnectionError);
+            var accessToken = getCookie('githubchat_access_token'), serviceUrl = getCookie('githubchat_service_url'), username = getCookie('githubchat_username');
+            if (!accessToken) {
+                appendMessage('_BROADCAST_', 'You\'re not logged in. Click <a href="/api/auth/login">here</a> to login with GitHub.');
+            } else {
+                startConnection(serviceUrl, bindConnectionMessage)
+                    .then(onConnected)
+                    .catch(() => appendMessage('_BROADCAST_', 'You\'re not logged in. Click <a href="/api/auth/login">here</a> to login with GitHub.'));
+            }
         });
     </script>
 </body>

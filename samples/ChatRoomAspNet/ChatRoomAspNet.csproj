@@ -131,10 +131,10 @@
       <HintPath>packages\Microsoft.AspNetCore.WebUtilities.2.1.0-preview2-30131\lib\netstandard2.0\Microsoft.AspNetCore.WebUtilities.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Azure.SignalR, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Azure.SignalR.1.0.0-preview-10000\lib\netstandard2.0\Microsoft.Azure.SignalR.dll</HintPath>
+      <HintPath>packages\Microsoft.Azure.SignalR.1.0.0-preview-10001\lib\netstandard2.0\Microsoft.Azure.SignalR.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Azure.SignalR.Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Azure.SignalR.Owin.1.0.0-preview-10000\lib\net461\Microsoft.Azure.SignalR.Owin.dll</HintPath>
+      <HintPath>packages\Microsoft.Azure.SignalR.Owin.1.0.0-preview-10001\lib\net461\Microsoft.Azure.SignalR.Owin.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=1.0.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.7\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
