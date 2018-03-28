@@ -1,4 +1,4 @@
-# Implement You Own Authentication
+# Implement Your Own Authentication
 
 The authentication in previous tutorial is actually very simple, you claim who you are and authentication API will give you a token with that name.
 This is not really useful in real applications, in this tutorial you'll learn how to implement your own authentication and integrate with SignalR service.
