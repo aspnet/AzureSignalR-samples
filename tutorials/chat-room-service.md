@@ -4,11 +4,9 @@ In last tutorial you have learned how to use SignalR Core to build a chat room a
 
 ## Create a SignalR Service
 
-> [TODO] The screenshots below are based on dogfooding environment. To be replaced with production screenshots later.
-
 First let's create a SignalR service on Azure.
 
-1. Open Azure portal, click "Create a resource" and find "SignalR Service".
+1. Open Azure portal, click "Create a resource" and find "SignalR Service" in "Web + Mobile".
 
    ![signalr-1](images/signalr-1.png)
 
@@ -22,6 +20,8 @@ First let's create a SignalR service on Azure.
    
    * Free: which can handle 100 connections at the same time and can send and receive one million messages in a month.
    * Basic: which has 1000 concurrent connections and 75 millions message per month limit for *one unit*. You can scale up to 10 units for a single service instance and you'll be charged by the number of units you use.
+
+   > In private preview, only basic tier with one unit is supported.
 
 3. Click "Create", your SignalR service will be created in a few minutes.
 
