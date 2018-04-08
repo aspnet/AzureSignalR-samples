@@ -138,7 +138,7 @@ Other than these changes, everything else remains the same, you can still use th
 Now let's build and run the app (you need to first set connect string as an environment variable).
 
 ```
-export AzureSignalRConnectionString=<connection_string>
+export AzureSignalRConnectionString="<connection_string>"
 dotnet build
 dotnet run
 ```
