@@ -144,7 +144,7 @@ Also the token may expire after some time, so display the same login message if 
 Now you can run the project to chat using your GitHub ID:
 
 ```
-export AzureSignalRConnectionString=<connection_string>
+export AzureSignalRConnectionString="<connection_string>"
 export GitHubClientId=<client_id>
 export GitHubClientSecret=<client_secret>
 dotnet build
