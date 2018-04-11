@@ -12,7 +12,10 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoom
     {
         public Startup(IHostingEnvironment env)
         {
-            var builder = new ConfigurationBuilder().AddEnvironmentVariables();
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(env.ContentRootPath)
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables();
             Configuration = builder.Build();
         }
 
