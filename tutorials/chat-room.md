@@ -48,7 +48,7 @@ The code sample can be found [here](../samples/ChatRoomLocal/). Let's do it step
     > You need to reference the SignalR SDK before using the APIs:
     >
     > ```xml
-    > <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-preview2-30186" />
+    > <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-preview2-final" />
     > ```
 
     Hub is the core concept in SignalR which exposes a set of methods that can be called from client. Here we define two methods: `Broadcast()` which broadcasts the message to all clients and `Echo()` which sends the message back to the caller.
