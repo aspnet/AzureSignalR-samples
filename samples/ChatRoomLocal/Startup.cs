@@ -10,15 +10,9 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoom
 
     public class Startup
     {
-        public Startup(IHostingEnvironment env)
+        public Startup(IConfiguration configuration)
         {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
-
-            builder.AddEnvironmentVariables();
-            Configuration = builder.Build();
+            Configuration = configuration;
         }
 
         public IConfiguration Configuration { get; }
@@ -26,7 +20,6 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoom
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            services.AddSingleton(typeof(IConfiguration), Configuration);
             services.AddSignalR();
         }
 

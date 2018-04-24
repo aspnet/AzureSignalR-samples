@@ -7,12 +7,12 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoom
 
     public class Chat : Hub
     {
-        public void broadcastMessage(string name, string message)
+        public void BroadcastMessage(string name, string message)
         {
             Clients.All.SendAsync("broadcastMessage", name, message);
         }
 
-        public void echo(string name, string message)
+        public void Echo(string name, string message)
         {
             Clients.Client(Context.ConnectionId).SendAsync("echo", name, message + " (echo from server)");
         }

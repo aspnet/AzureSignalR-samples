@@ -3,6 +3,7 @@
 
 namespace Microsoft.Azure.SignalR.Samples.ChatRoom
 {
+    using Microsoft.AspNetCore.Authentication.Cookies;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Configuration;
@@ -10,37 +11,37 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoom
 
     public class Startup
     {
-        public Startup(IHostingEnvironment env)
+        public Startup(IConfiguration configuration)
         {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables();
-            Configuration = builder.Build();
+            Configuration = configuration;
         }
 
         public IConfiguration Configuration { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie();
             services.AddMvc();
             services.AddSingleton(typeof(IConfiguration), Configuration);
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("Microsoft_Only", policy => policy.RequireClaim("Company", "Microsoft"));
             });
-            services.AddAzureSignalR();
+            
+            services.AddSignalR()
+                .AddAzureSignalR();
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app)
         {
+            app.UseAuthentication();
             app.UseMvc();
             app.UseFileServer();
-            app.UseAzureSignalR(Configuration[Constants.AzureSignalRConnectionStringKey],
-                builder => 
-                { 
-                    builder.UseHub<Chat>(); 
-                });
+            app.UseAzureSignalR(routes =>
+            {
+                routes.MapHub<Chat>("/chat");
+            });
         }
     }
 }

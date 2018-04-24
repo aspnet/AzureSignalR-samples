@@ -9,16 +9,15 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoom
     using System.Security.Claims;
     using System.Text;
     using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Authentication;
+    using Microsoft.AspNetCore.Authentication.Cookies;
     using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Azure.SignalR;
     using Microsoft.Extensions.Configuration;
     using Newtonsoft.Json;
 
     [Route("api/auth")]
     public class AuthController : Controller
     {
-        private readonly EndpointProvider _endpointProvider;
-        private readonly TokenProvider _tokenProvider;
         private readonly HttpClient _httpClient;
         private readonly string _clientId;
         private readonly string _clientSecret;
@@ -57,9 +56,6 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoom
 
         public AuthController(IConfiguration config)
         {
-            var connStr = config[Constants.AzureSignalRConnectionStringKey];
-            _endpointProvider = CloudSignalR.CreateEndpointProviderFromConnectionString(connStr);
-            _tokenProvider = CloudSignalR.CreateTokenProviderFromConnectionString(connStr);
             _clientId = config[Constants.GitHubClientIdKey];
             _clientSecret = config[Constants.GitHubClientSecretKey];
             _httpClient = new HttpClient();
@@ -76,19 +72,29 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoom
         [HttpGet("callback")]
         public async Task<IActionResult> Callback(string code)
         {
-            var hubName = "chat";
+            await SignInUser(code);
+            return Redirect("/");
+        }
+
+        private async Task SignInUser(string code)
+        {
             var githubToken = await GetToken(code);
             var user = await GetUser(githubToken);
-            var serviceUrl = _endpointProvider.GetClientEndpoint(hubName);
-            var accessToken = _tokenProvider.GenerateClientAccessToken(hubName, new[]
+            var principal = GetPrincipal(user);
+
+            Response.Cookies.Append("githubchat_username", user.Name);
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+        }
+
+        private ClaimsPrincipal GetPrincipal(UserInfo user)
+        {
+            var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Name),
-                new Claim("Company", user.Company ?? "")
-            });
-            Response.Cookies.Append("githubchat_access_token", accessToken);
-            Response.Cookies.Append("githubchat_service_url", serviceUrl);
-            Response.Cookies.Append("githubchat_username", user.Name);
-            return Redirect("/");
+                new Claim("Company", user.Company ?? string.Empty)
+            };
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            return new ClaimsPrincipal(claimsIdentity);
         }
     }
 }
