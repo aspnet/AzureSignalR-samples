@@ -16,3 +16,13 @@ To learn how to use Azure SignalR Service, you can start with our [tutorials](tu
 >
 > Azure SignalR Service is based on SignalR Core, therefore you can only use SignalR Core SDK when using the service.
 > This doesn't mean you cannot use the service in .NET Framework, our SDK is .NET Standard so you can still use it in .NET Framework, just you have to use the new APIs instead of old ones.
+
+## Updates of Azure SignalR Service Runtime and SDK
+
+We have made some changes to Azure SignalR Service Runtime, as well as Service SDK. You have to upgrade to the latest Service SDK to connect to the latest Service Runtime.
+In the latest Service SDK, we have made the following changes:
+
+- Dependency injection is built on top of SignalR Core.
+- Expose a built-in authentication endpoint to issue access token. User authentication endpoint is not required any more.
+- Re-design interfaces for REST API.
+- Remove .NET Framework support. We plan to support .NET Framework in later releases.

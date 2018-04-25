@@ -43,7 +43,7 @@ After you authorized the application, GitHub will return a code to the applicati
 The code can be used to get the actual access token of the account:
 
 ```cs
-private async Task<string> GetToken(string code)
+private async Task<string> GetTokenAsync(string code)
 {
     var body = JsonConvert.SerializeObject(new Dictionary<string, string> {
         { "client_id", _clientId },
@@ -61,7 +61,7 @@ private async Task<string> GetToken(string code)
 With the access token, you can call GitHub to get user information like name and company:
 
 ```cs
-private async Task<UserInfo> GetUser(string token)
+private async Task<UserInfo> GetUserAsync(string token)
 {
     var userString = await _httpClient.GetStringAsync($"https://api.github.com/user?access_token={token}");
     var userObject = JsonConvert.DeserializeObject<Dictionary<string, string>>(userString);
@@ -73,24 +73,33 @@ private async Task<UserInfo> GetUser(string token)
 }
 ```
 
+Use user information to create a principal:
+```cs
+private static ClaimsPrincipal GetClaimsPrincipal(UserInfo user)
+{
+    var claims = new List<Claim>
+    {
+        new Claim(ClaimTypes.NameIdentifier, user.Name),
+        new Claim("Company", user.Company ?? string.Empty)
+    };
+    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+    return new ClaimsPrincipal(claimsIdentity);
+}
+```
+
 Then add an API to handle the callback from GitHub:
 
 ```cs
 [HttpGet("callback")]
 public async Task<IActionResult> Callback(string code)
 {
-    var hubName = "chat";
-    var githubToken = await GetToken(code);
-    var user = await GetUser(githubToken);
-    var serviceUrl = _endpointProvider.GetClientEndpoint(hubName);
-    var accessToken = _tokenProvider.GenerateClientAccessToken(hubName, new[]
-    {
-        new Claim(ClaimTypes.NameIdentifier, user.Name),
-        new Claim("Company", user.Company ?? "")
-    });
-    Response.Cookies.Append("githubchat_access_token", accessToken);
-    Response.Cookies.Append("githubchat_service_url", serviceUrl);
+    var githubToken = await GetTokenAsync(code);
+    var user = await GetUserAsync(githubToken);
+    var claimsPrincipal = GetClaimsPrincipal(user);
+
     Response.Cookies.Append("githubchat_username", user.Name);
+    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
+
     return Redirect("/");
 }
 ```
@@ -99,47 +108,54 @@ The API does the following:
 
 1. Get access token from the code.
 2. Get username and company from access token.
-3. Generate a SignalR access token with these claims.
-4. Return access token and service url in cookies and redirect back to the chat room page.
+3. Create a principal from user information.
+4. Sign in user with the principal, which will return an encrypted cookie for further authentication.
 
 > For more details about GitHub OAuth flow, please refer to this [article](https://developer.github.com/v3/guides/basics-of-authentication/).
+
+> For more details about using Cookie Authentication in ASP.NET Core, please refer to this [article](https://docs.microsoft.com/en-us/aspnet/core/security/authentication/cookie?view=aspnetcore-2.1&tabs=aspnetcore2x).
 
 > The full sample code can be found [here](../samples/GitHubChat/).
 
 ## Update Hub Code
 
-Then let's update the hub to use user's claim.
+Then let's update the hub to enforce authentication.
 
-In previous tutorial `broadcastMessage()` method takes a `name` parameter to let caller claim who he is, which is apparently not secure.
-Let's remove the `name` parameter and read username from the authenticated user's claim:
+1. Add `[Authorize]` attribute on the `Chat` class. Then only authenticated user can access the `/chat` endpoint. An `Unauthorized` error will be returned if user is not authenticated.
+```cs
+[Authorize]
+public class Chat : Hub
+{
+    ...
+}
+```
+
+2. In previous tutorial `broadcastMessage()` method takes a `name` parameter to let caller claim who he is, which is apparently not secure.
+Let's remove the `name` parameter and read user identifier from `Hub` class's `Context` member.:
 
 ```cs
 public void broadcastMessage(string message)
 {
-    var username = Context.Connection.User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
-    Clients.All.SendAsync("broadcastMessage", username, message);
+    Clients.All.SendAsync("broadcastMessage", Context.UserIdentifier, message);
 }
 ```
 
 ## Update Client Code
 
-Finally let's update client code to use the new authentication API:
+Finally let's update client code to handle `Unauthorized` error and instruct user to login.
 
 ```js
-var accessToken = getCookie('githubchat_access_token'), serviceUrl = getCookie('githubchat_service_url'), username = getCookie('githubchat_username');
-if (!accessToken) {
-    appendMessage('_BROADCAST_', 'You\'re not logged in. Click <a href="/api/auth/login">here</a> to login with GitHub.');
-} else {
-    startConnection(serviceUrl, bindConnectionMessage)
-        .then(onConnected)
-        .catch(() => appendMessage('_BROADCAST_', 'You\'re not logged in. Click <a href="/api/auth/login">here</a> to login with GitHub.'));
-}
+connection.start()
+    .then(function () {
+        onConnected(connection);
+    })
+    .catch(function (error) {
+        console.error(error.message);
+        if (error.message === "Unauthorized") {
+            appendMessage('_BROADCAST_', 'You\'re not logged in. Click <a href="/api/auth/login">here</a> to login with GitHub.');
+        }
+    });
 ```
-
-Instead of calling the auth API to get access token, we try to get it from cookies.
-If it doesn't exist, display a message to ask user to login.
-
-Also the token may expire after some time, so display the same login message if connection failure happens.
 
 Now you can run the project to chat using your GitHub ID:
 
@@ -147,7 +163,6 @@ Now you can run the project to chat using your GitHub ID:
 export AzureSignalRConnectionString="<connection_string>"
 export GitHubClientId=<client_id>
 export GitHubClientSecret=<client_secret>
-dotnet build
 dotnet run
 ```
 
@@ -195,7 +210,6 @@ Now if your GitHub account's company is not Microsoft, you cannot send message i
 > So if you want to get a confirmation of the hub invocation (for example in this case you want to know whether your call has enough permission) you need to use `invoke()`:
 >
 > ```js
-> connection
->     .invoke('broadcastMessage', messageInput.value)
->     .catch(e => appendMessage('_BROADCAST_', e.message));
+> connection.invoke('broadcastMessage', messageInput.value)
+>           .catch(e => appendMessage('_BROADCAST_', e.message));
 > ```

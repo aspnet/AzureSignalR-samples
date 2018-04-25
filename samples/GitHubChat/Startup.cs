@@ -11,6 +11,8 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoom
 
     public class Startup
     {
+        public const string AzureSignalRConnectionStringKey = "AzureSignalRConnectionString";
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -21,16 +23,18 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoom
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie();
-            services.AddMvc();
-            services.AddSingleton(typeof(IConfiguration), Configuration);
+                    .AddCookie();
+
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("Microsoft_Only", policy => policy.RequireClaim("Company", "Microsoft"));
             });
-            
+
+            services.AddMvc();
+            services.AddSingleton(typeof(IConfiguration), Configuration);
+
             services.AddSignalR()
-                .AddAzureSignalR();
+                    .AddAzureSignalR(Configuration[AzureSignalRConnectionStringKey]);
         }
 
         public void Configure(IApplicationBuilder app)

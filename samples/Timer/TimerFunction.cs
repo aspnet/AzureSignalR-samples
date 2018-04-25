@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.AspNetCore.SignalR;
+
 namespace Timer
 {
     using System;
@@ -14,8 +16,12 @@ namespace Timer
         public static async Task Run(TimerInfo myTimer, TraceWriter log)
         {
             var connectionString = Environment.GetEnvironmentVariable("AzureSignalRConnectionString");
-            var proxy = CloudSignalR.CreateHubProxyFromConnectionString(connectionString, "chat");
-            await proxy.Clients.All.SendAsync("broadcastMessage", new object[] { "_BROADCAST_", $"Current time is: {DateTime.Now}" });
+            var serviceContext = AzureSignalR.CreateServiceContext(connectionString, "chat");
+            await serviceContext.HubContext.Clients.All.SendAsync("broadcastMessage",
+                new object[]
+                {
+                    "_BROADCAST_", $"Current time is: {DateTime.Now}"
+                });
         }
     }
 }

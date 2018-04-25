@@ -5,7 +5,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.WebJobs" Version="2.1.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions" Version="2.1.0" />
-    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.0.0-preview-10001" />
+    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.0.0-preview-10005" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />

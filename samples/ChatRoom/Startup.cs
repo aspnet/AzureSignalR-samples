@@ -20,7 +20,7 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoom
         {
             services.AddMvc();
             services.AddSignalR()
-                    .AddAzureSignalR();
+                    .AddAzureSignalR(Configuration["AzureSignalRConnectionString"]);
         }
 
         public void Configure(IApplicationBuilder app)

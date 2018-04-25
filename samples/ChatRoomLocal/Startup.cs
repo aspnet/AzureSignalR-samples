@@ -4,7 +4,6 @@
 namespace Microsoft.Azure.SignalR.Samples.ChatRoom
 {
     using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
 
@@ -23,14 +22,14 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoom
             services.AddSignalR();
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app)
         {
             app.UseMvc();
             app.UseFileServer();
             app.UseSignalR(routes =>
-                { 
-                    routes.MapHub<Chat>("/chat");
-                });
+            {
+                routes.MapHub<Chat>("/chat");
+            });
         }
     }
 }
