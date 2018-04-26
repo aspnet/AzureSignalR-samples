@@ -172,7 +172,7 @@ To build and deploy the Azure function, first create a function app:
 ```
 az group create --name <resource_group_name> --location CentralUS
 az storage account create --resource-group <resource_group_name> --name <storage_account_name> \
-   --location CentralUS --sku Standard_LR
+   --location CentralUS --sku Standard_LRS
 az functionapp create --resource-group <resource_group_name> --name <function_name> \
    --consumption-plan-location CentralUS --storage-account <storage_account_name>
 ```

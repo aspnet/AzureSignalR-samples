@@ -64,7 +64,7 @@ The full sample code can be found [here](../samples/ChatRoom/). Let's look at th
     You also need to reference the service SDK before using these APIs:
 
     ```xml
-    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.0.0-preview-10006" />
+    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.0.0-preview-10007" />
     ```
 
 Other than these changes, everything else remains the same, you can still use the hub interface you're already familiar with to write business logic.
