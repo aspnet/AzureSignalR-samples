@@ -135,12 +135,11 @@ The sample project can be found [here](../samples/Timer/), let's see how it work
 The core logic of the function is in [TimerFunction.cs](../samples/Timer/TimerFunction.cs):
 
 ```cs
-var connectionString = Environment.GetEnvironmentVariable("AzureSignalRConnectionString");
-var proxy = CloudSignalR.CreateHubProxyFromConnectionString(connectionString, "chat");
-await proxy.Clients.All.SendAsync("broadcastMessage", new object[] { "_BROADCAST_", $"Current time is: {DateTime.Now}" });
+var serviceContext = AzureSignalR.CreateServiceContext("chat");
+await serviceContext.HubContext.Clients.All.SendAsync("broadcastMessage", "_BROADCAST_", $"Current time is: {DateTime.Now}");
 ```
 
-You can see in the service SDK there is a `CloudSignalR.CreateHubProxyFromConnectionString()` method that creates a `HubProxy` object from the connection string. `HubProxy.Clients` implements `IHubClients<>` interface so you can access all connected clients using the same API of SignalR.
+You can see in the service SDK there is a `AzureSignalR.CreateServiceContext()` method that creates a `ServiceContext` object from the connection string. `ServiceContext.HubContext` implements `IHubContext<>` interface so you can access all connected clients and groups using the same API of SignalR.
 
 In this sample we simply get the current time and broadcast it to all clients.
 
@@ -168,7 +167,7 @@ To build and deploy the Azure function, first create a function app:
 ```
 az group create --name <resource_group_name> --location CentralUS
 az storage account create --resource-group <resource_group_name> --name <storage_account_name> \
-   --location CentralUS --sku Standard_LR
+   --location CentralUS --sku Standard_LRS
 az functionapp create --resource-group <resource_group_name> --name <function_name> \
    --consumption-plan-location CentralUS --storage-account <storage_account_name>
 ```
@@ -214,12 +213,12 @@ git push origin master
 Finally set the connection string to the application settings:
 ```
 az functionapp config appsettings set --resource-group <resource_group_name> --name <app_name> \
-   --setting AzureSignalRConnectionString=<connection_string>
+   --setting Azure:SignalR:ConnectionString=<connection_string>
 ```
 
 Now after you log into the chat room, you'll see a broadcast of current time every one minute.
 
-> You can see in the function code it directly calls to `HubProxy.Clients.All.SendAsync()`, instead of calling to `BroadcastMessage()` of the hub.
+> You can see in the function code it directly calls to `ServiceContext.HubContext.Clients.All.SendAsync()`, instead of calling to `BroadcastMessage()` of the hub.
 That means the call directly goes to clients through SignalR service, without need to go to the web server (which hosts the hub).
 So if your application only needs to broadcast message to clients, you don't even need to host the hub logic in a web server.
 
