@@ -1,6 +1,6 @@
 # Build Your First Azure SignalR Service Application
 
-In last tutorial you have learned how to use SignalR Core to build a chat room application. In that example, the SignalR runtime (which manages the client connections and message routing) is running on your own server. As the number of the clients increases, you'll eventually hit a limit on your server and you'll need to scale your server to handle more clients. This is usually not an easy task. In this tutorial, you'll learn how to use Azure SignalR Service to offload the connection management part to the service so that you don't need to worry about the scaling problem.
+In last tutorial you have learned how to use SignalR to build a chat room application. In that example, the SignalR runtime (which manages the client connections and message routing) is running on your own server. As the number of the clients increases, you'll eventually hit a limit on your server and you'll need to scale your server to handle more clients. This is usually not an easy task. In this tutorial, you'll learn how to use Azure SignalR Service to offload the connection management part to the service so that you don't need to worry about the scaling problem.
 
 ## Create a SignalR Service
 
@@ -69,7 +69,7 @@ The full sample code can be found [here](../samples/ChatRoom/). Let's look at th
 
 Other than these changes, everything else remains the same, you can still use the hub interface you're already familiar with to write business logic.
 
-> Under the hood, an endpoint `/chat/negotiate` is exposed for negotiation by Azure SignalR Service SDK. It will return a special negotiation response when clients try to connect and redirect clients to service endpoint from the connection string. Read more details about the redirection at SignalR Core's [Negotitation Protocol](https://github.com/aspnet/SignalR/blob/dev/specs/TransportProtocols.md#post-endpoint-basenegotiate-request).
+> Under the hood, an endpoint `/chat/negotiate` is exposed for negotiation by Azure SignalR Service SDK. It will return a special negotiation response when clients try to connect and redirect clients to service endpoint from the connection string. Read more details about the redirection at SignalR's [Negotitation Protocol](https://github.com/aspnet/SignalR/blob/dev/specs/TransportProtocols.md#post-endpoint-basenegotiate-request).
 
 Now let's build and run the app (you need to first set connect string as an environment variable).
 

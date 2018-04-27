@@ -10,11 +10,11 @@ If you're new to Azure SignalR Service, this repo contains useful documentation 
 
 To learn how to use Azure SignalR Service, you can start with our [tutorials](tutorials/).
 
-> #### SignalR, SignalR Core and Azure SignalR Service
-> There're two versions of SignalR: SignalR (for ASP.NET) and SignalR Core (for ASP.NET Core). SignalR Core is not a simple .NET Core port of SignalR, but a [rewrite](https://blogs.msdn.microsoft.com/webdev/2017/09/14/announcing-signalr-for-asp-net-core-2-0/) of the original version.
-> As a result, SignalR Core is not backward compatible with SignalR (API interfaces and behaviors are different). If you're using SignalR and want to move to SignalR Core, you'll need to change your code to handle these differences.
+> #### ASP.NET SignalR, ASP.NET Core SignalR and Azure SignalR Service
+> There're two versions of SignalR: ASP.NET SignalR and ASP.NET Core SignalR. The ASP.NET Core version is not a simple .NET Core port of the original SignalR, but a [rewrite](https://blogs.msdn.microsoft.com/webdev/2017/09/14/announcing-signalr-for-asp-net-core-2-0/) of the original version.
+> As a result, ASP.NET Core SignalR is not backward compatible with ASP.NET SignalR (API interfaces and behaviors are different). If you're using ASP.NET version and want to move to ASP.NET Core version, you'll need to change your code to handle these differences.
 >
-> Azure SignalR Service is based on SignalR Core, therefore you can only use SignalR Core SDK when using the service.
+> Azure SignalR Service is based on ASP.NET Core SignalR, therefore you can only use ASP.NET Core SDK when using the service.
 > This doesn't mean you cannot use the service in .NET Framework, our SDK is .NET Standard so you can still use it in .NET Framework, just you have to use the new APIs instead of old ones.
 
 ## Updates of Azure SignalR Service Runtime and SDK
@@ -22,7 +22,7 @@ To learn how to use Azure SignalR Service, you can start with our [tutorials](tu
 We have made some changes to Azure SignalR Service Runtime, as well as Service SDK. You have to upgrade to the latest Service SDK to connect to the latest Service Runtime.
 In the latest Service SDK, we have made the following changes:
 
-- Dependency injection is built on top of SignalR Core.
+- Dependency injection is built on top of ASP.NET Core SignalR.
 - Expose a built-in authentication endpoint to issue access token. User authentication endpoint is not required any more.
 - Re-design interfaces for REST API.
 - Remove .NET Framework support. We plan to support .NET Framework in later releases.
