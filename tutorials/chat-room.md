@@ -1,10 +1,10 @@
 # Get Started with SignalR: a Chat Room Example
 
-In this tutorial you'll learn how to use SignalR Core to build a chat room application.
+In this tutorial you'll learn how to use ASP.NET Core SignalR to build a chat room application.
 
-> This tutorial is to give you a brief introduction about how SignalR Core works, if you're already familiar with SignalR Core, you can skip this tutorial.
+> This tutorial is to give you a brief introduction about how ASP.NET Core SignalR works, if you're already familiar with it, you can skip this tutorial.
 >
-> Please be noted this tutorial (and all other tutorials in this repo) is based on SignalR Core rather than SignalR.
+> Please be noted this tutorial (and all other tutorials in this repo) is based on ASP.NET Core SignalR rather than the ASP.NET version.
 
 Our chat room is a web page application that anyone can login and chat with others in the room.
 
