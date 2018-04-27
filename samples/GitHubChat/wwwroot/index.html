@@ -150,7 +150,7 @@
                 .catch(function (error) {
                     console.error(error.message);
                     if (error.message === "Unauthorized") {
-                        appendMessage('_BROADCAST_', 'You\'re not logged in. Click <a href="/api/auth/login">here</a> to login with GitHub.');
+                        appendMessage('_BROADCAST_', 'You\'re not logged in. Click <a href="/login">here</a> to login with GitHub.');
                     }
                 });
         });

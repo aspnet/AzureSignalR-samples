@@ -135,13 +135,8 @@ The sample project can be found [here](../samples/Timer/), let's see how it work
 The core logic of the function is in [TimerFunction.cs](../samples/Timer/TimerFunction.cs):
 
 ```cs
-var connectionString = Environment.GetEnvironmentVariable("AzureSignalRConnectionString");
-var serviceContext = AzureSignalR.CreateServiceContext(connectionString, "chat");
-await serviceContext.HubContext.Clients.All.SendAsync("broadcastMessage",
-    new object[]
-    {
-        "_BROADCAST_", $"Current time is: {DateTime.Now}"
-    });
+var serviceContext = AzureSignalR.CreateServiceContext("chat");
+await serviceContext.HubContext.Clients.All.SendAsync("broadcastMessage", "_BROADCAST_", $"Current time is: {DateTime.Now}");
 ```
 
 You can see in the service SDK there is a `AzureSignalR.CreateServiceContext()` method that creates a `ServiceContext` object from the connection string. `ServiceContext.HubContext` implements `IHubContext<>` interface so you can access all connected clients and groups using the same API of SignalR.
@@ -218,7 +213,7 @@ git push origin master
 Finally set the connection string to the application settings:
 ```
 az functionapp config appsettings set --resource-group <resource_group_name> --name <app_name> \
-   --setting AzureSignalRConnectionString=<connection_string>
+   --setting Azure:SignalR:ConnectionString=<connection_string>
 ```
 
 Now after you log into the chat room, you'll see a broadcast of current time every one minute.

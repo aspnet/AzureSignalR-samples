@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <IsPackable>false</IsPackable>
+    <UserSecretsId>chatroom</UserSecretsId>
     <RootNamespace>Microsoft.Azure.SignalR.Samples.ChatRoom</RootNamespace>
   </PropertyGroup>
 
@@ -10,5 +10,9 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.0-rc1-30656" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.0-rc1-30656" />
     <PackageReference Include="Microsoft.Azure.SignalR" Version="1.0.0-preview-10007" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="2.0.0" />
   </ItemGroup>
 </Project>

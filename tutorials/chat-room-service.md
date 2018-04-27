@@ -48,7 +48,7 @@ The full sample code can be found [here](../samples/ChatRoom/). Let's look at th
     {
         ...
         services.AddSignalR()
-                .AddAzureSignalR(Configuration["AzureSignalRConnectionString"]);
+                .AddAzureSignalR();
     }
 
     public void Configure(IApplicationBuilder app)
@@ -74,7 +74,7 @@ Other than these changes, everything else remains the same, you can still use th
 Now let's build and run the app (you need to first set connect string as an environment variable).
 
 ```
-export AzureSignalRConnectionString="<connection_string>"
+export Azure__SignalR__ConnectionString="<connection_string>"
 dotnet run
 ```
 

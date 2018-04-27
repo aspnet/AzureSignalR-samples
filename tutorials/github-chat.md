@@ -11,7 +11,7 @@ First step is to create a OAuth App in GitHub:
 
 1. Go to GitHub -> Settings -> Developer Settings, and click "New OAuth App".
 2. Fill in application name, description and homepage URL.
-3. Authorization callback URL is the url GitHub will redirect you to after authentication. For now make it `http://localhost:5000/api/auth/callback`.
+3. Authorization callback URL is the url GitHub will redirect you to after authentication. For now make it `http://localhost:5000/signin-github`.
 4. Click "Register application" and you'll get an application with client ID and secret, you'll need them later when you implement the OAuth flow.
 
 ## Implement OAuth Flow
@@ -21,16 +21,22 @@ The first step of OAuth flow is to ask user to login with GitHub account. This c
 Add a link in the chat room for user to login:
 
 ```js
-appendMessage('_BROADCAST_', 'You\'re not logged in. Click <a href="/api/auth/login">here</a> to login with GitHub.');
+appendMessage('_BROADCAST_', 'You\'re not logged in. Click <a href="/login">here</a> to login with GitHub.');
 ```
 
-The link points to `/api/auth/login` which redirects to GitHub with client ID of the application:
+The link points to `/login` which redirects to GitHub OAuth page if you are not authenticated:
 
 ```cs
 [HttpGet("login")]
 public IActionResult Login()
 {
-    return Redirect($"https://github.com/login/oauth/authorize?scope=user:email&client_id={_clientId}");
+    if (!HttpContext.User.Identity.IsAuthenticated)
+    {
+        return Challenge(GitHubAuthenticationDefaults.AuthenticationScheme);
+    }
+
+    HttpContext.Response.Cookies.Append("githubchat_username", HttpContext.User.Identity.Name);
+    return Redirect("/");
 }
 ```
 
@@ -38,78 +44,7 @@ GitHub will check whether you have already logged in and authorized the applicat
 
 ![github-oauth](images/github-oauth.png)
 
-After you authorized the application, GitHub will return a code to the application by redirecting to the callback url of the application.
-
-The code can be used to get the actual access token of the account:
-
-```cs
-private async Task<string> GetTokenAsync(string code)
-{
-    var body = JsonConvert.SerializeObject(new Dictionary<string, string> {
-        { "client_id", _clientId },
-        { "client_secret", _clientSecret },
-        { "code", code },
-        { "accept", "json" }
-    });
-    var response = await _httpClient.PostAsync("https://github.com/login/oauth/access_token", new StringContent(body, Encoding.UTF8, "application/json"));
-    var tokenString = await response.Content.ReadAsStringAsync();
-    var tokenObject = JsonConvert.DeserializeObject<Dictionary<string, string>>(tokenString);
-    return tokenObject["access_token"];
-}
-```
-
-With the access token, you can call GitHub to get user information like name and company:
-
-```cs
-private async Task<UserInfo> GetUserAsync(string token)
-{
-    var userString = await _httpClient.GetStringAsync($"https://api.github.com/user?access_token={token}");
-    var userObject = JsonConvert.DeserializeObject<Dictionary<string, string>>(userString);
-    return new UserInfo
-    {
-        Name = userObject["login"],
-        Company = userObject["company"]
-    };
-}
-```
-
-Use user information to create a principal:
-```cs
-private static ClaimsPrincipal GetClaimsPrincipal(UserInfo user)
-{
-    var claims = new List<Claim>
-    {
-        new Claim(ClaimTypes.NameIdentifier, user.Name),
-        new Claim("Company", user.Company ?? string.Empty)
-    };
-    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-    return new ClaimsPrincipal(claimsIdentity);
-}
-```
-
-Then add an API to handle the callback from GitHub:
-
-```cs
-[HttpGet("callback")]
-public async Task<IActionResult> Callback(string code)
-{
-    var githubToken = await GetTokenAsync(code);
-    var user = await GetUserAsync(githubToken);
-    var claimsPrincipal = GetClaimsPrincipal(user);
-
-    Response.Cookies.Append("githubchat_username", user.Name);
-    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
-
-    return Redirect("/");
-}
-```
-
-The API does the following:
-
-1. Get access token from the code.
-2. Get username and company from access token.
-3. Create a principal from user information.
-4. Sign in user with the principal, which will return an encrypted cookie for further authentication.
+After you authorized the application, GitHub will return a code to the application by redirecting to the callback url of the application. `AspNet.Security.OAuth.GitHub` package will handle the rest of the OAuth flow for us and redirect back to `/login` page with the authenticated user identity.
 
 > For more details about GitHub OAuth flow, please refer to this [article](https://developer.github.com/v3/guides/basics-of-authentication/).
 
@@ -130,13 +65,13 @@ public class Chat : Hub
 }
 ```
 
-2. In previous tutorial `broadcastMessage()` method takes a `name` parameter to let caller claim who he is, which is apparently not secure.
+2. In previous tutorial `BroadcastMessage()` method takes a `name` parameter to let caller claim who he is, which is apparently not secure.
 Let's remove the `name` parameter and read user identifier from `Hub` class's `Context` member.:
 
 ```cs
-public void broadcastMessage(string message)
+public void BroadcastMessage(string message)
 {
-    Clients.All.SendAsync("broadcastMessage", Context.UserIdentifier, message);
+    Clients.All.SendAsync("broadcastMessage", Context.User.Identity.Name, message);
 }
 ```
 
@@ -160,7 +95,7 @@ connection.start()
 Now you can run the project to chat using your GitHub ID:
 
 ```
-export AzureSignalRConnectionString="<connection_string>"
+export Azure__SignalR__ConnectionString="<connection_string>"
 export GitHubClientId=<client_id>
 export GitHubClientSecret=<client_secret>
 dotnet run
@@ -194,11 +129,11 @@ services.AddAuthorization(options =>
 
 This policy requires user to have a "Microsoft" company claim.
 
-Then apply the policy to `broadcastMessage()` method:
+Then apply the policy to `BroadcastMessage()` method:
 
 ```cs
 [Authorize(Policy = "Microsoft_Only")]
-public void broadcastMessage(string message)
+public void BroadcastMessage(string message)
 {
     ...
 }

@@ -4,5 +4,4 @@ obj/
 .vscode/
 packages/
 **.csproj.user
-**/Properties/
 node_modules/
