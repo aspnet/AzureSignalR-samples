@@ -47,99 +47,34 @@ The full sample code can be found [here](../samples/ChatRoom/). Let's look at th
     public void ConfigureServices(IServiceCollection services)
     {
         ...
-        services.AddAzureSignalR();
+        services.AddSignalR()
+                .AddAzureSignalR();
     }
 
-    public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+    public void Configure(IApplicationBuilder app)
     {
         ...
-        app.UseAzureSignalR(Configuration[Constants.AzureSignalRConnectionStringKey],
-            builder => 
-            { 
-                builder.UseHub<Chat>(); 
-            });
+        app.UseAzureSignalR(routes => 
+        { 
+            routes.MapHub<Chat>("/chat"); 
+        });
     }
     ```
 
     You also need to reference the service SDK before using these APIs:
 
     ```xml
-    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.0.0-preview-10001" />
-    ```
-
-2.  Add an [AuthController.cs](../samples/ChatRoom/Controllers/AuthController.cs) that provides an API for authentication.
-
-    The connection string is used for server code to connect to the service. For client, usually there are additional authentication needed, so Azure SignalR Service gives you the flexibility to implement your own authentication. A client doesn't directly connect to the service using connection string, instead your application need to implement an API that does the authentication and issues a token to the client. Client then use this token to connect to the service.
-
-    In this sample, we simply do no authentication and directly issue the token. You can implement a real authentication in your own project.
-
-    ```cs
-    [HttpGet("{hubName}")]
-    public IActionResult GenerateJwtBearer(string hubName, [FromQuery] string uid)
-    {
-        var serviceUrl = _endpointProvider.GetClientEndpoint(hubName);
-        var accessToken =_tokenProvider.GenerateClientAccessToken(hubName, new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, uid)
-        });
-        return new OkObjectResult(new
-        {
-            ServiceUrl = serviceUrl,
-            AccessToken = accessToken
-        });
-    }
-    ```
-
-    Here you can see there is `GenerateClientAccessToken()` in the service SDK that helps you issue the token from the connection string once you finish the authentication.
-
-    Also besides the token, this API returns the service url so that the client knows where to connect.
-
-3.  In [index.html](../samples/ChatRoom/wwwroot/index.html), change the logic to first call authentication API to get back the service url and token:
-
-    ```js
-    function getAccessToken(url) {
-        return new Promise((resolve, reject) => {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', url, true);
-            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-            xhr.send();
-            xhr.onload = () => {
-                if (xhr.status >= 200 && xhr.status < 300) {
-                    resolve(JSON.parse(xhr.response || xhr.responseText));
-                }
-                else {
-                    reject(new Error(xhr.statusText));
-                }
-            };
-
-            xhr.onerror = () => {
-                reject(new Error(xhr.statusText));
-            }
-        });
-    }
-
-    getAccessToken(`/api/signalr/chat?uid=${username}`)
-        .then(function(endpoint) {
-            accessToken = endpoint.accessToken;
-            return startConnection(endpoint.serviceUrl, bindConnectionMessage);
-        })
-        .then(onConnected)
-        .catch(onConnectionError);
-    ```
-
-    And then connect to service with the token:
-
-    ```js
-    var connection = new signalR.HubConnection(url, { transport: transport, accessToken: () => accessToken });
+    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.0.0-preview-10007" />
     ```
 
 Other than these changes, everything else remains the same, you can still use the hub interface you're already familiar with to write business logic.
 
+> Under the hood, an endpoint `/chat/negotiate` is exposed for negotiation by Azure SignalR Service SDK. It will return a special negotiation response when clients try to connect and redirect clients to service endpoint from the connection string. Read more details about the redirection at SignalR Core's [Negotitation Protocol](https://github.com/aspnet/SignalR/blob/dev/specs/TransportProtocols.md#post-endpoint-basenegotiate-request).
+
 Now let's build and run the app (you need to first set connect string as an environment variable).
 
 ```
-export AzureSignalRConnectionString="<connection_string>"
-dotnet build
+export Azure__SignalR__ConnectionString="<connection_string>"
 dotnet run
 ```
 

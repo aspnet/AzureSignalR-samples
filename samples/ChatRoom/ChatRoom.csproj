@@ -1,21 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <IsPackable>false</IsPackable>
+    <UserSecretsId>chatroom</UserSecretsId>
     <RootNamespace>Microsoft.Azure.SignalR.Samples.ChatRoom</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.0-preview2-30131" />
-    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.1.0-preview2-30131" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.1.0-preview2-30131" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.0-preview2-30131" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.1.0-preview2-30131" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="2.1.0-preview2-30131" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="2.1.0-preview2-30131" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.1.0-preview2-30131" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.1.0-preview2-30131" />
-    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.0.0-preview-10001" />
-    <PackageReference Include="Newtonsoft.Json" Version="10.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="2.1.0-rc1-30656" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.0-rc1-30656" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.0-rc1-30656" />
+    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.0.0-preview-10007" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="2.0.0" />
   </ItemGroup>
 </Project>
