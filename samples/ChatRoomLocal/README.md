@@ -1,22 +1,22 @@
 # Get Started with SignalR: a Chat Room Example
 
-In this tutorial you'll learn how to use ASP.NET Core SignalR to build a chat room application.
+In this sample you'll learn how to use ASP.NET Core SignalR to build a chat room application.
 
-> This tutorial is to give you a brief introduction about how ASP.NET Core SignalR works, if you're already familiar with it, you can skip this tutorial.
+> This tutorial is to give you a brief introduction about how ASP.NET Core SignalR works, if you're already familiar with it, you can skip this sample.
 >
-> Please be noted this tutorial (and all other tutorials in this repo) is based on ASP.NET Core SignalR rather than the ASP.NET version.
+> Please be noted this sample (and all other samples in this repo) is based on ASP.NET Core SignalR rather than the ASP.NET version.
 
 Our chat room is a web page application that anyone can login and chat with others in the room.
 
 First time you open the application you'll be asked for your name:
 
-![chat-room-1](images/chat-room-1.png)
+![chat-room-1](../../docs/images/chat-room-1.png)
 
 Then send something and everyone in the room can see it:
 
-![chat-room-2](images/chat-room-2.png)
+![chat-room-2](../../docs/images/chat-room-2.png)
 
-The code sample can be found [here](../samples/ChatRoomLocal/). Let's do it step by step.
+Let's do it step by step.
 
 1.  First create a ASP.NET Core web application.
 
@@ -29,10 +29,10 @@ The code sample can be found [here](../samples/ChatRoomLocal/). Let's do it step
 2.  Create a `Chat.cs` that defines a `Chat` hub class.
 
     ```cs
+    using Microsoft.AspNetCore.SignalR;
+
     public class Chat : Hub
     {
-        using Microsoft.AspNetCore.SignalR;
-
         public void BroadcastMessage(string name, string message)
         {
             Clients.All.SendAsync("broadcastMessage", name, message);
@@ -77,7 +77,7 @@ The code sample can be found [here](../samples/ChatRoomLocal/). Let's do it step
 
 4.  The last step is to create the UI of the chat room. In this sample, we use HTML and javascript to build a web application.
 
-    Copy the HTML and script files from [wwwroot](../samples/ChatRoomLocal/wwwroot/) of the sample project to the `wwwroot` folder of your project.
+    Copy the HTML and script files from [wwwroot](wwwroot/) of the sample project to the `wwwroot` folder of your project.
     Add the following code to `Startup.cs` to make the application serve the pages:
 
     ```cs
@@ -88,7 +88,7 @@ The code sample can be found [here](../samples/ChatRoomLocal/). Let's do it step
     }
     ```
 
-    Let's take a look at key changes in [index.html](../samples/ChatRoomLocal/wwwroot/index.html). First it creates a hub connection to the server:
+    Let's take a look at key changes in [index.html](wwwroot/index.html). First it creates a hub connection to the server:
 
     ```js
     var connection = new signalR.HubConnectionBuilder()
@@ -135,5 +135,5 @@ dotnet run
 
 Open http://localhost:5000, you'll see the chat room running on your local machine.
 
-In this tutorial you have learned the basics of SignalR and how to use it to build a chat room application.
-In next tutorials you'll learn how to use Azure SignalR service and host your chat room on Azure.
+In this sample you have learned the basics of SignalR and how to use it to build a chat room application.
+In other samples you'll learn how to use Azure SignalR service and host your chat room on Azure.

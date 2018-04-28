@@ -1,6 +1,6 @@
 # Build Your First Azure SignalR Service Application
 
-In last tutorial you have learned how to use SignalR to build a chat room application. In that example, the SignalR runtime (which manages the client connections and message routing) is running on your own server. As the number of the clients increases, you'll eventually hit a limit on your server and you'll need to scale your server to handle more clients. This is usually not an easy task. In this tutorial, you'll learn how to use Azure SignalR Service to offload the connection management part to the service so that you don't need to worry about the scaling problem.
+In [ChatRoomLocal sample](../ChatRoomLocal) you have learned how to use SignalR to build a chat room application. In that example, the SignalR runtime (which manages the client connections and message routing) is running on your own server. As the number of the clients increases, you'll eventually hit a limit on your server and you'll need to scale your server to handle more clients. This is usually not an easy task. In this tutorial, you'll learn how to use Azure SignalR Service to offload the connection management part to the service so that you don't need to worry about the scaling problem.
 
 ## Create a SignalR Service
 
@@ -8,11 +8,11 @@ First let's create a SignalR service on Azure.
 
 1. Open Azure portal, click "Create a resource" and find "SignalR Service" in "Web + Mobile".
 
-   ![signalr-1](images/signalr-1.png)
+   ![signalr-1](../../docs/images/signalr-1.png)
 
 2. Click "Create", and then fill in basic information including resource name, resource group and location.
 
-   ![signalr-2](images/signalr-2.png)
+   ![signalr-2](../../docs/images/signalr-2.png)
 
    Resource name will also be used as the DNS name of your service endpoint. So you'll get a `<resource_name>.service.signalr.net` that your application can connect to.
 
@@ -25,7 +25,7 @@ First let's create a SignalR service on Azure.
 
 3. Click "Create", your SignalR service will be created in a few minutes.
 
-   ![signalr-3](images/signalr-3.png)
+   ![signalr-3](../../docs/images/signalr-3.png)
 
 After your service is ready, go to the Keys page of your service instance and you'll get two connection strings that your application can use to connect to the service.
 
@@ -39,9 +39,9 @@ Endpoint=<service_endpoint>;AccessKey=<access_key>;
 
 Then let's update the chat room sample to use the new service you just created.
 
-The full sample code can be found [here](../samples/ChatRoom/). Let's look at the key changes:
+Let's look at the key changes:
 
-1.  In [Startup.cs](../samples/ChatRoom/Startup.cs), instead of calling `AddSignalR()` and `UseSignalR()`, you need to call `AddAzureSignalR()` and `UseAzureSignalR()` and pass in connection string to make the application connect to the service instead of hosting SignalR by itself.
+1.  In [Startup.cs](Startup.cs), instead of calling `AddSignalR()` and `UseSignalR()`, you need to call `AddAzureSignalR()` and `UseAzureSignalR()` and pass in connection string to make the application connect to the service instead of hosting SignalR by itself.
 
     ```cs
     public void ConfigureServices(IServiceCollection services)
@@ -71,13 +71,15 @@ Other than these changes, everything else remains the same, you can still use th
 
 > Under the hood, an endpoint `/chat/negotiate` is exposed for negotiation by Azure SignalR Service SDK. It will return a special negotiation response when clients try to connect and redirect clients to service endpoint from the connection string. Read more details about the redirection at SignalR's [Negotitation Protocol](https://github.com/aspnet/SignalR/blob/dev/specs/TransportProtocols.md#post-endpoint-basenegotiate-request).
 
-Now let's build and run the app (you need to first set connect string as an environment variable).
+
+Now set the connection string in the [Secret Manager](https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-2.1&tabs=visual-studio#secret-manager) tool for .NET Core, and run this app.
 
 ```
-export Azure__SignalR__ConnectionString="<connection_string>"
+dotnet restore
+dotnet user-secrets set Azure:SignalR:ConnectionString "<your connection string>"
 dotnet run
 ```
 
 You can see the application runs as usual, just instead of hosting a SignalR runtime by itself, it connects to the SignalR service running on Azure.
 
-In this tutorial you have learned how to use Azure SignalR Service to replace your self-hosted SignalR runtime. But you still need a web server to host your hub logic. In next tutorial you'll learn how to use other Azure services to host your hub logic so you can get everything running on cloud.
+In this sample, you have learned how to use Azure SignalR Service to replace your self-hosted SignalR runtime. But you still need a web server to host your hub logic. In next tutorial you'll learn how to use other Azure services to host your hub logic so you can get everything running on cloud.
