@@ -1,6 +1,6 @@
 # Integrate with Azure Services
 
-In last tutorial you have learned how to use Azure SignalR Service in your application, but you still need to host the hub implementation on a web server.
+In the [ChatRoom sample](../ChatRoom) you have learned how to use Azure SignalR Service in your application, but you still need to host the hub implementation on a web server.
 In this tutorial you'll learn how to use Azure web app to host your hub logic and also integrate with serverless applications like Azure functions.
 
 ## Deploy SignalR Hub to Azure Web App
@@ -45,7 +45,7 @@ ENTRYPOINT ["dotnet", "ChatRoom.dll"]
 Then you can test the image locally:
 
 ```
-docker run -p 5000:5000 -e AzureSignalRConnectionString=<connection_string> chatroom
+docker run -p 5000:5000 -e Azure__SignalR__ConnectionString=<connection_string> chatroom
 ```
 
 > For more information about building Docker image for .NET Core, please refer to this [doc](https://docs.microsoft.com/en-us/dotnet/core/docker/building-net-docker-images).
@@ -86,7 +86,7 @@ az webapp config container set \
    --docker-registry-server-password <acr_password>
 az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> --setting PORT=5000
 az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> \
-   --setting AzureSignalRConnectionString=<connection_string>
+   --setting Azure:SignalR:ConnectionString=<connection_string>
 ```
 
 Now open `https://<app_name>.azurewebsites.net` and you will see your chat room running on Azure.
@@ -119,7 +119,7 @@ Now open `https://<app_name>.azurewebsites.net` and you will see your chat room 
 >     ```
 >     az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> --setting PORT=5000
 >     az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> \
->        --setting AzureSignalRConnectionString=<connection_string>
+>        --setting Azure:SignalR:ConnectionString=<connection_string>
 >     ```
 
 ## Integrate with Azure Functions
