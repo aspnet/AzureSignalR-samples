@@ -17,7 +17,7 @@ To learn how to use Azure SignalR Service, you can start with the following tuto
 
 More samples can be found here:
 
-* [Realtime Sign-in Example using Azure SignalR Service](samples/RealtimeSignin)
+* [Realtime Sign-in Example using Azure SignalR Service](samples/RealtimeSignIn)
 
 ## Updates of Azure SignalR Service Runtime and SDK
 
