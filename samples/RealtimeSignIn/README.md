@@ -4,6 +4,8 @@
 
 This sample application shows how to build a realtime application using Azure SignalR Service and serverless architecture. When you open homepage of the application, you will see how many people has visited this page (and their OS and browser distribution) and the page will auto update when others open the same page.
 
+A live demo can be found [here](https://signalrsignin.azurewebsites.net).
+
 ## How Does It Work
 
 The application is built on top of Azure SignalR Service, Functions and Storage. There is no web server needed in this sample.
