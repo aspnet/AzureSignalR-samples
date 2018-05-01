@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4"
+    crossorigin="anonymous">
+
+  <title>Azure SignalR Sign-in Sample</title>
+</head>
+
+<body>
+  <div id="main" class="container collapse">
+    <div class="row">
+      <div class="col-12">
+        <h1 class="text-center"><span id="count"></span> people have visited this page!</h1>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-12 col-lg-6">
+        <canvas id="chartByOS" width="400" height="400"></canvas>
+      </div>
+      <div class="col-12 col-lg-6">
+        <canvas id="chartByBrowser" width="400" height="400"></canvas>
+      </div>
+    </div>
+    <div class="row justify-content-center">
+      <div class="col-2"><div id="qrcode" class="d-none d-lg-block"></div></div>
+    </div>
+  </div>
+
+  <!-- Optional JavaScript -->
+  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@0.3.0"></script>
+  <script src="scripts/signalr.min.js"></script>
+  <script src="scripts/qrcode.min.js"></script>
+  <script>
+    var chartByOS, chartByBrowser;
+
+    function prepareData(data) {
+      var list = [];
+      for (var label in data) list.push([label, data[label]]);
+      list.sort((x, y) => x[0] > y[0] ? 1 : x[0] == y[0] ? 0 : -1);
+      return {
+        labels: list.map(i => i[0]),
+        values: list.map(i => i[1])
+      };
+    }
+
+    function createChart(element, data, title) {
+      var backgroundColors = [
+        'rgba(255, 99, 132, 0.2)',
+        'rgba(54, 162, 235, 0.2)',
+        'rgba(255, 206, 86, 0.2)',
+        'rgba(75, 192, 192, 0.2)',
+        'rgba(153, 102, 255, 0.2)',
+        'rgba(255, 159, 64, 0.2)'
+      ];
+      var borderColors = [
+        'rgba(255,99,132,1)',
+        'rgba(54, 162, 235, 1)',
+        'rgba(255, 206, 86, 1)',
+        'rgba(75, 192, 192, 1)',
+        'rgba(153, 102, 255, 1)',
+        'rgba(255, 159, 64, 1)'
+      ];
+      var sorted = prepareData(data);
+      var ctx = element.getContext('2d');
+      return new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: sorted.labels,
+          datasets: [{
+            label: '# of Visitors',
+            data: sorted.values,
+            backgroundColor: backgroundColors,
+            borderColor: borderColors,
+            borderWidth: 1
+          }]
+        },
+        options: {
+          plugins: {
+            datalabels: {
+              color: 'black',
+              font: {
+                size: '20',
+                weight: 'bold'
+              },
+              formatter: Math.round
+            }
+          },
+          title: {
+            display: true,
+            text: title
+          },
+          scales: {
+            yAxes: [{
+              ticks: {
+                beginAtZero: true
+              }
+            }]
+          }
+        }
+      });
+    }
+
+    function updateChart(chart, data) {
+      var sorted = prepareData(data);
+      chart.data.labels = sorted.labels;
+      chart.data.datasets[0].data = sorted.values;
+      chart.update();
+    }
+
+    function signIn(url) {
+      return new Promise((resolve, reject) => {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        xhr.send();
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve(JSON.parse(xhr.response || xhr.responseText));
+          }
+          else {
+            reject(new Error(xhr.statusText));
+          }
+        };
+
+        xhr.onerror = () => {
+          reject(new Error(xhr.statusText));
+        }
+      });
+    }
+
+    function initPage(stat) {
+      $('#count').text(stat.totalNumber);
+      chartByOS = createChart(document.getElementById("chartByOS"), stat.byOS, '# of Visitors by OS');
+      chartByBrowser = createChart(document.getElementById("chartByBrowser"), stat.byBrowser, '# of Visitors by Browser');
+      $("#main").show();
+    }
+
+    function updatePage(stat) {
+      $('#count').text(stat.totalNumber);
+      updateChart(chartByOS, stat.byOS);
+      updateChart(chartByBrowser, stat.byBrowser);
+    }
+
+    function startConnection(url, accessToken, configureConnection) {
+      return function start(transport) {
+        console.log(`Starting connection using ${signalR.TransportType[transport]} transport`);
+        var connection = new signalR.HubConnection(url, { transport: transport, accessTokenFactory: () => accessToken });
+        if (configureConnection && typeof configureConnection === 'function') {
+          configureConnection(connection);
+        }
+
+        return connection.start()
+          .then(function () {
+            return connection;
+          })
+          .catch(function (error) {
+            console.log(`Cannot start the connection use ${signalR.TransportType[transport]} transport. ${error.message}`);
+            if (transport !== signalR.TransportType.LongPolling) {
+              return start(transport + 1);
+            }
+
+            return Promise.reject(error);
+          });
+      }(signalR.TransportType.WebSockets);
+    }
+
+    function bindConnectionMessage(connection) {
+      connection.on('updateSignInStats', updatePage);
+    }
+
+    new QRCode(document.getElementById("qrcode"), window.location.href);
+    signIn("https://kenchensigninfun2.azurewebsites.net/signin")
+    // signIn("/signin")
+      .then(function (result) {
+        initPage(result.Stats);
+        return startConnection(result.AuthInfo.ServiceUrl, result.AuthInfo.AccessToken, bindConnectionMessage);
+      });
+    /*.then(onConnected)
+    .catch(onConnectionError);*/
+  </script>
+</body>
+
+</html>

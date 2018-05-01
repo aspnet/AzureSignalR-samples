@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>    
+    <PackageReference Include="Microsoft.Azure.WebJobs" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Http" Version="1.1.0" />
+    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.0.0-preview-10001" />
+    <PackageReference Include="UAParser" Version="3.0.0" />
+    <PackageReference Include="WindowsAzure.Storage" Version="7.2.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="host.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="local.settings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
+    <None Update="proxies.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="signin\function.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>
