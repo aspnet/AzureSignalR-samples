@@ -1,0 +1,17 @@
+{
+  "configurationSource": "attributes",
+  "bindings": [
+    {
+      "type": "httpTrigger",
+      "methods": [
+        "get",
+        "post"
+      ],
+      "authLevel": "anonymous",
+      "name": "req"
+    }
+  ],
+  "disabled": false,
+  "scriptFile": "../RealtimeSignIn.dll",
+  "entryPoint": "RealtimeSignIn.SignInFunction.Run"
+}
