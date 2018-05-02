@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>SignalR Flight Map</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/sticky-footer-navbar.css">
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.10/css/all.css" integrity="sha384-+d0P83n9kaQMCwj8F4RJB66tzIwOKmrdb46+porD/OvrJ+37WqIM7UoBtwHO6Nlg"
+        crossorigin="anonymous">
+    <script src='https://www.bing.com/api/maps/mapcontrol?callback=getMap&key=AqJE7zYyzdIzgJoI-qIn_BBB2WHPGFQ_cWxfqi4T0mYf2UsReMxPnbUXHLyhoh-3&'
+        async defer></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"></script>
+    <script src="scripts/util.js"></script>
+    <script src="scripts/signalr.js"></script>
+    <script src="scripts/connect-signalr.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/2.2.3/fabric.js"></script>
+    <script src="scripts/CanvasOverlayModule.js"></script>
+    <script src='./scripts/map-canvas.js'></script>
+</head>
+
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm bg-dark fixed-top navbar-dark">
+            <a class="navbar-brand " href="#">
+                <img src="/images/signalr-logo.png" alt="logo" class="nav-logo-img">
+            </a>
+
+            <div class=" bg-dark navbar-dark d-none d-sm-block">
+                <ul class="navbar-nav mr-auto justify-content-center">
+                    <li class="nav-item active">
+                        <a class="nav-link logo-title-up" href="#">SignalR Flight Map</a>
+                        <a class="nav-link logo-title-down" href="#" id="microsoft">Microsoft</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class=" bg-dark navbar-dark d-block d-sm-none ">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link logo-title-up" href="#">SignalR Service</a>
+                        <a class="nav-link logo-title-down" href="#" id="microsoft2">Microsoft</a>
+                    </li>
+                </ul>
+            </div>
+
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mycollapse" style="margin-right: 0.3rem;">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </nav>
+    </header>
+
+    <div class="full-screen-outer" id="two">
+        <div id='myMap' class="full-height"></div>
+    </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container-fluid">
+            <div class="row ">
+                <div class="col text-left">
+                    <span class="text-muted">© Microsoft</span>
+                </div>
+                <div class="col text-center" id="news"></div>
+                <div class="col text-right">
+                    <span class="" id="counter-checkin"></span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script type='text/javascript'>
+        // configuration
+        var debug = false;
+
+        // global var
+        var map;
+        var pushpinLayer;
+        var overlay;
+        var canvas;
+        var aircraftDict = {};
+        var added = {};
+        var updateDuration = 30 * 1000;
+        var updateDelay = 30;
+        var zoomLevel = 6;
+        var start, end;
+        var isInit = false;
+        var username;
+        var accessToken = '';
+        var curTimestamp;
+        var speedup;
+
+        $(() => {
+            var connectWithRetry = c => c.start().catch(error => {
+                console.log("Failed to start SignalR connection: " + error.message);
+                setTimeout(() => connectWithRetry(c), 5000);
+            });
+
+            var connection = new signalR.HubConnectionBuilder()
+                .withUrl('/flightData')
+                .build();
+
+            configureConnection(connection);
+
+            // auto reconnect when connection is closed
+            connection.onclose(() => {
+                console.log("Disconnected, try to reconnect.");
+                connectWithRetry(connection);
+            });
+
+            connectWithRetry(connection);
+        });
+    </script>
+</body>
+
+</html>

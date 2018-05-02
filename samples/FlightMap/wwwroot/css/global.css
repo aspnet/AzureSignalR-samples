@@ -1,0 +1,78 @@
+.full-screen-outer {
+    position:  absolute;
+    width: 100%;
+    bottom: 50px;
+    top: 50px;
+    /* margin: 10px 0; */
+    /* background:  rgb(156, 129, 184); */
+}
+
+#overlay-canvas {
+    width: 500px;
+    height: 500px;
+}
+
+.full-height {
+    height: 100%;
+}
+
+/* .navbar {
+    height: 55px;
+    background-color: #000000;
+    
+} */
+
+.qccode {
+    width: 245px;
+    bottom: 6.5rem;
+    right: 0.5rem;
+    position: fixed;
+}
+
+body {
+    /* background-color: rgb(172, 199, 242); */
+}
+
+
+.logo-title-up {
+    padding-bottom: 0;
+    padding-top: 0;
+    margin-bottom: -0.2rem;
+}
+
+.logo-title-down {
+    font-size: 0.7rem;
+    padding-top: 0; 
+    padding-bottom: 0; 
+    color: #a0a0a0;
+}
+
+#microsoft {
+    color: #a0a0a0;
+}
+
+#microsoft2 {
+    color: #a0a0a0;
+    text-align: center;
+}
+
+.navbar {
+    padding: 0;
+}
+
+.navbar-brand {
+    padding: 0;
+    margin: 0;
+}
+
+.nav-logo-img {
+    width: 50px;
+}
+
+#counter-checkin, #counter-checkin2 {
+    color: #c1c1c1;
+}
+
+#news, #news2 {
+    color: #c1c1c1;    
+}
