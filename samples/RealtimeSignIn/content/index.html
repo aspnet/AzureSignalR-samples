@@ -160,9 +160,8 @@
       return function start(transport) {
         console.log(`Starting connection using ${signalR.HttpTransportType[transport]} transport`);
         var connection = new signalR.HubConnectionBuilder()
-                                        .withUrl(url, { transport: transport, accessTokenFactory: () => accessToken })
-                                        .build();
-        // var connection = new signalR.HubConnection(url, { transport: transport, accessTokenFactory: () => accessToken });
+                              .withUrl(url, { transport: transport, accessTokenFactory: () => accessToken })
+                              .build();
         if (configureConnection && typeof configureConnection === 'function') {
           configureConnection(connection);
         }
@@ -190,8 +189,8 @@
     // signIn("https://signalrsignin.azurewebsites.net/api/signin")
     signIn("/signin")
       .then(function (result) {
-        initPage(result.Stats);
-        return startConnection(result.AuthInfo.ServiceUrl, result.AuthInfo.AccessToken, bindConnectionMessage);
+        initPage(result.stats);
+        return startConnection(result.authInfo.serviceUrl, result.authInfo.accessToken, bindConnectionMessage);
       });
     /*.then(onConnected)
     .catch(onConnectionError);*/

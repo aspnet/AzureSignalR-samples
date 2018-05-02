@@ -19,7 +19,7 @@
                     "OPTIONS"
                 ]
             },
-            "backendUri": "https://%blob_url%/content/scripts/{rest}"
+            "backendUri": "https://%BlobUrl%/content/scripts/{rest}"
         },
         "default": {
             "matchCondition": {
@@ -29,7 +29,7 @@
                     "OPTIONS"
                 ]
             },
-            "backendUri": "https://%blob_url%/content/index.html"
+            "backendUri": "https://%BlobUrl%/content/index.html"
         }
     }
 }
