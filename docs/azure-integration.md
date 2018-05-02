@@ -202,7 +202,7 @@ msbuild /p:Configuration=Release
 Deploy it using git:
 
 ```
-cd bin\Release\net461
+cd bin/Release/net461
 git init
 git remote add origin <deploy_git_url>
 git add -A
