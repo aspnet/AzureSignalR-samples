@@ -11,6 +11,7 @@ using System.Timers;
 using System.Drawing;
 using Interlocked = System.Threading.Interlocked;
 using Microsoft.Extensions.Configuration;
+using System.Net.Http;
 
 namespace Microsoft.Azure.SignalR.Samples.FlightMap
 {
@@ -29,7 +30,7 @@ namespace Microsoft.Azure.SignalR.Samples.FlightMap
     {
         private const int DeviceInterval = 1000;
 
-        private const int WorldInterval = 15 * 1000;
+        private const int WorldInterval = 5 * 1000;
 
         private readonly Timer timer;
 
@@ -44,8 +45,10 @@ namespace Microsoft.Azure.SignalR.Samples.FlightMap
         public FlightControl(IHubContext<FlightMapHub> context, IConfiguration configuration)
         {
             this.context = context;
-            var dataPath = configuration["DataFileUrl"];
-            string data = File.ReadAllText(dataPath);
+            var dataUrl = configuration["DataFileUrl"];
+            // TODO: make it async
+            var client = new HttpClient();
+            string data = client.GetStringAsync(dataUrl).GetAwaiter().GetResult();
             flightData = JsonConvert.DeserializeObject<FlightRecord[][]>(data);
 
             timer = new Timer(DeviceInterval);

@@ -20,24 +20,17 @@ namespace Microsoft.Azure.SignalR.Samples.FlightMap
         {
             services.AddSingleton<IFlightControl, FlightControl>();
             services.AddMvc();
-            if (Configuration["UseLocal"] != "true") services.AddSignalR().AddAzureSignalR();
-            else services.AddSignalR();
+            services.AddSignalR().AddAzureSignalR();
         }
 
         public void Configure(IApplicationBuilder app)
         {
             app.UseMvc();
             app.UseFileServer();
-            if (Configuration["UseLocal"] != "true")
-                app.UseAzureSignalR(routes =>
-                {
-                    routes.MapHub<FlightMapHub>("/flightData");
-                });
-            else
-                app.UseSignalR(routes =>
-                { 
-                    routes.MapHub<FlightMapHub>("/flightData");
-                });
+            app.UseAzureSignalR(routes =>
+            {
+                routes.MapHub<FlightMapHub>("/flightData");
+            });
         }
     }
 }
