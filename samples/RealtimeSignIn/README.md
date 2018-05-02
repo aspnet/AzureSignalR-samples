@@ -74,7 +74,7 @@ Here is a diagram that illustrates the structure of this appliaction:
    nuget restore
    msbuild /p:Configuration=Release
 
-   cd bin\Release\net461
+   cd bin/Release/net461
    git init
    git remote add origin <deploy_git_url>
    git add -A
