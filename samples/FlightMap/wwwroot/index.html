@@ -43,7 +43,7 @@
                 <ul class="navbar-nav mr-auto">
                     <li class="nav-item active">
                         <a class="nav-link logo-title-up" href="#">SignalR Service</a>
-                        <a class="nav-link logo-title-down" href="#" id="microsoft2">Microsoft</a>
+                        <a class="nav-link logo-title-down" href="#" id="microsoft-center">Microsoft</a>
                     </li>
                 </ul>
             </div>
@@ -65,37 +65,30 @@
                 <div class="col text-left">
                     <span class="text-muted">© Microsoft</span>
                 </div>
-                <div class="col text-center" id="news"></div>
+                <div class="col text-center" id="time"></div>
                 <div class="col text-right">
-                    <span class="" id="counter-checkin"></span>
+                    <span class="" id="counter"></span>
                 </div>
             </div>
         </div>
     </footer>
 
     <script type='text/javascript'>
-        // configuration
-        var debug = false;
-
         // global var
         var map;
-        var pushpinLayer;
         var overlay;
-        var canvas;
         var aircraftDict = {};
-        var added = {};
-        var updateDuration = 30 * 1000;
-        var updateDelay = 30;
+        var addedAircrafts = {};
+        var updateDuration;
         var zoomLevel = 6;
-        var start, end;
         var isInit = false;
-        var username;
-        var accessToken = '';
         var curTimestamp;
         var speedup;
-
-        var stopAnimation = false;
+        var stopCurAnimation = false;
         var receiveTimestamp = -1;
+        var animating = false;
+        var avoidStopAtStart = 0;
+        var aircraftListCache;
 
         $(() => {
             var connectWithRetry = c => c.start().catch(error => {
