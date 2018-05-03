@@ -88,7 +88,7 @@
 
     function prepareData(data) {
       var list = [];
-      for (var label in data) list.push([label, data[label]]);
+      for (var label in data) list.push([label.toUpperCase(), data[label]]);
       list.sort((x, y) => x[0] > y[0] ? 1 : x[0] == y[0] ? 0 : -1);
       return {
         labels: list.map(i => i[0]),
