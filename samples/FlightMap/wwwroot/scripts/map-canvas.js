@@ -117,20 +117,33 @@ function movePins(newAircraftList) {
         showTime(curTimestamp + elapseTime * speedup);
 
         // exit animation
-        if (curTime >= startTime + updateDuration) {
+        if (stopAnimation || curTime >= startTime + updateDuration) {
             console.log('fps:', Math.round(frames / updateDuration * 1000));
             // update aircraftDict
             newAircraftList.map((ac, i) => {
-                if (ac.icao in aircraftDict) {
-                    aircraftDict[ac.icao].loc = new Microsoft.Maps.Location(ac.lat, ac.long);
+                if (stopAnimation == false || curTime >= startTime + updateDuration) {
+                        aircraftDict[ac.icao].loc = new Microsoft.Maps.Location(ac.lat, ac.long);
+                } else {
+                    var from = aircraftDict[ac.icao].loc;
+                    var to = new Microsoft.Maps.Location(ac.lat, ac.long);
+                    var loc = interpolatePosition(from, to, curTime, startTime, updateDuration);
+                    aircraftDict[ac.icao].loc = loc;
                 }
                 return ac;
             });
-            if (isInitAngle)
+            if (isInitAngle) {
                 for (var key in aircraftDict) {
                     aircraftDict[key].rotate = true;
                 }
-            return;
+            }
+            // return;
+            if (stopAnimation == true) { 
+                stopAnimation = false;
+                movePins(listCache);
+                return;
+            } else {
+                return;
+            }
         }
         // update location
         for (var i = 0; i < newAircraftList.length; i++) {
@@ -164,5 +177,5 @@ function movePins(newAircraftList) {
 function updateAircraft(newAircraftList) {
     addPins(newAircraftList);
     clearPlanes(newAircraftList);
-    movePins(newAircraftList);
+    if (stopAnimation == false) movePins(newAircraftList);
 }
