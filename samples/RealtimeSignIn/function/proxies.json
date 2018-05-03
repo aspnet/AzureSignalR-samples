@@ -21,6 +21,16 @@
             },
             "backendUri": "https://%BlobUrl%/content/scripts/{rest}"
         },
+        "images": {
+            "matchCondition": {
+                "route": "/images/{*rest}",
+                "methods": [
+                    "GET",
+                    "OPTIONS"
+                ]
+            },
+            "backendUri": "https://%BlobUrl%/content/images/{rest}"
+        },
         "default": {
             "matchCondition": {
                 "route": "/",
