@@ -11,31 +11,69 @@
     crossorigin="anonymous">
 
   <title>Azure SignalR Sign-in Sample</title>
+  <style>
+    .navbar {
+      padding: 0;
+    }
+
+    .navbar-brand {
+      padding: 0;
+      margin: 0;
+    }
+
+    .nav-logo-img {
+      width: 50px;
+    }
+
+    .container {
+      margin-top: 80px;
+    }
+
+    .title-text {
+      color: #d0d0d0;
+    }
+
+    #qrcode {
+      position: fixed;
+      right: 0;
+      margin-right: 30px;
+    }
+  </style>
 </head>
 
 <body>
+  <header>
+    <nav class="navbar navbar-expand-sm bg-dark fixed-top navbar-dark">
+      <a class="navbar-brand " href="#">
+        <img src="images/signalr-logo.png" alt="logo" class="nav-logo-img">
+      </a>
+      <div class="justify-content-center d-flex flex-fill">
+        <h5 class="title-text d-md-block d-none" id="count-large"></h5>
+        <h5 class="title-text d-block d-md-none" id="count-small"></h5>
+      </div>
+    </nav>
+  </header>
+  <div id="qrcode" class="d-none d-lg-block"></div>
   <div id="main" class="container collapse">
     <div class="row">
-      <div class="col-12">
-        <h1 class="text-center"><span id="count"></span> people have visited this page!</h1>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-12 col-lg-6">
+      <div class="col-12 col-md-6">
+        <div class="justify-content-center d-flex flex-fill">
+          <h5># of visitors by OS</h5>
+        </div>
         <canvas id="chartByOS" width="400" height="400"></canvas>
       </div>
-      <div class="col-12 col-lg-6">
+      <div class="col-12 col-md-6">
+        <div class="justify-content-center d-flex flex-fill">
+          <h5># of visitors by browser</h5>
+        </div>
         <canvas id="chartByBrowser" width="400" height="400"></canvas>
       </div>
-    </div>
-    <div class="row justify-content-center">
-      <div class="col-2"><div id="qrcode" class="d-none d-lg-block"></div></div>
     </div>
   </div>
 
   <!-- Optional JavaScript -->
   <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
     crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ"
     crossorigin="anonymous"></script>
@@ -58,7 +96,7 @@
       };
     }
 
-    function createChart(element, data, title) {
+    function createChart(element, data) {
       var backgroundColors = [
         'rgba(255, 99, 132, 0.2)',
         'rgba(54, 162, 235, 0.2)',
@@ -76,6 +114,12 @@
         'rgba(255, 159, 64, 1)'
       ];
       var sorted = prepareData(data);
+      var allBgColors = [], allBdColors = [];
+      for (var i = 0; i < sorted.labels.length; i += backgroundColors.length) {
+        allBgColors = allBgColors.concat(backgroundColors);
+        allBdColors = allBdColors.concat(borderColors);
+      }
+
       var ctx = element.getContext('2d');
       return new Chart(ctx, {
         type: 'bar',
@@ -84,12 +128,15 @@
           datasets: [{
             label: '# of Visitors',
             data: sorted.values,
-            backgroundColor: backgroundColors,
-            borderColor: borderColors,
+            backgroundColor: allBgColors,
+            borderColor: allBdColors,
             borderWidth: 1
           }]
         },
         options: {
+          legend: {
+            display: false
+          },
           plugins: {
             datalabels: {
               color: 'black',
@@ -99,10 +146,6 @@
               },
               formatter: Math.round
             }
-          },
-          title: {
-            display: true,
-            text: title
           },
           scales: {
             yAxes: [{
@@ -115,6 +158,11 @@
       });
     }
 
+    function updateCount(count) {
+      $('#count-large').text(`${count} people have visited this page`);
+      $('#count-small').text(`${count} visitors`);
+    }
+
     function updateChart(chart, data) {
       var sorted = prepareData(data);
       chart.data.labels = sorted.labels;
@@ -122,78 +170,46 @@
       chart.update();
     }
 
-    function signIn(url) {
-      return new Promise((resolve, reject) => {
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', url, true);
-        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-        xhr.send();
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            resolve(JSON.parse(xhr.response || xhr.responseText));
-          }
-          else {
-            reject(new Error(xhr.statusText));
-          }
-        };
-
-        xhr.onerror = () => {
-          reject(new Error(xhr.statusText));
-        }
-      });
-    }
-
     function initPage(stat) {
-      $('#count').text(stat.totalNumber);
-      chartByOS = createChart(document.getElementById("chartByOS"), stat.byOS, '# of Visitors by OS');
-      chartByBrowser = createChart(document.getElementById("chartByBrowser"), stat.byBrowser, '# of Visitors by Browser');
+      updateCount(stat.totalNumber);
+      chartByOS = createChart(document.getElementById("chartByOS"), stat.byOS);
+      chartByBrowser = createChart(document.getElementById("chartByBrowser"), stat.byBrowser);
       $("#main").show();
+      new QRCode(document.getElementById("qrcode"), window.location.href);
     }
 
     function updatePage(totalNumber, byOS, byBrowser) {
-      $('#count').text(totalNumber);
+      updateCount(totalNumber);
       updateChart(chartByOS, byOS);
       updateChart(chartByBrowser, byBrowser);
     }
 
-    function startConnection(url, accessToken, configureConnection) {
-      return function start(transport) {
-        console.log(`Starting connection using ${signalR.HttpTransportType[transport]} transport`);
-        var connection = new signalR.HubConnectionBuilder()
-                              .withUrl(url, { transport: transport, accessTokenFactory: () => accessToken })
-                              .build();
-        if (configureConnection && typeof configureConnection === 'function') {
-          configureConnection(connection);
-        }
-
-        return connection.start()
-          .then(function () {
-            return connection;
-          })
-          .catch(function (error) {
-            console.log(`Cannot start the connection use ${signalR.HttpTransportType[transport]} transport. ${error.message}`);
-            if (transport !== signalR.HttpTransportType.LongPolling) {
-              return start(transport + 1);
-            }
-
-            return Promise.reject(error);
-          });
-      }(signalR.HttpTransportType.WebSockets);
-    }
-
-    function bindConnectionMessage(connection) {
-      connection.on('updateSignInStats', updatePage);
-    }
-
-    new QRCode(document.getElementById("qrcode"), window.location.href);
-    // signIn("https://signalrsignin.azurewebsites.net/api/signin")
-    signIn("/signin")
-      .then(function (result) {
-        initPage(result.stats);
-        return startConnection(result.authInfo.serviceUrl, result.authInfo.accessToken, bindConnectionMessage);
+    function startConnection(url, accessToken) {
+      var connectWithRetry = c => c.start().catch(error => {
+        console.log("Failed to start SignalR connection: " + error.message);
+        setTimeout(() => connectWithRetry(c), 5000);
       });
-    /*.then(onConnected)
-    .catch(onConnectionError);*/
+
+      var connection = new signalR.HubConnectionBuilder()
+        .withUrl(url, { accessTokenFactory: () => accessToken })
+        .build();
+
+      // auto reconnect when connection is closed
+      connection.onclose(() => {
+        console.log("Disconnected, try to reconnect.");
+        connectWithRetry(connection);
+      });
+
+      connection.on('updateSignInStats', updatePage);
+
+      connectWithRetry(connection);
+    }
+
+    $.getJSON('https://signalrsignin.azurewebsites.net/api/signin').done(result => {
+      // $.getJSON('/signin').done(result => {
+      initPage(result.stats);
+      startConnection(result.authInfo.serviceUrl, result.authInfo.accessToken);
+    });
   </script>
 </body>
 
