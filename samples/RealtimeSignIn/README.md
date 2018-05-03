@@ -91,3 +91,38 @@ Here is a diagram that illustrates the structure of this appliaction:
       --setting BlobUrl=<blob_url>
    az functionapp config appsettings set --resource-group <resource_group_name> --name <app_name> \
       --setting AzureSignalRConnectionString=<signalr_connection_string>
+
+## Brief Explanation
+
+What's happening behind the scene is Azure SignalR Service exposed a set of REST APIs to for you to send message to clients. For example, the API that broadcasts message to all clients is exposed through this endpoint:
+
+```
+POST https://<service_endpoint>:5002/api/v1-preview/hub/<hub_name>
+```
+
+The body of the request is a JSON object with three properties:
+
+1. `target`: The target method you want to call in clients.
+2. `arguments`: an array of arguments you want to send to clients.
+3. `excludedList`: an array of user ID that you want to exclude.
+
+The service authenticates REST call using JWT token, when you're generating the JWT token, make sure the audience is same as the REST API url and use the access key in SignalR service connection string as th secret key. Then put it in authentication header:
+
+```
+Authorization: Bearer <jwt_token>
+```
+
+> Refer to `GenerateJwtBearer()` in [AzureSignalR.cs](function/AzureSignalR.cs) for a sample to generate JWT token in C#.
+
+If the API call succeeds, it returns 202 (Accepted).
+
+Clients also connect to SignalR service using JWT token, since there is no web server to generate the token, you'll need to do it in Azure function as well.
+
+1. The JWT token is generated using the same algorithm described above, just the audience should be the url of the client hub.
+2. Client hub is the following format:
+
+   ```
+   https://<service_endpoint>:5001/client/?hub=<hubName>
+   ```
+
+   This is also the endpoint client should connect to using SignalR client SDK.
