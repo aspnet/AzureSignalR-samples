@@ -48,8 +48,8 @@
         <img src="images/signalr-logo.png" alt="logo" class="nav-logo-img">
       </a>
       <div class="justify-content-center d-flex flex-fill">
-        <h5 class="title-text d-md-block d-none" id="count-large"></h5>
-        <h5 class="title-text d-block d-md-none" id="count-small"></h5>
+        <h5 class="title-text d-md-block d-none" id="count-large">Connecting...</h5>
+        <h5 class="title-text d-block d-md-none" id="count-small">Connection...</h5>
       </div>
     </nav>
   </header>
@@ -158,6 +158,11 @@
       });
     }
 
+    function updateStatus(text) {
+      $('#count-large').text(text);
+      $('#count-small').text(text);
+    }
+
     function updateCount(count) {
       $('#count-large').text(`${count} people have visited this page`);
       $('#count-small').text(`${count} visitors`);
@@ -185,28 +190,16 @@
     }
 
     function startConnection(url, accessToken) {
-      var connectWithRetry = c => c.start().catch(error => {
-        console.log("Failed to start SignalR connection: " + error.message);
-        setTimeout(() => connectWithRetry(c), 5000);
-      });
-
       var connection = new signalR.HubConnectionBuilder()
         .withUrl(url, { accessTokenFactory: () => accessToken })
         .build();
 
-      // auto reconnect when connection is closed
-      connection.onclose(() => {
-        console.log("Disconnected, try to reconnect.");
-        connectWithRetry(connection);
-      });
-
       connection.on('updateSignInStats', updatePage);
-
-      connectWithRetry(connection);
+      connection.onclose(() => updateStatus('Disconnected'));
+      connection.start().catch(() => updateStatus('Disconnected'));
     }
 
-    $.getJSON('https://signalrsignin.azurewebsites.net/api/signin').done(result => {
-      // $.getJSON('/signin').done(result => {
+    $.getJSON('/signin').done(result => {
       initPage(result.stats);
       startConnection(result.authInfo.serviceUrl, result.authInfo.accessToken);
     });
