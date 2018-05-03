@@ -45,8 +45,7 @@ namespace Microsoft.Azure.SignalR.Samples.FlightMap
         public FlightControl(IHubContext<FlightMapHub> context, IConfiguration configuration)
         {
             this.context = context;
-            // var dataUrl = configuration["DataFileUrl"];
-            var dataUrl = "https://wanlflightmap.blob.core.windows.net/flightmap/flight.json";
+            var dataUrl = configuration["DataFileUrl"];
             // TODO: make it async
             var client = new HttpClient();
             string data = client.GetStringAsync(dataUrl).GetAwaiter().GetResult();

@@ -17,21 +17,20 @@ function getMap() {
     return map;
 }
 
-function addPins(aircraftList) {
+function addAircrafts(aircraftList) {
     fabric.Image.fromURL('images/plane-white.png', (img) => {
         var l = aircraftList.length;
-        console.log(aircraftList.length + ' planes are flying.');
-        added = {};
+        console.log(aircraftList.length + ' aircrafts are flying.');
+        addedAircrafts = {};
         for (var i = 0; i < l; i++) {
             var aircraft = aircraftList[i];
             var key = aircraft['icao'];
             if (key in aircraftDict) continue;
             var location = new Microsoft.Maps.Location(aircraft.lat, aircraft.long);
-            added[key] = location;
+            addedAircrafts[key] = location;
         }
-        console.log('added cnt ', Object.keys(added).length);
-        for (var key in added) {
-            var pt = loc2pt(added[key]);
+        for (var key in addedAircrafts) {
+            var pt = loc2pt(addedAircrafts[key]);
             var img2 = new fabric.Image(img.getElement(), {
                 left: pt.x,
                 top: pt.y,
@@ -42,26 +41,25 @@ function addPins(aircraftList) {
             });
             img2.key = key;
             overlay._fabric.add(img2);
-            aircraftDict[key] = { obj: img2, loc: added[key], rotate: false };
+            aircraftDict[key] = { obj: img2, loc: addedAircrafts[key], rotate: false };
         }
     });
 
 }
 
-function initAircraft(aircraftList) {
-    console.log('initAircraft');
-    clearAllPlanes();
-    addPins(aircraftList);
+function initAircrafts(aircraftList) {
+    clearAllAircrafts();
+    addAircrafts(aircraftList);
 }
 
-function clearAllPlanes() {
+function clearAllAircrafts() {
     for (var key in aircraftDict) {
         overlay._fabric.remove(aircraftDict[key].obj);
     }
     aircraftDict = {};
 }
 
-function clearPlanes(newAircraftList) {
+function clearAircrafts(newAircraftList) {
     var curKeys = {};
     var l = newAircraftList.length;
     for (var i = 0; i < l; i++) {
@@ -73,7 +71,7 @@ function clearPlanes(newAircraftList) {
         }
     }
 
-    // clear planes not in list any more
+    // clear aircrafts not in list any more
     for (key in aircraftDict) {
         if (!(key in curKeys)) {
             overlay._fabric.remove(aircraftDict[key].obj);
@@ -82,46 +80,37 @@ function clearPlanes(newAircraftList) {
     }
 }
 
-function movePins(newAircraftList) {
+function moveAircrafts(newAircraftList) {
+    console.log('move aircrafts');
     var startTime = new Date().getTime();
+
+    // compute angle
     var angles = {};
-    var dAngles = {};
-    var oAngles = {};
     newAircraftList.map((ac) => {
         if (ac.icao in aircraftDict) {
-            oAngles[ac.icao] = aircraftDict[ac.icao].obj.angle;
             var from = aircraftDict[ac.icao].loc;
             var to = new Microsoft.Maps.Location(ac.lat, ac.long);
             var toAngle = compDegAnglePt(loc2pt(from), loc2pt(to));
-            var fromAngle = aircraftDict[ac.icao].obj.angle;
             angles[ac.icao] = toAngle;
-            dAngles[ac.icao] = toAngle - fromAngle;
-            if (Math.abs(toAngle + 360 - fromAngle) <= 180) {
-                angles[ac.icao] = toAngle + 360;
-                dAngles[ac.icao] = toAngle + 360 - fromAngle;
-            } else if (Math.abs(toAngle - 360 - fromAngle) <= 180) {
-                angles[ac.icao] = toAngle - 360;
-                dAngles[ac.icao] = toAngle - 360 - fromAngle;
-            }
         }
         return ac;
     });
 
     var isInitAngle = false;
     var frames = 0;
-    var animatePins = function () {
-
+    var animate = function () {
+        animating = true;
         frames++;
         var curTime = new Date().getTime();
         var elapseTime = curTime - startTime;
         showTime(curTimestamp + elapseTime * speedup);
 
         // exit animation
-        if (stopAnimation || curTime >= startTime + updateDuration) {
+        if (stopCurAnimation || curTime >= startTime + updateDuration) {
             console.log('fps:', Math.round(frames / updateDuration * 1000));
             // update aircraftDict
             newAircraftList.map((ac, i) => {
-                if (stopAnimation == false || curTime >= startTime + updateDuration) {
+                if (stopCurAnimation == false || curTime >= startTime + updateDuration) {
                         aircraftDict[ac.icao].loc = new Microsoft.Maps.Location(ac.lat, ac.long);
                 } else {
                     var from = aircraftDict[ac.icao].loc;
@@ -136,12 +125,16 @@ function movePins(newAircraftList) {
                     aircraftDict[key].rotate = true;
                 }
             }
-            // return;
-            if (stopAnimation == true) { 
-                stopAnimation = false;
-                movePins(listCache);
+
+            if (stopCurAnimation == true) { 
+                // continue animating
+                stopCurAnimation = false;
+                moveAircrafts(aircraftListCache);
+                animating = false;
                 return;
             } else {
+                stopCurAnimation = false;
+                animating = false;
                 return;
             }
         }
@@ -161,21 +154,22 @@ function movePins(newAircraftList) {
                 isInitAngle = true;
 
                 // update opacity
-                if (ac.icao in added && isInit == true) aircraftDict[ac.icao].obj.opacity = 1.0;
+                if (ac.icao in addedAircrafts && isInit == true) aircraftDict[ac.icao].obj.opacity = 1.0;
             }
         }
 
         // next frame
-        fabric.util.requestAnimFrame(animatePins, overlay._fabric.getElement());
+        fabric.util.requestAnimFrame(animate, overlay._fabric.getElement());
         overlay._fabric.renderAll();
     };
 
-    animatePins();
+    animate();
 
 }
 
-function updateAircraft(newAircraftList) {
-    addPins(newAircraftList);
-    clearPlanes(newAircraftList);
-    if (stopAnimation == false) movePins(newAircraftList);
+function updateAircrafts(newAircraftList) {
+    addAircrafts(newAircraftList);
+    clearAircrafts(newAircraftList);
+    if (animating == false) 
+        moveAircrafts(newAircraftList);
 }

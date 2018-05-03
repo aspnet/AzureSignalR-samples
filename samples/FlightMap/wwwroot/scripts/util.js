@@ -80,7 +80,6 @@ function showTime(time) {
     var minutes = "0" + date.getMinutes();
     var seconds = "0" + date.getSeconds();
     var formattedTime = hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
-    $('#news').text(formattedTime);
-    $('#news2').text(formattedTime);
+    $('#time').text(formattedTime);
     
 }
