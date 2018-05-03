@@ -46,6 +46,7 @@ Here is a diagram that illustrates the structure of this appliaction:
    az storage blob upload -c content --account-name <account_name> -n index.html -f index.html
    az storage blob upload -c content --account-name <account_name> -n scripts/signalr.min.js -f scripts/signalr.min.js
    az storage blob upload -c content --account-name <account_name> -n scripts/qrcode.min.js -f scripts/qrcode.min.js
+   az storage blob upload -c content --account-name <account_name> -n images/signalr-logo.png -f images/signalr-logo.png
    ```
 
 
