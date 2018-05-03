@@ -20,7 +20,7 @@ namespace Microsoft.Azure.SignalR.Samples.FlightMap
         {
             services.AddSingleton<IFlightControl, FlightControl>();
             services.AddMvc();
-            services.AddSignalR().AddAzureSignalR("Endpoint=https://flightmap-signalr.service.signalr.net;AccessKey=8p5tltV5bokITnBammtKWkwhzwvMbhSpSyoYQ5RIuQU=;");
+            services.AddSignalR().AddAzureSignalR();
         }
 
         public void Configure(IApplicationBuilder app)
