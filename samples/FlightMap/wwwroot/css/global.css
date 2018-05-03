@@ -51,7 +51,7 @@ body {
     color: #a0a0a0;
 }
 
-#microsoft2 {
+#microsoft-center {
     color: #a0a0a0;
     text-align: center;
 }
@@ -69,10 +69,10 @@ body {
     width: 50px;
 }
 
-#counter-checkin, #counter-checkin2 {
+#counter {
     color: #c1c1c1;
 }
 
-#news, #news2 {
+#time {
     color: #c1c1c1;    
 }

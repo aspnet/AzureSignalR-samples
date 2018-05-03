@@ -53,7 +53,6 @@ var CanvasOverlay = (function (_super) {
      * CanvasOverlay added to map, load canvas.
      */
     CanvasOverlay.prototype.onAdd = function () {
-        console.log("on add");
         //Create a canvas for rendering.
         this._canvas = document.createElement('canvas');
         this._canvas.setAttribute('id','flightMapCanvas')
@@ -67,13 +66,11 @@ var CanvasOverlay = (function (_super) {
      * CanvasOverlay loaded, attach map events for updating canvas.
      */
     CanvasOverlay.prototype.onLoad = function () {
-        //
-        console.log("on load");
         var total = 100,
-    blobs = new Array(total),
-    myfps = 60,
-    updateTime = 1000 / myfps,
-    mouse_pos = { x: 0, y: 0 };
+        blobs = new Array(total),
+        myfps = 60,
+        updateTime = 1000 / myfps,
+        mouse_pos = { x: 0, y: 0 };
 
         this._fabric = new  fabric.Canvas('flightMapCanvas', {
             renderOnAddRemove: false,
