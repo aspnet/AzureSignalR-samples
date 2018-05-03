@@ -61,7 +61,7 @@ Let's look at the key changes:
     }
     ```
 
-    You also need to reference the service SDK before using these APIs:
+    You also need to reference the service SDK before using these APIs. This is how that would look in your ChatRoom.csproj file:
 
     ```xml
     <PackageReference Include="Microsoft.Azure.SignalR" Version="1.0.0-preview-10007" />
@@ -80,6 +80,6 @@ dotnet user-secrets set Azure:SignalR:ConnectionString "<your connection string>
 dotnet run
 ```
 
-You can see the application runs as usual, just instead of hosting a SignalR runtime by itself, it connects to the SignalR service running on Azure.
+When you open http://localhost:5000, you can see the application runs as usual, just instead of hosting a SignalR runtime by itself, it connects to the SignalR service running on Azure.
 
 In this sample, you have learned how to use Azure SignalR Service to replace your self-hosted SignalR runtime. But you still need a web server to host your hub logic. In next tutorial you'll learn how to use other Azure services to host your hub logic so you can get everything running on cloud.
