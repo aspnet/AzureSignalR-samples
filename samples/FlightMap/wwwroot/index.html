@@ -94,6 +94,9 @@
         var curTimestamp;
         var speedup;
 
+        var stopAnimation = false;
+        var receiveTimestamp = -1;
+
         $(() => {
             var connectWithRetry = c => c.start().catch(error => {
                 console.log("Failed to start SignalR connection: " + error.message);
