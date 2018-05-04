@@ -2,41 +2,37 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.AspNetCore.SignalR;
-using System;
-using System.IO;
-using System.Collections;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
-using System.Timers;
-using System.Drawing;
-using Interlocked = System.Threading.Interlocked;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using System;
 using System.Net.Http;
+using System.Timers;
+using Interlocked = System.Threading.Interlocked;
 
 namespace Microsoft.Azure.SignalR.Samples.FlightMap
 {
     class FlightRecord
     {
-        public string Icao;
+        public string Icao { get; set; }
 
-        public long PosTime;
+        public long PosTime { get; set; }
 
-        public double Lat;
+        public double Lat { get; set; }
 
-        public double Long;
+        public double Long { get; set; }
     }
 
     public class FlightControl : Hub, IFlightControl
     {
-        private const int DeviceInterval = 1000;
-
-        private const int WorldInterval = 5 * 1000;
+        private const int DefaultInterval = 1000;
 
         private readonly Timer timer;
 
         private int index = 0;
 
         private int totalVisitors = 0;
+
+        private int speed = 1;
 
         private FlightRecord[][] flightData;
 
@@ -51,7 +47,7 @@ namespace Microsoft.Azure.SignalR.Samples.FlightMap
             string data = client.GetStringAsync(dataUrl).GetAwaiter().GetResult();
             flightData = JsonConvert.DeserializeObject<FlightRecord[][]>(data);
 
-            timer = new Timer(DeviceInterval);
+            timer = new Timer(DefaultInterval / speed);
             timer.Elapsed += BroadcastFlights;
             Start();
         }
@@ -71,19 +67,28 @@ namespace Microsoft.Azure.SignalR.Samples.FlightMap
             timer.Start();
         }
 
-        public void Restart() {
+        public void Restart()
+        {
             index = 0;
         }
 
-        public void Stop() {
+        public void Stop()
+        {
             timer.Stop();
         }
 
-        public void BroadcastFlights(Object source, ElapsedEventArgs e) {
+        public void SetSpeed(int speed)
+        {
+            this.speed = speed;
+            timer.Interval = DefaultInterval / speed;
+        }
+
+        public void BroadcastFlights(Object source, ElapsedEventArgs e)
+        {
             var curr = flightData[index];
             var currTime = curr[0].PosTime;
             long serverTimestamp = (long)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalMilliseconds;
-            context.Clients.All.SendAsync("updateAircraft", DeviceInterval, curr, index, serverTimestamp, currTime, WorldInterval / DeviceInterval);
+            context.Clients.All.SendAsync("updateAircraft", DefaultInterval / speed, curr, index, serverTimestamp, currTime);
             index = (index + 1) % flightData.Length;
             Console.WriteLine($"Current index: {index}");
         }

@@ -1,42 +1,68 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.SignalR;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.IO;
 
 namespace Microsoft.Azure.SignalR.Samples.FlightMap
 {
 
     [Route("/animation")]
-    public class AnimationController : Controller {
+    public class AnimationController : Controller
+    {
+        private IFlightControl control;
 
-        IFlightControl control;
+        private string adminKey;
 
-        public AnimationController(IFlightControl ctrl) {
+        public AnimationController(IFlightControl ctrl, IConfiguration configuration)
+        {
+            adminKey = configuration["AdminKey"];
             control = ctrl;
         }
 
         [HttpGet("start")]
-        public string Start() {
+        public IActionResult Start(string key)
+        {
+            if (string.IsNullOrEmpty(adminKey) || key != adminKey) return new UnauthorizedResult();
             control.Start();
-            return "Started to animate.";
+            return new OkObjectResult(new
+            {
+                Message = "Started"
+            });
         }
 
         [HttpGet("stop")]
-        public string Stop() {
+        public IActionResult Stop(string key)
+        {
+            if (string.IsNullOrEmpty(adminKey) || key != adminKey) return new UnauthorizedResult();
             control.Stop();
-            return "Stopped animation.";
+            return new OkObjectResult(new
+            {
+                Message = "Stopped"
+            });
         }
 
         [HttpGet("restart")]
-        public string restart() {
+        public IActionResult Restart(string key)
+        {
+            if (string.IsNullOrEmpty(adminKey) || key != adminKey) return new UnauthorizedResult();
             control.Restart();
-            return "Restarted animation.";
+            return new OkObjectResult(new
+            {
+                Message = "Restarted"
+            });
+        }
+
+        [HttpGet("setSpeed")]
+        public IActionResult SetSpeed(int speed, string key)
+        {
+            if (string.IsNullOrEmpty(adminKey) || key != adminKey) return new UnauthorizedResult();
+            if (speed < 1 || speed > 10) return new BadRequestObjectResult("Speed must between 1 and 10.");
+            control.SetSpeed(speed);
+            return new OkObjectResult(new
+            {
+                Message = "Speed set"
+            });
         }
     }
 }

@@ -3,8 +3,6 @@
     width: 100%;
     bottom: 50px;
     top: 50px;
-    /* margin: 10px 0; */
-    /* background:  rgb(156, 129, 184); */
 }
 
 #overlay-canvas {
@@ -15,24 +13,6 @@
 .full-height {
     height: 100%;
 }
-
-/* .navbar {
-    height: 55px;
-    background-color: #000000;
-    
-} */
-
-.qccode {
-    width: 245px;
-    bottom: 6.5rem;
-    right: 0.5rem;
-    position: fixed;
-}
-
-body {
-    /* background-color: rgb(172, 199, 242); */
-}
-
 
 .logo-title-up {
     padding-bottom: 0;
@@ -74,5 +54,5 @@ body {
 }
 
 #time {
-    color: #c1c1c1;    
+    color: #c1c1c1;
 }
