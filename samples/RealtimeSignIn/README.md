@@ -50,7 +50,9 @@ Here is a diagram that illustrates the structure of this appliaction:
 
 ### Deploy Azure Function
 
-1. Create Azure function
+1. Create a SignalR Service in Azure portal.
+
+2. Create Azure function
 
    ```
    az group create --name <resource_group_name> --location CentralUS
@@ -60,14 +62,14 @@ Here is a diagram that illustrates the structure of this appliaction:
       --consumption-plan-location CentralUS --storage-account <storage_account_name>
    ```
 
-2. Configure deployment credentials
+3. Configure deployment credentials
 
    ```
    az functionapp deployment source config-local-git --resource-group <resource_group_name> --name <function_name>
    az functionapp deployment user set --user-name <user_name> --password <password>
    ```
 
-3. Build and deploy Azure function
+4. Build and deploy Azure function
 
    ```
    nuget restore
@@ -81,7 +83,7 @@ Here is a diagram that illustrates the structure of this appliaction:
    git push origin master
    ```
 
-4. Update application settings
+5. Update application settings
 
    ```
    az functionapp config appsettings set --resource-group <resource_group_name> --name <app_name> \
