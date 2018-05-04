@@ -19,7 +19,7 @@
                     "OPTIONS"
                 ]
             },
-            "backendUri": "https://%BlobUrl%/content/scripts/{rest}"
+            "backendUri": "https://%BlobHost%/content/scripts/{rest}"
         },
         "images": {
             "matchCondition": {
@@ -29,7 +29,7 @@
                     "OPTIONS"
                 ]
             },
-            "backendUri": "https://%BlobUrl%/content/images/{rest}"
+            "backendUri": "https://%BlobHost%/content/images/{rest}"
         },
         "default": {
             "matchCondition": {
@@ -39,7 +39,7 @@
                     "OPTIONS"
                 ]
             },
-            "backendUri": "https://%BlobUrl%/content/index.html"
+            "backendUri": "https://%BlobHost%/content/index.html"
         }
     }
 }

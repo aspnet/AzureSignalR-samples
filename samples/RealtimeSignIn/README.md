@@ -87,7 +87,7 @@ Here is a diagram that illustrates the structure of this appliaction:
    az functionapp config appsettings set --resource-group <resource_group_name> --name <app_name> \
       --setting TableConnectionString=<table_connection_string>
    az functionapp config appsettings set --resource-group <resource_group_name> --name <app_name> \
-      --setting BlobUrl=<blob_url>
+      --setting BlobHost=<blob_host>
    az functionapp config appsettings set --resource-group <resource_group_name> --name <app_name> \
       --setting AzureSignalRConnectionString=<signalr_connection_string>
 

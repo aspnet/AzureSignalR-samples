@@ -152,6 +152,11 @@
               ticks: {
                 beginAtZero: true
               }
+            }],
+            xAxes: [{
+              ticks: {
+                autoSkip: false
+              }
             }]
           }
         }
@@ -199,7 +204,7 @@
       connection.start().catch(() => updateStatus('Disconnected'));
     }
 
-    $.getJSON('/signin').done(result => {
+    $.getJSON('https://signalrsignin.azurewebsites.net/signin').done(result => {
       initPage(result.stats);
       startConnection(result.authInfo.serviceUrl, result.authInfo.accessToken);
     });

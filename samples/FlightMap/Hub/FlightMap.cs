@@ -3,12 +3,6 @@
 
 using Microsoft.AspNetCore.SignalR;
 using System;
-using System.IO;
-using System.Collections;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
-using System.Timers;
-using System.Drawing;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.SignalR.Samples.FlightMap
@@ -25,12 +19,12 @@ namespace Microsoft.Azure.SignalR.Samples.FlightMap
 
         public override Task OnConnectedAsync()
         {
-            return Clients.All.SendAsync("countVisitors", control.VisitorJoin());
+            return Clients.All.SendAsync("updateVisitors", control.VisitorJoin());
         }
 
         public override Task OnDisconnectedAsync(Exception exception)
         {
-            return Clients.All.SendAsync("countVisitors", control.VisitorLeave());
+            return Clients.All.SendAsync("updateVisitors", control.VisitorLeave());
         }
     }
 }
