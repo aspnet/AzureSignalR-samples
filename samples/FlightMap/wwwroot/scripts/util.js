@@ -64,8 +64,8 @@ function interpolatePosition(src, dest, curTimestamp, startTimeStamp, duration) 
     if (duration == 0) {
         return dest;
     }
-    var latVec = -src.latitude + dest.latitude;
-    var longVec = -src.longitude + dest.longitude;
+    var latVec = dest.latitude - src.latitude;
+    var longVec = dest.longitude - src.longitude;
 
     var ratio = (curTimestamp - startTimeStamp) / duration;
     var curLat = src.latitude + latVec * ratio;
@@ -81,5 +81,4 @@ function showTime(time) {
     var seconds = "0" + date.getSeconds();
     var formattedTime = hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
     $('#time').text(formattedTime);
-    
 }
