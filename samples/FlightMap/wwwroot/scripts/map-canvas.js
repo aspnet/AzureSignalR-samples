@@ -3,48 +3,53 @@ function getMap() {
         center: new Microsoft.Maps.Location(39.9611755, -82.9987942),
         mapTypeId: Microsoft.Maps.MapTypeId.road,
         liteMode: true,
-        zoom: zoomLevel
+        zoom: 6
     });
-    pushpinLayer = new Microsoft.Maps.Layer();
-    map.layers.insert(pushpinLayer);
 
     Microsoft.Maps.registerModule('CanvasOverlayModule', '/scripts/CanvasOverlayModule.js');
     Microsoft.Maps.loadModule('CanvasOverlayModule', function () {
         overlay = new CanvasOverlay();
         map.layers.insert(overlay);
-    });
 
-    return map;
+        var connectWithRetry = c => c.start().catch(error => {
+            console.log("Failed to start SignalR connection: " + error.message);
+            setTimeout(() => connectWithRetry(c), 5000);
+        });
+
+        var connection = new signalR.HubConnectionBuilder()
+            .withUrl('/flightData')
+            .build();
+
+        configureConnection(connection);
+
+        // auto reconnect when connection is closed
+        connection.onclose(() => {
+            console.log("Disconnected, try to reconnect.");
+            connectWithRetry(connection);
+        });
+
+        connectWithRetry(connection);
+    });
 }
 
 function addAircrafts(aircraftList) {
     fabric.Image.fromURL('images/plane-white.png', (img) => {
-        var l = aircraftList.length;
-        console.log(aircraftList.length + ' aircrafts are flying.');
-        addedAircrafts = {};
-        for (var i = 0; i < l; i++) {
-            var aircraft = aircraftList[i];
-            var key = aircraft['icao'];
-            if (key in aircraftDict) continue;
-            var location = new Microsoft.Maps.Location(aircraft.lat, aircraft.long);
-            addedAircrafts[key] = location;
-        }
-        for (var key in addedAircrafts) {
-            var pt = loc2pt(addedAircrafts[key]);
-            var img2 = new fabric.Image(img.getElement(), {
+        var addedAircrafts = aircraftList.filter(a => !(a.icao in aircraftDict)).forEach(a => {
+            var icao = a.icao;
+            var loc = new Microsoft.Maps.Location(a.lat, a.long);
+            var pt = loc2pt(loc);
+            var newImg = new fabric.Image(img.getElement(), {
                 left: pt.x,
                 top: pt.y,
                 angle: 0,
-                opacity: 0.0,
+                opacity: 1.0,
                 originX: 'center',
                 originY: 'center'
             });
-            img2.key = key;
-            overlay._fabric.add(img2);
-            aircraftDict[key] = { obj: img2, loc: addedAircrafts[key], rotate: false };
-        }
+            newImg.key = icao;
+            aircraftDict[icao] = { obj: newImg, loc: loc };
+        });
     });
-
 }
 
 function initAircrafts(aircraftList) {
@@ -80,83 +85,41 @@ function clearAircrafts(newAircraftList) {
     }
 }
 
-function moveAircrafts(newAircraftList) {
-    console.log('move aircrafts');
-    var startTime = new Date().getTime();
-
-    // compute angle
-    var angles = {};
-    newAircraftList.map((ac) => {
-        if (ac.icao in aircraftDict) {
-            var from = aircraftDict[ac.icao].loc;
-            var to = new Microsoft.Maps.Location(ac.lat, ac.long);
-            var toAngle = compDegAnglePt(loc2pt(from), loc2pt(to));
-            angles[ac.icao] = toAngle;
-        }
-        return ac;
+function prepareMoveData(newAircraftList) {
+    return newAircraftList.map(a => {
+        var from = aircraftDict[a.icao].loc;
+        var to = new Microsoft.Maps.Location(a.lat, a.long);
+        var angle = compDegAnglePt(loc2pt(from), loc2pt(to));
+        overlay._fabric.remove(aircraftDict[a.icao].obj);
+        overlay._fabric.add(aircraftDict[a.icao].obj);
+        return {
+            icao: a.icao,
+            from: from,
+            to: to,
+            angle: angle
+        };
     });
+}
 
-    var isInitAngle = false;
-    var frames = 0;
+function moveAircrafts(moveData) {
+    var startTime = globalStart = new Date().getTime();
+
     var animate = function () {
-        animating = true;
-        frames++;
+        if (startTime !== globalStart) return;
         var curTime = new Date().getTime();
-        var elapseTime = curTime - startTime;
-        showTime(curTimestamp + elapseTime * speedup);
+        var elapsedTime = curTime - startTime;
+        if (elapsedTime > updateDuration) return;
+        showTime(curTimestamp + elapsedTime * speedup);
 
-        // exit animation
-        if (stopCurAnimation || curTime >= startTime + updateDuration) {
-            console.log('fps:', Math.round(frames / updateDuration * 1000));
-            // update aircraftDict
-            newAircraftList.map((ac, i) => {
-                if (stopCurAnimation == false || curTime >= startTime + updateDuration) {
-                        aircraftDict[ac.icao].loc = new Microsoft.Maps.Location(ac.lat, ac.long);
-                } else {
-                    var from = aircraftDict[ac.icao].loc;
-                    var to = new Microsoft.Maps.Location(ac.lat, ac.long);
-                    var loc = interpolatePosition(from, to, curTime, startTime, updateDuration);
-                    aircraftDict[ac.icao].loc = loc;
-                }
-                return ac;
-            });
-            if (isInitAngle) {
-                for (var key in aircraftDict) {
-                    aircraftDict[key].rotate = true;
-                }
-            }
-
-            if (stopCurAnimation == true) { 
-                // continue animating
-                stopCurAnimation = false;
-                moveAircrafts(aircraftListCache);
-                animating = false;
-                return;
-            } else {
-                stopCurAnimation = false;
-                animating = false;
-                return;
-            }
-        }
         // update location
-        for (var i = 0; i < newAircraftList.length; i++) {
-            var ac = newAircraftList[i];
-            if (!(ac.icao in aircraftDict)) continue;
-            var from = aircraftDict[ac.icao].loc;
-            var to = new Microsoft.Maps.Location(ac.lat, ac.long);
-            var loc = interpolatePosition(from, to, curTime, startTime, updateDuration);
+        moveData.forEach(d => {
+            var loc = interpolatePosition(d.from, d.to, curTime, startTime, updateDuration);
             var pt = loc2pt(loc);
-            aircraftDict[ac.icao].obj.left = pt.x;
-            aircraftDict[ac.icao].obj.top = pt.y;
-            if (Object.keys(angles).length != 0) {
-                // update angle
-                aircraftDict[ac.icao].obj.angle = angles[ac.icao];
-                isInitAngle = true;
-
-                // update opacity
-                if (ac.icao in addedAircrafts && isInit == true) aircraftDict[ac.icao].obj.opacity = 1.0;
-            }
-        }
+            aircraftDict[d.icao].obj.left = pt.x;
+            aircraftDict[d.icao].obj.top = pt.y;
+            aircraftDict[d.icao].obj.angle = d.angle;
+            aircraftDict[d.icao].loc = loc;
+        });
 
         // next frame
         fabric.util.requestAnimFrame(animate, overlay._fabric.getElement());
@@ -164,12 +127,11 @@ function moveAircrafts(newAircraftList) {
     };
 
     animate();
-
 }
 
 function updateAircrafts(newAircraftList) {
+    if (!overlay._fabric) return;
     addAircrafts(newAircraftList);
     clearAircrafts(newAircraftList);
-    if (animating == false) 
-        moveAircrafts(newAircraftList);
+    moveAircrafts(prepareMoveData(newAircraftList));
 }

@@ -10,17 +10,6 @@
     <link rel="stylesheet" href="/css/global.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.10/css/all.css" integrity="sha384-+d0P83n9kaQMCwj8F4RJB66tzIwOKmrdb46+porD/OvrJ+37WqIM7UoBtwHO6Nlg"
         crossorigin="anonymous">
-    <script src='https://www.bing.com/api/maps/mapcontrol?callback=getMap&key=AqJE7zYyzdIzgJoI-qIn_BBB2WHPGFQ_cWxfqi4T0mYf2UsReMxPnbUXHLyhoh-3&'
-        async defer></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"></script>
-    <script src="scripts/util.js"></script>
-    <script src="scripts/signalr.js"></script>
-    <script src="scripts/connect-signalr.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/2.2.3/fabric.js"></script>
-    <script src="scripts/CanvasOverlayModule.js"></script>
-    <script src='./scripts/map-canvas.js'></script>
 </head>
 
 <body>
@@ -73,6 +62,16 @@
         </div>
     </footer>
 
+    <script src='https://www.bing.com/api/maps/mapcontrol?callback=getMap&key=AqJE7zYyzdIzgJoI-qIn_BBB2WHPGFQ_cWxfqi4T0mYf2UsReMxPnbUXHLyhoh-3&'
+        async defer></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"></script>
+    <script src="scripts/util.js"></script>
+    <script src="scripts/signalr.js"></script>
+    <script src="scripts/connect-signalr.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/2.2.3/fabric.js"></script>
+    <script src='scripts/map-canvas.js'></script>
     <script type='text/javascript'>
         // global var
         var map;
@@ -80,36 +79,12 @@
         var aircraftDict = {};
         var addedAircrafts = {};
         var updateDuration;
-        var zoomLevel = 6;
         var isInit = false;
         var curTimestamp;
         var speedup;
-        var stopCurAnimation = false;
-        var receiveTimestamp = -1;
-        var animating = false;
         var avoidStopAtStart = 0;
         var aircraftListCache;
-
-        $(() => {
-            var connectWithRetry = c => c.start().catch(error => {
-                console.log("Failed to start SignalR connection: " + error.message);
-                setTimeout(() => connectWithRetry(c), 5000);
-            });
-
-            var connection = new signalR.HubConnectionBuilder()
-                .withUrl('/flightData')
-                .build();
-
-            configureConnection(connection);
-
-            // auto reconnect when connection is closed
-            connection.onclose(() => {
-                console.log("Disconnected, try to reconnect.");
-                connectWithRetry(connection);
-            });
-
-            connectWithRetry(connection);
-        });
+        var globalStart;
     </script>
 </body>
 
