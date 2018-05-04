@@ -1,5 +1,5 @@
 function configureConnection(connection) {
-    var updateAircraftsCallback = function (duration, aircrafts, ind, serverTimestamp, timestamp, speedupRatio) {
+    var updateAircraftsCallback = function (duration, aircrafts, ind, serverTimestamp, timestamp) {
         var now = new Date().getTime();
         if (isInit == true  && avoidStopAtStart >=2 && receiveTimestamp + updateDuration > now - 10) 
             stopCurAnimation = true;
@@ -7,8 +7,8 @@ function configureConnection(connection) {
         aircraftListCache = aircrafts;
         receiveTimestamp = now;
 
+        speedup = (timestamp - curTimestamp) / duration;
         curTimestamp = timestamp;
-        speedup = speedupRatio;
         updateDuration = duration;
         console.log("delay from server to client:", new Date().getTime() - serverTimestamp, ' ms');
         aircraftJsonStrCache = aircrafts;
@@ -19,15 +19,14 @@ function configureConnection(connection) {
             isInit = true;
         } else
             updateAircrafts(aircrafts);
-
     };
 
-    var countVisitorsCallback = (totalVisitors) => {
+    var updateVisitorsCallback = (totalVisitors) => {
         $("#counter").text(`${totalVisitors} joined`);
     }
 
     // Create a function that the hub can call to broadcast messages.
     connection.on('startUpdate', updateAircraftsCallback);
     connection.on('updateAircraft', updateAircraftsCallback);
-    connection.on('countVisitors', countVisitorsCallback);
+    connection.on('updateVisitors', updateVisitorsCallback);
 }

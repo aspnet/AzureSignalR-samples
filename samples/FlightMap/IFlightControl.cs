@@ -10,5 +10,7 @@ namespace Microsoft.Azure.SignalR.Samples.FlightMap
         int VisitorJoin();
 
         int VisitorLeave();
+
+        void SetSpeed(int speed);
     }
 }
