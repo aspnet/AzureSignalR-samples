@@ -8,14 +8,14 @@ Azure SignalR Service is an Azure managed service that helps developers easily b
 
 If you're new to Azure SignalR Service, this repo contains useful documentation and code samples that can help you quickly get started to use this service.
 
-To learn how to use Azure SignalR Service, you can start with the following tutorials:
+To learn how to use Azure SignalR Service, you can start with the following samples:
 
-* [Get Started with SignalR: a Chat Room Example](./samples/ChatRoomLocal/README.md)
-* [Build Your First Azure SignalR Service Application](./samples/ChatRoom/README.md)
-* [Integrate with Azure Services](./docs/azure-integration.md)
-* [Implement Your Own Authentication](./samples/GitHubChat/README.md)
+* [Get Started with SignalR: a Chat Room Example](samples/ChatRoomLocal)
+* [Build Your First Azure SignalR Service Application](samples/ChatRoom)
+* [Integrate with Azure Services](docs/azure-integration)
+* [Implement Your Own Authentication](samples/GitHubChat)
 
-More samples can be found here:
+More advanced samples are listed as below:
 
 * [Realtime Sign-in Example using Azure SignalR Service](samples/RealtimeSignIn)
 * [Flight Map: Realtime Monitoring Dashboard using Azure SignalR Service](samples/FlightMap)
