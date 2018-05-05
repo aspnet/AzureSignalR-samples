@@ -49,7 +49,7 @@
       </a>
       <div class="justify-content-center d-flex flex-fill">
         <h5 class="title-text d-md-block d-none" id="count-large">Connecting...</h5>
-        <h5 class="title-text d-block d-md-none" id="count-small">Connection...</h5>
+        <h5 class="title-text d-block d-md-none" id="count-small">Connecting...</h5>
       </div>
     </nav>
   </header>
@@ -88,7 +88,7 @@
 
     function prepareData(data) {
       var list = [];
-      for (var label in data) list.push([label.toUpperCase(), data[label]]);
+      for (var label in data) list.push([label, data[label]]);
       list.sort((x, y) => x[0] > y[0] ? 1 : x[0] == y[0] ? 0 : -1);
       return {
         labels: list.map(i => i[0]),
@@ -204,7 +204,7 @@
       connection.start().catch(() => updateStatus('Disconnected'));
     }
 
-    $.getJSON('https://signalrsignin.azurewebsites.net/signin').done(result => {
+    $.getJSON('/signin').done(result => {
       initPage(result.stats);
       startConnection(result.authInfo.serviceUrl, result.authInfo.accessToken);
     });
