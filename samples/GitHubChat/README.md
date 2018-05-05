@@ -18,10 +18,12 @@ First step is to create a OAuth App in GitHub:
 
 The first step of OAuth flow is to ask user to login with GitHub account. This can be done by redirect user to the GitHub login page.
 
-Add a link in the chat room for user to login:
+Add a link in the chat room for user to login, when Http status code is `401` (unauthorized):
 
 ```js
-appendMessage('_BROADCAST_', 'You\'re not logged in. Click <a href="/login">here</a> to login with GitHub.');
+if (error.statusCode && error.statusCode === 401) {
+    appendMessage('_BROADCAST_', 'You\'re not logged in. Click <a href="/login">here</a> to login with GitHub.');
+}
 ```
 
 The link points to `/login` which redirects to GitHub OAuth page if you are not authenticated:
@@ -85,9 +87,14 @@ connection.start()
         onConnected(connection);
     })
     .catch(function (error) {
-        console.error(error.message);
-        if (error.message === "Unauthorized") {
-            appendMessage('_BROADCAST_', 'You\'re not logged in. Click <a href="/api/auth/login">here</a> to login with GitHub.');
+        if (error) {
+            if (error.message){
+                console.error(error.message);
+            }
+
+            if (error.statusCode && error.statusCode === 401) {
+                appendMessage('_BROADCAST_', 'You\'re not logged in. Click <a href="/login">here</a> to login with GitHub.');
+            }
         }
     });
 ```
