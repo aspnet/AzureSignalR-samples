@@ -34,7 +34,7 @@ Here is a diagram that illustrates the structure of this appliaction:
 2. Create container and table
 
    ```
-   az storage table create --name SignInInfo
+   az storage table create --account-name <account_name> --name SignInInfo
    az storage container create --account-name <account_name> --name content --public-access blob
    ```
 
