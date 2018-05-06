@@ -1,7 +1,5 @@
 function configureConnection(connection) {
     var updateAircraftsCallback = function (duration, aircrafts, ind, serverTimestamp, timestamp) {
-        aircraftListCache = aircrafts;
-
         speedup = (timestamp - curTimestamp) / duration;
         curTimestamp = timestamp;
         updateDuration = duration;
@@ -19,7 +17,6 @@ function configureConnection(connection) {
     }
 
     // Create a function that the hub can call to broadcast messages.
-    connection.on('startUpdate', updateAircraftsCallback);
     connection.on('updateAircraft', updateAircraftsCallback);
     connection.on('updateVisitors', updateVisitorsCallback);
 }

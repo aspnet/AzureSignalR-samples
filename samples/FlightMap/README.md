@@ -33,7 +33,13 @@ In real world scenarios you can replace the web server and the blob storage with
     az webapp deployment user set --user-name <user_name> --password <password>
     ```
 
-4.  Deploy using git:
+4.  Add your bing map key to `index.html`:
+
+    ```
+    <script src='https://www.bing.com/api/maps/mapcontrol?callback=getMap&key=<bing_map_key>'
+    ```
+
+    Then deploy using git:
     ```
     git init
     git remote add origin <deploy_git_url>

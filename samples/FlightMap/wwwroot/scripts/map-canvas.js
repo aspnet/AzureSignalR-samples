@@ -47,6 +47,7 @@ function addAircrafts(aircraftList) {
                 originY: 'center'
             });
             newImg.key = icao;
+            overlay._fabric.add(newImg);
             aircraftDict[icao] = { obj: newImg, loc: loc };
         });
     });
@@ -90,8 +91,6 @@ function prepareMoveData(newAircraftList) {
         var from = aircraftDict[a.icao].loc;
         var to = new Microsoft.Maps.Location(a.lat, a.long);
         var angle = compDegAnglePt(loc2pt(from), loc2pt(to));
-        overlay._fabric.remove(aircraftDict[a.icao].obj);
-        overlay._fabric.add(aircraftDict[a.icao].obj);
         return {
             icao: a.icao,
             from: from,
@@ -118,6 +117,7 @@ function moveAircrafts(moveData) {
             aircraftDict[d.icao].obj.left = pt.x;
             aircraftDict[d.icao].obj.top = pt.y;
             aircraftDict[d.icao].obj.angle = d.angle;
+            aircraftDict[d.icao].obj.setCoords();
             aircraftDict[d.icao].loc = loc;
         });
 

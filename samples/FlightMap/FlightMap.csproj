@@ -6,9 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore" Version="2.1.0-rc1-30656" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.0-rc1-30656" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.0-rc1-30656" />
-    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.0.0-preview-10007" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="2.1.0-rc1-30677" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.0-rc1-30677" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.0-rc1-30677" />
+    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.0.0-preview-10008" />
   </ItemGroup>
 </Project>
