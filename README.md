@@ -12,7 +12,7 @@ To learn how to use Azure SignalR Service, you can start with the following samp
 
 * [Get Started with SignalR: a Chat Room Example](samples/ChatRoomLocal)
 * [Build Your First Azure SignalR Service Application](samples/ChatRoom)
-* [Integrate with Azure Services](docs/azure-integration)
+* [Integrate with Azure Services](docs/azure-integration.md)
 * [Implement Your Own Authentication](samples/GitHubChat)
 
 More advanced samples are listed as below:
