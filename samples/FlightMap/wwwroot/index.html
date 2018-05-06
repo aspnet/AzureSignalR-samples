@@ -62,7 +62,7 @@
         </div>
     </footer>
 
-    <script src='https://www.bing.com/api/maps/mapcontrol?callback=getMap&key=AqJE7zYyzdIzgJoI-qIn_BBB2WHPGFQ_cWxfqi4T0mYf2UsReMxPnbUXHLyhoh-3&'
+    <script src='https://www.bing.com/api/maps/mapcontrol?callback=getMap&key=<bing_map_key>'
         async defer></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
@@ -77,13 +77,10 @@
         var map;
         var overlay;
         var aircraftDict = {};
-        var addedAircrafts = {};
         var updateDuration;
         var isInit = false;
         var curTimestamp;
         var speedup;
-        var avoidStopAtStart = 0;
-        var aircraftListCache;
         var globalStart;
     </script>
 </body>
