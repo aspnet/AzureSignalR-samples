@@ -105,7 +105,6 @@ The body of the request is a JSON object with three properties:
 
 1. `target`: The target method you want to call in clients.
 2. `arguments`: an array of arguments you want to send to clients.
-3. `excludedList`: an array of user ID that you want to exclude.
 
 The service authenticates REST call using JWT token, when you're generating the JWT token, make sure the audience is same as the REST API url and use the access key in SignalR service connection string as th secret key. Then put it in authentication header:
 
