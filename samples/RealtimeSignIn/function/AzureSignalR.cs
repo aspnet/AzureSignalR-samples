@@ -18,8 +18,6 @@ namespace RealtimeSignIn
             public string Target { get; set; }
 
             public object[] Arguments { get; set; }
-
-            public string[] ExcludedList { get; set; }
         }
 
         private readonly string endpoint;
