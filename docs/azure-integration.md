@@ -84,9 +84,9 @@ az webapp config container set \
    --docker-registry-server-url https://<acr_name>.azurecr.io \
    --docker-registry-server-user <acr_name> \
    --docker-registry-server-password <acr_password>
-az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> --setting PORT=5000
+az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> --setting PORT=80
 az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> \
-   --setting Azure__SignalR__ConnectionString=<connection_string>
+   --setting Azure__SignalR__ConnectionString="<connection_string>"
 ```
 
 Now open `https://<app_name>.azurewebsites.net` and you will see your chat room running on Azure.
