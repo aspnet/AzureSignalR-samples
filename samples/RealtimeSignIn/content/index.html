@@ -25,7 +25,7 @@
       width: 50px;
     }
 
-    .container {
+    .container-fluid {
       margin-top: 80px;
     }
 
@@ -33,10 +33,9 @@
       color: #d0d0d0;
     }
 
-    #qrcode {
-      position: fixed;
-      right: 0;
-      margin-right: 30px;
+    #qrcode > img {
+      width: 80%;
+      height: 80%;
     }
   </style>
 </head>
@@ -53,20 +52,25 @@
       </div>
     </nav>
   </header>
-  <div id="qrcode" class="d-none d-lg-block"></div>
-  <div id="main" class="container collapse">
+  <div id="main" class="container-fluid collapse">
     <div class="row">
-      <div class="col-12 col-md-6">
+      <div class="col-12 col-md-4">
         <div class="justify-content-center d-flex flex-fill">
           <h5># of visitors by OS</h5>
         </div>
         <canvas id="chartByOS" width="400" height="400"></canvas>
       </div>
-      <div class="col-12 col-md-6">
+      <div class="col-12 col-md-4">
         <div class="justify-content-center d-flex flex-fill">
           <h5># of visitors by browser</h5>
         </div>
         <canvas id="chartByBrowser" width="400" height="400"></canvas>
+      </div>
+      <div class="col-md-4 d-none d-md-block">
+        <div id="qrcode" class="justify-content-center d-flex flex-fill"></div>
+        <div class="justify-content-center d-flex flex-fill">
+          <h5>Scan to check-in</h5>
+        </div>
       </div>
     </div>
   </div>
@@ -185,7 +189,11 @@
       chartByOS = createChart(document.getElementById("chartByOS"), stat.byOS);
       chartByBrowser = createChart(document.getElementById("chartByBrowser"), stat.byBrowser);
       $("#main").show();
-      new QRCode(document.getElementById("qrcode"), window.location.href);
+      new QRCode(document.getElementById("qrcode"), {
+        text: window.location.href,
+        width: 512,
+        height: 512,
+      });
     }
 
     function updatePage(totalNumber, byOS, byBrowser) {
