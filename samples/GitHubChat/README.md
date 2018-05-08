@@ -10,7 +10,7 @@ GitHub provides OAuth APIs for third-party applications to authenticate with Git
 First step is to create a OAuth App in GitHub:
 
 1. Go to GitHub -> Settings -> Developer Settings, and click "New OAuth App".
-2. Fill in application name, description and homepage URL.
+2. Fill in an application name, a description and a homepage URL (for this sample you can just enter any random URL)
 3. Authorization callback URL is the url GitHub will redirect you to after authentication. For now make it `http://localhost:5000/signin-github`.
 4. Click "Register application" and you'll get an application with client ID and secret, you'll need them later when you implement the OAuth flow.
 

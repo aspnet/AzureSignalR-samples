@@ -45,8 +45,7 @@ Let's do it step by step.
     }
     ```
 
-    > You need to reference the SignalR SDK before using the APIs:
-    >
+    > You need to reference the SignalR SDK before using the APIs. This is how that would look in your ChatRoomLocal.csproj file:
     > ```xml
     > <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-rc1-30677" />
     > ```
