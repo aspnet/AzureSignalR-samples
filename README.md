@@ -36,5 +36,3 @@ In the latest Service SDK, we have made the following changes:
 > As a result, ASP.NET Core SignalR is not backward compatible with ASP.NET SignalR (API interfaces and behaviors are different). If you're using ASP.NET version and want to move to ASP.NET Core version, you'll need to change your code to handle these differences.
 >
 > Azure SignalR Service is based on ASP.NET Core SignalR, therefore you can only use ASP.NET Core SDK when using the service.
-> This doesn't mean you cannot use the service in .NET Framework, our SDK is .NET Standard so you can still use it in .NET Framework, just you have to use the new APIs instead of old ones.
-
