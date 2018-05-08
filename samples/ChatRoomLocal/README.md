@@ -24,7 +24,7 @@ Let's do it step by step.
     dotnet new web
     ```
 
-    > Before you start, make sure you installed [.NET Core SDK](https://www.microsoft.com/net/learn/get-started).
+    > Before you start, make sure you installed the latest [.NET Core 2.1 RC1 SDK](https://www.microsoft.com/net/download/dotnet-core/sdk-2.1.300-rc1).
 
 2.  Create a `Chat.cs` that defines a `Chat` hub class.
 
