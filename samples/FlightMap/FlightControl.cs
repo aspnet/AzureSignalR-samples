@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
+using System.IO;
 using System.Net.Http;
 using System.Timers;
 using Interlocked = System.Threading.Interlocked;
@@ -22,7 +23,7 @@ namespace Microsoft.Azure.SignalR.Samples.FlightMap
         public double Long { get; set; }
     }
 
-    public class FlightControl : Hub, IFlightControl
+    public class FlightControl : IFlightControl
     {
         private const int DefaultInterval = 1000;
 
@@ -42,11 +43,15 @@ namespace Microsoft.Azure.SignalR.Samples.FlightMap
         {
             this.context = context;
             var dataUrl = configuration["DataFileUrl"];
-            // TODO: make it async
-            var client = new HttpClient();
-            string data = client.GetStringAsync(dataUrl).GetAwaiter().GetResult();
-            flightData = JsonConvert.DeserializeObject<FlightRecord[][]>(data);
+            string data;
+            if (File.Exists(dataUrl)) data = File.ReadAllText(dataUrl);
+            else
+            {
+                var client = new HttpClient();
+                data = client.GetStringAsync(dataUrl).GetAwaiter().GetResult();
+            }
 
+            flightData = JsonConvert.DeserializeObject<FlightRecord[][]>(data);
             timer = new Timer(DefaultInterval / speed);
             timer.Elapsed += BroadcastFlights;
             Start();
@@ -90,7 +95,6 @@ namespace Microsoft.Azure.SignalR.Samples.FlightMap
             long serverTimestamp = (long)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalMilliseconds;
             context.Clients.All.SendAsync("updateAircraft", DefaultInterval / speed, curr, index, serverTimestamp, currTime);
             index = (index + 1) % flightData.Length;
-            Console.WriteLine($"Current index: {index}");
         }
     }
 }

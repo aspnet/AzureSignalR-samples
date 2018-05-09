@@ -3,6 +3,7 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <UserSecretsId>flightmap</UserSecretsId>
     <RootNamespace>Microsoft.Azure.SignalR.Samples.FlightMap</RootNamespace>
+    <UserSecretsId>flightMap</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,5 +13,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.0-rc1-final" />
     <PackageReference Include="Microsoft.Azure.SignalR" Version="1.0.0-preview1-10009" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="2.0.0" />
   </ItemGroup>
 </Project>

@@ -19,36 +19,28 @@ namespace RealtimeSignIn
         [FunctionName("signin")]
         public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")]HttpRequestMessage req, TraceWriter log)
         {
-            try
+            var table = new SignInTable(Environment.GetEnvironmentVariable("TableConnectionString"));
+            var signalR = new AzureSignalR(Environment.GetEnvironmentVariable("AzureSignalRConnectionString"));
+
+            var ua = Parser.GetDefault().Parse(req.Headers.UserAgent.ToString());
+            // add sign-in record
+            table.Add(ua.OS.Family, ua.UserAgent.Family);
+
+            // calculate statistics
+            var stats = table.GetStats();
+
+            // broadcast through SignalR
+            await signalR.SendAsync("signin", "updateSignInStats", stats.TotalNumber, stats.ByOS, stats.ByBrowser);
+
+            return req.CreateResponse(HttpStatusCode.OK, new
             {
-                var table = new SignInTable(Environment.GetEnvironmentVariable("TableConnectionString"));
-                var signalR = new AzureSignalR(Environment.GetEnvironmentVariable("AzureSignalRConnectionString"));
-
-                var ua = Parser.GetDefault().Parse(req.Headers.UserAgent.ToString());
-                // add sign-in record
-                table.Add(ua.OS.Family, ua.UserAgent.Family);
-
-                // calculate statistics
-                var stats = table.GetStats();
-
-                // broadcast through SignalR
-                await signalR.SendAsync("signin", "updateSignInStats", stats.TotalNumber, stats.ByOS, stats.ByBrowser);
-
-                return req.CreateResponse(HttpStatusCode.OK, new
+                authInfo = new
                 {
-                    authInfo = new
-                    {
-                        serviceUrl = signalR.GetClientHubUrl(HubName),
-                        accessToken = signalR.GenerateAccessToken(HubName)
-                    },
-                    stats = stats
-                }, "application/json");
-            }
-            catch (Exception ex)
-            {
-                log.Info(ex.ToString());
-                throw;
-            }
+                    serviceUrl = signalR.GetClientHubUrl(HubName),
+                    accessToken = signalR.GenerateAccessToken(HubName)
+                },
+                stats = stats
+            }, "application/json");
         }
     }
 }
