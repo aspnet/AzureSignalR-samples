@@ -1,3 +1,20 @@
+function flightDataReceived(duration, aircrafts, ind, serverTimestamp, timestamp) {
+    speedup = (timestamp - curTimestamp) / duration;
+    curTimestamp = timestamp;
+    updateDuration = duration;
+    if (ind == 0)
+        isInit = false;
+    if (!isInit) {
+        initAircrafts(aircrafts);
+        isInit = true;
+    } else
+        updateAircrafts(aircrafts);
+};
+
+function updateVisitors(totalVisitors) {
+    $("#counter").text(`${totalVisitors} joined`);
+}
+
 function getMap() {
     map = new Microsoft.Maps.Map(document.getElementById('myMap'), {
         center: new Microsoft.Maps.Location(39.9611755, -82.9987942),
@@ -16,11 +33,14 @@ function getMap() {
             setTimeout(() => connectWithRetry(c), 5000);
         });
 
+        // create connection
         var connection = new signalR.HubConnectionBuilder()
             .withUrl('/flightData')
             .build();
 
-        configureConnection(connection);
+        // setup callbacks
+        connection.on('updateAircraft', flightDataReceived);
+        connection.on('updateVisitors', updateVisitors);
 
         // auto reconnect when connection is closed
         connection.onclose(() => {

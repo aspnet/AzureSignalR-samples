@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.SignalR.Samples.FlightMap
 {
-
     public class FlightMapHub : Hub
     {
         private IFlightControl control;
