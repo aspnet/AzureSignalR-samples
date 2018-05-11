@@ -12,6 +12,8 @@ Azure Web App supports container, so we will build our application into a Docker
 
 First use the [Dockerfile](../samples/ChatRoom/Dockerfile) to build our application into a Docker container image:
 
+> Make sure you have [NuGet.config](../samples/ChatRoom/NuGet.config) in your project root. 
+
 ```
 docker build -t chatroom .
 ```
