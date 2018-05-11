@@ -45,7 +45,7 @@ ENTRYPOINT ["dotnet", "ChatRoom.dll"]
 Then you can test the image locally:
 
 ```
-docker run -p 5000:5000 -e Azure__SignalR__ConnectionString=<connection_string> chatroom
+docker run -p 5000:80 -e Azure__SignalR__ConnectionString=<connection_string> chatroom
 ```
 
 > For more information about building Docker image for .NET Core, please refer to this [doc](https://docs.microsoft.com/en-us/dotnet/core/docker/building-net-docker-images).
