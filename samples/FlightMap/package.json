@@ -1,5 +1,5 @@
 {
-    "name": "chatsample",
+    "name": "flightmap",
     "private": true,
     "dependencies": {
         "@aspnet/signalr": "^1.0.0-rc1-final"

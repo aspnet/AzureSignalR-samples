@@ -6,7 +6,7 @@ WORKDIR /app
 
 # copy csproj and restore as distinct layers
 COPY NuGet.config ./
-RUN mkdir ChatRoom && cd ChatRoom/
+RUN mkdir FlightMap && cd FlightMap/
 COPY *.csproj ./
 RUN dotnet restore
 
@@ -18,4 +18,4 @@ RUN dotnet publish -c Release -o out
 FROM microsoft/dotnet:2.1-aspnetcore-runtime
 WORKDIR /app
 COPY --from=build-env /app/out .
-ENTRYPOINT ["dotnet", "ChatRoom.dll"]
+ENTRYPOINT ["dotnet", "FlightMap.dll"]
