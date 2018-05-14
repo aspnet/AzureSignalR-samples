@@ -38,7 +38,7 @@ Then copy the build output into `app` folder and set the entrypoint:
 
 ```docker
 # build runtime image
-FROM microsoft/aspnetcore:2.0
+FROM microsoft/dotnet:2.1-aspnetcore-runtime
 WORKDIR /app
 COPY --from=build-env /app/out .
 ENTRYPOINT ["dotnet", "ChatRoom.dll"]
@@ -47,7 +47,7 @@ ENTRYPOINT ["dotnet", "ChatRoom.dll"]
 Then you can test the image locally:
 
 ```
-docker run -p 5000:80 -e Azure__SignalR__ConnectionString=<connection_string> chatroom
+docker run -p 5000:80 -e Azure__SignalR__ConnectionString="<connection_string>" chatroom
 ```
 
 > For more information about building Docker image for .NET Core, please refer to this [doc](https://docs.microsoft.com/en-us/dotnet/core/docker/building-net-docker-images).
@@ -86,39 +86,9 @@ az webapp config container set \
    --docker-registry-server-url https://<acr_name>.azurecr.io \
    --docker-registry-server-user <acr_name> \
    --docker-registry-server-password <acr_password>
-az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> --setting PORT=5000
+az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> --setting PORT=80
 az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> \
-   --setting Azure__SignalR__ConnectionString=<connection_string>
+   --setting Azure__SignalR__ConnectionString="<connection_string>"
 ```
 
 Now open `https://<app_name>.azurewebsites.net` and you will see your chat room running on Azure.
-
-> Web App now supports .NET Core 2.0, so you can directly deploy to Web App without Docker:
-> 1.  Create a web app:
->     ```
->     az group create --name <resource_group_name> --location CentralUS
->     az appservice plan create --name <plan_name> --resource-group <resource_group_name> --sku S1 --is-linux
->     az webapp create \
->        --resource-group <resource_group_name> --plan <plan_name> --name <app_name> \
->        --runtime "DOTNETCORE|2.0"
->     ```
->
-> 2.  Config deployment source and credential:
->     ```
->     az webapp deployment source config-local-git --resource-group <resource_group_name> --name <app_name>
->     az webapp deployment user set --user-name <user_name> --password <password>
->     ```
->
-> 3.  Deploy using git:
->     ```
->     git init
->     git remote add origin <deploy_git_url>
->     git add -A
->     git commit -m "init commit"
->     git push origin master
->     ```
-> 4. Update config
->     ```
->     az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> \
->        --setting Azure__SignalR__ConnectionString=<connection_string>
->     ```

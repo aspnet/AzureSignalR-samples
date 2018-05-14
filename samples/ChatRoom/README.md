@@ -2,9 +2,9 @@
 
 In [ChatRoomLocal sample](../ChatRoomLocal) you have learned how to use SignalR to build a chat room application. In that example, the SignalR runtime (which manages the client connections and message routing) is running on your own server. As the number of the clients increases, you'll eventually hit a limit on your server and you'll need to scale your server to handle more clients. This is usually not an easy task. In this tutorial, you'll learn how to use Azure SignalR Service to offload the connection management part to the service so that you don't need to worry about the scaling problem.
 
-## Create a SignalR Service
+## Provision a SignalR Service
 
-First let's create a SignalR service on Azure.
+First let's provision a SignalR service on Azure.
 
 1. Open Azure portal, click "Create a resource" and find "SignalR Service" in "Web + Mobile".
 
@@ -20,8 +20,6 @@ First let's create a SignalR service on Azure.
    
    * Free: which can handle 100 connections at the same time and can send and receive one million messages in a month.
    * Basic: which has 1000 concurrent connections and 75 millions message per month limit for *one unit*. You can scale up to 10 units for a single service instance and you'll be charged by the number of units you use.
-
-   > In private preview, only basic tier with one unit is supported.
 
 3. Click "Create", your SignalR service will be created in a few minutes.
 
@@ -64,7 +62,7 @@ Let's look at the key changes:
     You also need to reference the service SDK before using these APIs:
 
     ```xml
-    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.0.0-preview-10008" />
+    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.0.0-preview1-10009" />
     ```
 
 Other than these changes, everything else remains the same, you can still use the hub interface you're already familiar with to write business logic.

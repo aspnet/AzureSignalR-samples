@@ -16,64 +16,52 @@ In real world scenarios you can replace the web server and the blob storage with
 
 ## Deploy to Azure
 
-1.  Create a SignalR Service in Azure portal.
-
-2.  Create a web app:
-    ```
-    az group create --name <resource_group_name> --location CentralUS
-    az appservice plan create --name <plan_name> --resource-group <resource_group_name> --sku S1 --is-linux
-    az webapp create \
-       --resource-group <resource_group_name> --plan <plan_name> --name <app_name> \
-       --runtime "DOTNETCORE|2.0"
-    ```
-
-3.  Config deployment source and credential:
-    ```
-    az webapp deployment source config-local-git --resource-group <resource_group_name> --name <app_name>
-    az webapp deployment user set --user-name <user_name> --password <password>
-    ```
-
-4.  Add your bing map key to `index.html`:
+1. Add your bing map key to `index.html`:
 
     ```
     <script src='https://www.bing.com/api/maps/mapcontrol?callback=getMap&key=<bing_map_key>'
     ```
 
-    Then deploy using git:
+1. Build docker image
+
     ```
-    git init
-    git remote add origin <deploy_git_url>
-    git add -A
-    git commit -m "init commit"
-    git push origin master
+    docker build -t flightmap .
     ```
 
-5.  Prepare flight data
+1. Push the docker image to a docker registry such as DockHub or[Azure Container Registry](https://azure.microsoft.com/en-us/services/container-registry/). Below are the commands to push to Azure Container Registry.
 
-    This sample reads flight data from a JSON file, which is a two dimenstion array whose first dimension is time and second dimension is flight. Each element of the array is in the following format:
-
-    ```json
-    {
-        "Icao": <unique_id>,
-        "PosTime": <time>,
-        "Lat": <latitude>,
-        "Long": <longitude>
-    }
+    ```
+    docker login <acr_name>.azurecr.io
+    docker tag flightmap <acr_name>.azurecr.io/flightmap
+    docker push <acr_name>.azurecr.io/flightmap
     ```
 
-    Here `Icao` is the unique ID of a flight and `PosTime` is the numeric value of a date time (milliseconds from midnight 1970/1/1).
-    `Lat` and `Long` are latitude and longitude of the flight postion respectively.
+1.  Create a SignalR Service in Azure portal.
 
-    A simple data generator can be found in [generate.js](data/generate.js). You can use it to generate some random flight data from input time range, plane count, and coordinates. You can also write your own data generate or download real data from other websites (e.g. https://www.adsbexchange.com/). Then upload the flight data to an online storage (recommend to use Azure blob storage) so it can be referenced in the web app.
+1.  Create a web app using [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest).
 
-6.  Update config
     ```
+    az group create --name <resource_group_name> --location CentralUS
+    az appservice plan create --name <plan_name> --resource-group <resource_group_name> --sku S1 --is-linux
+    az webapp create \
+        --resource-group <resource_group_name> --plan <plan_name> --name <app_name> \
+        --deployment-container-image-name nginx
+    ```
+
+1.  Update web app with above docker image:
+
+    ```
+    az webapp config container set \
+        --resource-group <resource_group_name> --name <app_name> \
+        --docker-custom-image-name <acr_name>.azurecr.io/flightmap \
+        --docker-registry-server-url https://<acr_name>.azurecr.io \
+        --docker-registry-server-user <acr_name> \
+        --docker-registry-server-password <acr_password>
+    az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> --setting PORT=80
     az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> \
-       --setting DataFileUrl=<data_file_url>
+        --setting Azure__SignalR__ConnectionString=<connection_string>
     az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> \
-       --setting Azure__SignalR__ConnectionString=<connection_string>
-    az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> \
-       --setting AdminKey=<admin_key>
+        --setting AdminKey=<admin_key>
     ```
 
 ## How to Play
