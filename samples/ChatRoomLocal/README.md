@@ -4,19 +4,19 @@ In this sample you'll learn how to use ASP.NET Core SignalR to build a chat room
 
 > This tutorial is to give you a brief introduction about how ASP.NET Core SignalR works, if you're already familiar with it, you can skip this sample.
 >
-> Please be noted this sample (and all other samples in this repo) is based on ASP.NET Core SignalR rather than the ASP.NET version.
+> Please be noted this sample, and all other samples in this repo, are based on ASP.NET Core SignalR rather than the ASP.NET version.
 
-Our chat room is a web page application that anyone can login and chat with others in the room.
+Our chat room is a web page application that anyone can login to and chat with other users in the room.
 
-First time you open the application you'll be asked for your name:
+The first time you open the application you'll be asked for your name:
 
 ![chat-room-1](../../docs/images/chat-room-1.png)
 
-Then send something and everyone in the room can see it:
+Then you can send a message and everyone in the room can see it:
 
 ![chat-room-2](../../docs/images/chat-room-2.png)
 
-Let's do it step by step.
+Let's implement this feature step by step.
 
 1.  First create a ASP.NET Core web application.
 
@@ -45,17 +45,17 @@ Let's do it step by step.
     }
     ```
 
-    > You need to reference the SignalR SDK before using the APIs:
+    > You need to reference the SignalR SDK before using the APIs. This is how that would look in your ChatRoomLocal.csproj file:
     >
     > ```xml
     > <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-rc1-final" />
     > ```
 
-    Hub is the core concept in SignalR which exposes a set of methods that can be called from client. Here we define two methods: `Broadcast()` which broadcasts the message to all clients and `Echo()` which sends the message back to the caller.
+    Hub is the core concept in SignalR which exposes a set of methods that can be called from clients. Here we define two methods: `Broadcast()` which broadcasts the message to all clients and `Echo()` which sends the message back to the caller.
 
     In each method you can see there is a `Clients` interface that gives you access to all connected clients so you can directly call back to these clients.
 
-3.  Then we need to initialize SignalR runtime when the application starts up. Add the following in `Startup.cs`:
+3.  Then we need to initialize the SignalR runtime when the application starts up. Add the following in `Startup.cs`:
 
     ```cs
     public void ConfigureServices(IServiceCollection services)
@@ -73,9 +73,9 @@ Let's do it step by step.
     }
     ```
 
-    The key changes here are `AddSignalR()` which initialize SignalR runtime and `MapHub()` which maps the hub to `/chat` so clients can access the hub using this url.
+    The key changes here are `AddSignalR()` which initializes the SignalR runtime and `MapHub()` which maps the hub to the `/chat` endpoint so clients can access the hub using this url.
 
-4.  The last step is to create the UI of the chat room. In this sample, we use HTML and javascript to build a web application.
+4.  The last step is to create the UI of the chat room. In this sample, we will use HTML and Javascript to build a web application:
 
     Copy the HTML and script files from [wwwroot](wwwroot/) of the sample project to the `wwwroot` folder of your project.
     Add the following code to `Startup.cs` to make the application serve the pages:
@@ -96,7 +96,7 @@ Let's do it step by step.
                                 .build();
     ```
 
-    When user clicks send button, it calls `broadcastMessage()` to broadcast the message to other clients:
+    When the user clicks the send button, it calls `broadcastMessage()` to broadcast the message to other clients:
 
     ```js
     document.getElementById('sendmessage').addEventListener('click', function (event) {
@@ -108,7 +108,7 @@ Let's do it step by step.
     });
     ```
 
-    Also it registers a callback to receive message from server:
+    Also, it registers a callback to receive messages from the server:
 
     ```js
     var messageCallback = function(name, message) {
@@ -126,14 +126,14 @@ Let's do it step by step.
     connection.on('broadcastMessage', messageCallback);
     ```
 
-Now build and run the application:
+Now, build and run the application:
 
 ```
 dotnet build
 dotnet run
 ```
 
-Open http://localhost:5000, you'll see the chat room running on your local machine.
+Open http://localhost:5000, and you'll see the chat room running on your local machine.
 
 In this sample you have learned the basics of SignalR and how to use it to build a chat room application.
 In other samples you'll learn how to use Azure SignalR service and host your chat room on Azure.

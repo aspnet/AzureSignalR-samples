@@ -1,6 +1,6 @@
 # Build Your First Azure SignalR Service Application
 
-In [ChatRoomLocal sample](../ChatRoomLocal) you have learned how to use SignalR to build a chat room application. In that example, the SignalR runtime (which manages the client connections and message routing) is running on your own server. As the number of the clients increases, you'll eventually hit a limit on your server and you'll need to scale your server to handle more clients. This is usually not an easy task. In this tutorial, you'll learn how to use Azure SignalR Service to offload the connection management part to the service so that you don't need to worry about the scaling problem.
+In [ChatRoomLocal sample](../ChatRoomLocal) you have learned how to use SignalR to build a chat room application. In that sample, the SignalR runtime (which manages the client connections and message routing) is running on your local machine. As the number of the clients increases, you'll eventually hit a limit on your machine and you'll need to scale up your machine to handle more clients. This is usually not an easy task. In this tutorial, you'll learn how to use Azure SignalR Service to offload the connection management part to the service so that you don't need to worry about the scaling problem.
 
 ## Provision a SignalR Service
 
@@ -25,9 +25,9 @@ First let's provision a SignalR service on Azure.
 
    ![signalr-3](../../docs/images/signalr-3.png)
 
-After your service is ready, go to the Keys page of your service instance and you'll get two connection strings that your application can use to connect to the service.
+After your service is ready, go to the **Keys** page of your service instance and you'll get two connection strings that your application can use to connect to the service.
 
-The connection string is the form of the following:
+The connection string is in the form of the following:
 
 ```
 Endpoint=<service_endpoint>;AccessKey=<access_key>;
@@ -35,7 +35,7 @@ Endpoint=<service_endpoint>;AccessKey=<access_key>;
 
 ## Update Chat Room to Use Azure SignalR Service
 
-Then let's update the chat room sample to use the new service you just created.
+Then, let's update the chat room sample to use the new service you just created.
 
 Let's look at the key changes:
 
@@ -59,7 +59,7 @@ Let's look at the key changes:
     }
     ```
 
-    You also need to reference the service SDK before using these APIs:
+    You also need to reference the service SDK before using these APIs. This is how that would look in your ChatRoom.csproj file:
 
     ```xml
     <PackageReference Include="Microsoft.Azure.SignalR" Version="1.0.0-preview1-10009" />
@@ -78,6 +78,6 @@ dotnet user-secrets set Azure:SignalR:ConnectionString "<your connection string>
 dotnet run
 ```
 
-You can see the application runs as usual, just instead of hosting a SignalR runtime by itself, it connects to the SignalR service running on Azure.
+When you open http://localhost:5000, you can see the application runs as usual, just instead of hosting a SignalR runtime by itself, it connects to the SignalR service running on Azure.
 
-In this sample, you have learned how to use Azure SignalR Service to replace your self-hosted SignalR runtime. But you still need a web server to host your hub logic. In next tutorial you'll learn how to use other Azure services to host your hub logic so you can get everything running on cloud.
+In this sample, you have learned how to use Azure SignalR Service to replace your self-hosted SignalR runtime. But you still need a web server to host your hub logic. In the next tutorial you'll learn how to use other Azure services to host your hub logic so you can get everything running in the cloud.

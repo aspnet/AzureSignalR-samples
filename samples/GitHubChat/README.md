@@ -1,7 +1,6 @@
 # Implement Your Own Authentication
 
-The authentication in [ChatRoom sample](../ChatRoom) is actually very simple, you claim who you are and authentication API will give you a token with that name.
-This is not really useful in real applications, in this tutorial you'll learn how to implement your own authentication and integrate with SignalR service.
+The authentication in [ChatRoom sample](../ChatRoom) is actually very simple, you claim who you are and authentication API will give you a token with that name. This is not really useful in real-life applications, so in this tutorial you'll learn how to implement your own authentication and integrate with SignalR service.
 
 GitHub provides OAuth APIs for third-party applications to authenticate with GitHub accounts. Let's use these APIs to allow users to login to our chat room with GitHub ID.
 
@@ -10,7 +9,7 @@ GitHub provides OAuth APIs for third-party applications to authenticate with Git
 First step is to create a OAuth App in GitHub:
 
 1. Go to GitHub -> Settings -> Developer Settings, and click "New OAuth App".
-2. Fill in application name, description and homepage URL.
+2. Fill in an application name, a description and a homepage URL (for this sample you can just enter any random URL)
 3. Authorization callback URL is the url GitHub will redirect you to after authentication. For now make it `http://localhost:5000/signin-github`.
 4. Click "Register application" and you'll get an application with client ID and secret, you'll need them later when you implement the OAuth flow.
 
@@ -26,7 +25,7 @@ if (error.statusCode && error.statusCode === 401) {
 }
 ```
 
-The link points to `/login` which redirects to GitHub OAuth page if you are not authenticated:
+The link points to `/login` which redirects to the GitHub OAuth page if you are not authenticated:
 
 ```cs
 [HttpGet("login")]
@@ -43,7 +42,7 @@ public IActionResult Login()
 }
 ```
 
-GitHub will check whether you have already logged in and authorized the application, if not it will ask you to login and show a dialog to let you authorize the application:
+GitHub will check whether you have already logged in and authorized the application, if not, it will ask you to login and show a dialog to let you authorize the application:
 
 ![github-oauth](../../docs/images/github-oauth.png)
 
@@ -79,7 +78,7 @@ public void BroadcastMessage(string message)
 
 ## Update Client Code
 
-Finally let's update client code to handle `Unauthorized` error and instruct user to login.
+Finally let's update the client code to handle `Unauthorized` error and instruct the user to log in.
 
 ```js
 connection.start()
@@ -99,7 +98,7 @@ connection.start()
     });
 ```
 
-Now you can run the project to chat using your GitHub ID:
+Now you can run the project and chat using your GitHub ID:
 
 ```
 dotnet restore
@@ -111,7 +110,7 @@ dotnet run
 
 ## Deploy to Azure
 
-Deploy to Azure is same as before, just you need to set two new settings we just added:
+Deployment to Azure is the same as before, just you need to set two new settings we just added:
 
 ```
 az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> \
@@ -124,9 +123,7 @@ And change the callback url of your GitHub app from localhost to the actual Azur
 
 ## Customize Hub Method Authorization
 
-It is possible to define different permission level on hub methods.
-For example, we don't want everyone to be able to send message in chat room.
-To achieve this we can define a custom authorization policy:
+It is possible to define different permission levels on hub methods. For example, we don't want everyone to be able to send message in a chat room. To achieve this, we can define a custom authorization policy:
 
 ```cs
 services.AddAuthorization(options =>
@@ -135,9 +132,9 @@ services.AddAuthorization(options =>
 });
 ```
 
-This policy requires user to have a "Microsoft" company claim.
+This policy requires the user to have a "Microsoft" company claim.
 
-Then apply the policy to `BroadcastMessage()` method:
+Then we can apply the policy to `BroadcastMessage()` method:
 
 ```cs
 [Authorize(Policy = "Microsoft_Only")]
@@ -147,10 +144,10 @@ public void BroadcastMessage(string message)
 }
 ```
 
-Now if your GitHub account's company is not Microsoft, you cannot send message in the chat room. But you can still see others' messages.
+Now, if your GitHub account's company is not Microsoft, you cannot send messages in the chat room, but you can still see other user's messages.
 
-> If you use `send()` to call hub, SignalR won't send back a completion message so you won't know whether the call is succeeded or not.
-> So if you want to get a confirmation of the hub invocation (for example in this case you want to know whether your call has enough permission) you need to use `invoke()`:
+> If you use `send()` to call hub, SignalR won't send back a completion message so you won't know whether the call succeeded or not.
+> So, if you want to get a confirmation of the hub invocation (for example in this case you want to know whether your call has enough permission) you need to use `invoke()`:
 >
 > ```js
 > connection.invoke('broadcastMessage', messageInput.value)
