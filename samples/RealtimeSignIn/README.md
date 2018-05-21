@@ -1,6 +1,6 @@
 # Realtime Sign-in Example using Azure SignalR Service
 
-This sample application shows how to build a realtime application using Azure SignalR Service and serverless architecture. When you open homepage of the application, you will see how many people has visited this page (and their OS and browser distribution) and the page will auto update when others open the same page.
+This sample application shows how to build a realtime application using Azure SignalR Service and serverless architecture. When you open the homepage of the application, you will see how many people have visited this page (and their OS and browser distribution) and the page will automatically update when others open the same page.
 
 A live demo can be found [here](https://signalrsignin.azurewebsites.net).
 
@@ -37,8 +37,9 @@ Here is a diagram that illustrates the structure of this appliaction:
    az storage table create --account-name <account_name> --name SignInInfo
    az storage container create --account-name <account_name> --name content --public-access blob
    ```
+**> Note:** Please take note of the endpoints created in the previous commands, as you will need it later to add to the Function App's application settings.
 
-3. Upload static files
+3. Navigate to the ```/content``` folder and upload the static files
 
    ```
    az storage blob upload -c content --account-name <account_name> -n index.html -f index.html
@@ -62,12 +63,16 @@ Here is a diagram that illustrates the structure of this appliaction:
       --consumption-plan-location CentralUS --storage-account <storage_account_name>
    ```
 
-3. Configure deployment credentials
+   **> Note:** Please provide a unique name for ```function_name```
+
+3. Navigate to the ```/function``` folder and configure the deployment credentials
 
    ```
    az functionapp deployment source config-local-git --resource-group <resource_group_name> --name <function_name>
    az functionapp deployment user set --user-name <user_name> --password <password>
    ```
+
+   **> Note: **Please take note of the Git url returned as you will need it later on.
 
 4. Build and deploy Azure function
 
@@ -92,6 +97,23 @@ Here is a diagram that illustrates the structure of this appliaction:
       --setting BlobHost=<blob_host>
    az functionapp config appsettings set --resource-group <resource_group_name> --name <app_name> \
       --setting AzureSignalRConnectionString=<signalr_connection_string>
+
+   ```
+
+**> Note: ** ```table_connection_string``` can be located in the Azure Portal from the Access Key section of the created storage account. ```blob_url``` is the blob service endpoint hostname (without https://), which you can find in the Blob Service Containers section. ```signalr_connection_string``` refers to the connection string you used before in the Chatroom sample.
+
+## Run the application
+
+Go to the url that was deployed as part of your Function App:
+
+   ```
+   https://<function_name>.azurewebsites.net/
+
+   ``` 
+
+It should show you an output similar to this:
+
+![Screenshot of the output in a web browser](screenshot.png)
 
 ## Brief Explanation
 

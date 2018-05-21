@@ -1,18 +1,18 @@
 # Flight Map: Realtime Monitoring Dashboard using Azure SignalR Service
 
-This sample shows how to use Azure SignalR Service to build a realtime monitoring dashboard. Open the application, you'll see flight locations in realtime.
+This sample shows how to use Azure SignalR Service to build a realtime monitoring dashboard. Open the application, and you'll see flight locations in realtime.
 
 A live demo can be found [here](http://flightmap-demo1.azurewebsites.net/).
 
-## How Does It Work
+## How does it work?
 
-In this sample, the data is generated on a web app, by reading from a JSON file on Azure blob. The web app then connects to the Azure SignalR Service and use it broadcast the data to all clients.
+In this sample, the data is generated in a web app by reading from a JSON file on Azure Blob storage. The web app then connects to the Azure SignalR Service and uses it to broadcast the data to all clients.
 
 Here is a diagram that illustrates the application structure:
 
 ![flightmap](../../docs/images/flightmap.png)
 
-In real world scenarios you can replace the web server and the blob storage with a component that generates the real data.
+In real world scenarios you can replace the web server and the blob storage with a component that generates actual live data.
 
 ## Deploy to Azure
 
@@ -64,11 +64,15 @@ In real world scenarios you can replace the web server and the blob storage with
         --setting AdminKey=<admin_key>
     ```
 
-## How to Play
+## How to run
 
-Open the homepage you'll see the planes moving on the map in realtime. The data is from the `<data_file_url>` you set in the app settings and played repeatedly.
+Once everything is deployed, a URL will be available to you to test the application at:
 
-You can also use the following APIs to control the data:
+    https://<app_name>.azurewebsites.net 
+
+Open the homepage you'll see the planes moving on the map in realtime. The data originates from the `<data_file_url>` you set in the app settings and played repeatedly.
+
+You can also use the following API endpoints to control the data:
 
 1. `https://<web_app_url>/animation/<action>?key=<key>` to start/stop/restart the animation. Here `<action>` can be `start`, `stop`, and `restart`. `<key>` is the `<admin_key>` you set in the app settings.
 
