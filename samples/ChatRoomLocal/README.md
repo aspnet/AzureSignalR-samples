@@ -73,6 +73,8 @@ Let's implement this feature step by step.
     }
     ```
 
+    > Make sure you remove `app.Run(...)` from `Configure()`, which will always give you a Hello World page.
+
     The key changes here are `AddSignalR()` which initializes the SignalR runtime and `MapHub()` which maps the hub to the `/chat` endpoint so clients can access the hub using this url.
 
 4.  The last step is to create the UI of the chat room. In this sample, we will use HTML and Javascript to build a web application:

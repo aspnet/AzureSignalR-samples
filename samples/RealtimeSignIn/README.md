@@ -100,7 +100,7 @@ Here is a diagram that illustrates the structure of this appliaction:
 
    ```
 
-**> Note: ** ```table_connection_string``` can be located in the Azure Portal from the Access Key section of the created storage account. ```blob_url``` is the blob service endpoint hostname (without https://), which you can find in the Blob Service Containers section. ```signalr_connection_string``` refers to the connection string you used before in the Chatroom sample.
+**> Note: ** ```table_connection_string``` can be located in the Azure Portal from the Access Key section of the created storage account. ```blob_host``` is the blob service endpoint hostname (without https://), which you can find in the Blob Service Containers section. ```signalr_connection_string``` refers to the connection string you used before in the Chatroom sample.
 
 ## Run the application
 
