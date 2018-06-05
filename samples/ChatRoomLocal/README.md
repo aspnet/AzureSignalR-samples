@@ -24,7 +24,7 @@ Let's implement this feature step by step.
     dotnet new web
     ```
 
-    > Before you start, make sure you installed the latest [.NET Core 2.1 RC1 SDK](https://www.microsoft.com/net/download/dotnet-core/sdk-2.1.300-rc1).
+    > Before you start, make sure you installed the latest [.NET Core 2.1 SDK](https://www.microsoft.com/net/download/dotnet-core/sdk-2.1.300).
 
 2.  Create a `Chat.cs` that defines a `Chat` hub class.
 
@@ -48,7 +48,7 @@ Let's implement this feature step by step.
     > You need to reference the SignalR SDK before using the APIs. This is how that would look in your ChatRoomLocal.csproj file:
     >
     > ```xml
-    > <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0-rc1-final" />
+    > <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0" />
     > ```
 
     Hub is the core concept in SignalR which exposes a set of methods that can be called from clients. Here we define two methods: `Broadcast()` which broadcasts the message to all clients and `Echo()` which sends the message back to the caller.
