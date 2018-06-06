@@ -45,11 +45,7 @@ Let's implement this feature step by step.
     }
     ```
 
-    > You need to reference the SignalR SDK before using the APIs. This is how that would look in your ChatRoomLocal.csproj file:
-    >
-    > ```xml
-    > <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.0" />
-    > ```
+    > SignalR SDK is already *included* in `Microsoft.AspNetCore.App` package reference in ChatRoomLocal.csproj file.
 
     Hub is the core concept in SignalR which exposes a set of methods that can be called from clients. Here we define two methods: `Broadcast()` which broadcasts the message to all clients and `Echo()` which sends the message back to the caller.
 
@@ -134,6 +130,8 @@ Now, build and run the application:
 dotnet build
 dotnet run
 ```
+
+> You can also use `dotnet watch run` to watch and reload the code changes.
 
 Open http://localhost:5000, and you'll see the chat room running on your local machine.
 
