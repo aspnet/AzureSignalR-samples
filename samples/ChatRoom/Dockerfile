@@ -5,7 +5,6 @@ FROM microsoft/dotnet:2.1-sdk-stretch AS build-env
 WORKDIR /app
 
 # copy csproj and restore as distinct layers
-COPY NuGet.config ./
 RUN mkdir ChatRoom && cd ChatRoom/
 COPY *.csproj ./
 RUN dotnet restore
