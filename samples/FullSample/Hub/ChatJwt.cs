@@ -4,14 +4,13 @@
 using Microsoft.AspNetCore.SignalR;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Microsoft.Azure.SignalR.Samples.ChatRoom
 {
-    [Authorize(Policy = "Authorized_User")]
-    [Authorize(Roles = "Admin")]
-    [Authorize(Policy = "FullAuthorized")]
-    public class Chat : Hub
+    [Authorize(JwtBearerDefaults.AuthenticationScheme)]
+    public class ChatJwt : Hub
     {
         public void BroadcastMessage(string name, string message)
         {

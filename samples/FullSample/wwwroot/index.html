@@ -11,8 +11,10 @@
 </head>
 <body>
     <h2 class="text-center" style="margin-top: 0; padding-top: 30px; padding-bottom: 30px;">Azure SignalR Group Chat</h2>
+
     <div class="container" style="height: calc(100% - 110px);">
         <div id="messages" style="background-color: whitesmoke; "></div>
+
         <div style="width: 100%; border-left-style: ridge; border-right-style: ridge;">
             <textarea id="message"
                       style="width: 100%; padding: 5px 10px; border-style: hidden;"
@@ -45,7 +47,6 @@
             <button class="btn-success" id="senduser">Send to User</button>
             <button class="btn-success" id="sendusers">Send to Users</button>
         </div>
-
     </div>
 
     <div class="modal alert alert-danger fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
@@ -58,7 +59,11 @@
             </div>
         </div>
     </div>
-    <!--Script references. -->
+
+
+
+
+<!--Script references. -->
     <script type="text/javascript" src="scripts/jquery-1.10.2.js"></script>
     <script type="text/javascript" src="scripts/bootstrap.js"></script>
     <!--Reference the SignalR library. -->
@@ -67,18 +72,55 @@
     <script type="text/javascript">
         document.addEventListener('DOMContentLoaded', function () {
 
+            function get(url) {
+                return new Promise((resolve, reject) => {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('GET', url, true);
+                    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                    xhr.send();
+                    xhr.onload = () => {
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            resolve();
+                        } else {
+                            reject(new Error(xhr.statusText));
+                        }
+                    }
+                    xhr.onerror = () => {
+                        reject(new Error(xhr.statusText));
+                    }
+                });
+            }
+
             function generateRandomName() {
                 return Math.random().toString(36).substring(2, 10);
             }
 
             // Get the user name and store it to prepend to messages.
-            var username = generateRandomName();
-            var promptMessage = 'Enter your name:';
+            var username = "cookie-" + generateRandomName();
+            var promptMessage = 'Enter your name (Only starting with cookie can get auth):';
+            var role = "Admin";
+            var promptRoleMessage = 'Enter your role (Only Admin can get auth)';
             do {
                 username = prompt(promptMessage, username);
                 if (!username || username.startsWith('_') || username.indexOf('<') > -1 || username.indexOf('>') > -1) {
                     username = '';
                     promptMessage = 'Invalid input. Enter your name:';
+                } else {
+                    role = prompt(promptRoleMessage, role);
+                    var url = `http://${document.location.host}/cookie/login?username=${username}&role=${role}`;
+                    get(url).then(() => {
+                        var connection = new signalR.HubConnectionBuilder()
+                            .withUrl(`/chat?username=${username}`)
+                            .build();
+                        bindConnectionMessage(connection);
+                        connection.start()
+                            .then(function() {
+                                onConnected(connection);
+                            })
+                            .catch(function(error) {
+                                console.error(error.message);
+                            });
+                    });
                 }
             } while (!username)
 
@@ -89,6 +131,7 @@
             var groupInput = document.getElementById('groupname');
             var groupExceptInput = document.getElementById('groupexcept');
             var userInput = document.getElementById('username');
+            var restapiInput = document.getElementById('restapirequest');
 
             function createMessageEntry(encodedName, encodedMsg) {
                 var entry = document.createElement('div');
@@ -237,18 +280,6 @@
                 modal.classList.add('in');
                 modal.style = 'display: block;';
             }
-
-            var connection = new signalR.HubConnectionBuilder()
-                .withUrl('/chat')
-                .build();
-            bindConnectionMessage(connection);
-            connection.start()
-                .then(function () {
-                    onConnected(connection);
-                })
-                .catch(function (error) {
-                    console.error(error.message);
-                });
         });
     </script>
 </body>
