@@ -7,7 +7,6 @@ WORKDIR /app
 ARG SDKVersion
 
 # copy csproj and restore as distinct layers
-COPY NuGet.config ./
 RUN mkdir FullSample && cd FullSample/
 COPY *.csproj ./
 RUN dotnet restore

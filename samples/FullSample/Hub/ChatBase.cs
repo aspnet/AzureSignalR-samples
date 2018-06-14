@@ -57,7 +57,5 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoom
         {
             Clients.Users(userIds).SendAsync("echo", name, message);
         }
-
-
     }
 }
