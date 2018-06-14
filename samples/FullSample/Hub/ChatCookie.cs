@@ -4,17 +4,16 @@
 using Microsoft.AspNetCore.SignalR;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Microsoft.Azure.SignalR.Samples.ChatRoom
 {
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
     [Authorize(Roles = "Admin")]
     [Authorize(Policy = "ClaimBasedAuth")]
     [Authorize(Policy = "PolicyBasedAuth")]
-    public class ChatJwt : ChatBase
-    { 
+    public class ChatCookie : ChatBase
+    {
 
     }
 }

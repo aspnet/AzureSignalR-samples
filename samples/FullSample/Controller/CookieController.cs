@@ -17,24 +17,33 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoom
     public class CookieController : Controller
     {
         [HttpGet("login")]
-        public async Task Login()
+        public async Task<IActionResult> Login([FromQuery] string username, [FromQuery] string role)
         {
-            string username = HttpContext.Request.Query["username"];
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(role))
+            {
+                return BadRequest("Username and role is required.");
+            }
+
+            if (!IsExistUser(username))
+            {
+                return Ok();
+            }
+
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, username),
                 new Claim(ClaimTypes.Role, HttpContext.Request.Query["role"])
             };
 
-            if (username.StartsWith("cookie"))
-            {
-                claims.Add(new Claim("AuthorizedUser", username));
-            }
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            //User.AddIdentity(claimsIdentity);
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal(claimsIdentity));
-            //await HttpContext.SignInAsync(User);
+            return Ok();
+        }
+
+        private bool IsExistUser(string username)
+        {
+            return username.StartsWith("cookie");
         }
 
     }

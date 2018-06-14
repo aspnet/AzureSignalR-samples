@@ -80,7 +80,7 @@
                     xhr.send();
                     xhr.onload = () => {
                         if (xhr.status >= 200 && xhr.status < 300) {
-                            resolve();
+                            resolve(xhr.response || xhr.responseText);
                         } else {
                             reject(new Error(xhr.statusText));
                         }
@@ -96,8 +96,16 @@
             }
 
             // Get the user name and store it to prepend to messages.
-            var username = "cookie-" + generateRandomName();
-            var promptMessage = 'Enter your name (Only starting with cookie can get auth):';
+            var authType = "cookie";
+            do {
+                authType = prompt("Choose auth type: cookie / jwt", authType);
+                if (authType != "cookie" && authType != "jwt") {
+                    authType = '';
+                }
+            } while (!authType)
+
+            var username = `${authType}-` + generateRandomName();
+            var promptMessage = `Enter your name (Only starting with ${authType} can get auth):`;
             var role = "Admin";
             var promptRoleMessage = 'Enter your role (Only Admin can get auth)';
             do {
@@ -107,22 +115,8 @@
                     promptMessage = 'Invalid input. Enter your name:';
                 } else {
                     role = prompt(promptRoleMessage, role);
-                    var url = `http://${document.location.host}/cookie/login?username=${username}&role=${role}`;
-                    get(url).then(() => {
-                        var connection = new signalR.HubConnectionBuilder()
-                            .withUrl(`/chat?username=${username}`)
-                            .build();
-                        bindConnectionMessage(connection);
-                        connection.start()
-                            .then(function() {
-                                onConnected(connection);
-                            })
-                            .catch(function(error) {
-                                console.error(error.message);
-                            });
-                    });
                 }
-            } while (!username)
+            } while (!username && !role)
 
             // Set initial focus to message input box.
             var messageInput = document.getElementById('message');
@@ -280,6 +274,29 @@
                 modal.classList.add('in');
                 modal.style = 'display: block;';
             }
+
+
+            var jwtToken = '';
+            var connection = new signalR.HubConnectionBuilder()
+                .withUrl(`/chat${authType}?username=${username}`,
+                    {
+                        accessTokenFactory: () => jwtToken
+                    })
+                .build();
+
+            var url = `http://${document.location.host}/${authType}/login?username=${username}&role=${role}`;
+            get(url).then((token) => {
+                    jwtToken = token;
+                    bindConnectionMessage(connection);
+                    return connection.start();
+                })
+                .then(function() {
+                        onConnected(connection);
+                })
+                .catch(function(error) {
+                        console.error(error.message);
+                });
+            
         });
     </script>
 </body>
