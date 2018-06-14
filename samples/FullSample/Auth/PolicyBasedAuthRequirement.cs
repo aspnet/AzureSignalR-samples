@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Microsoft.Azure.SignalR.Samples.ChatRoom
 {
-    public class FullAuthorizedRequirement : IAuthorizationRequirement
+    public class PolicyBasedAuthRequirement : IAuthorizationRequirement
     {
-        public FullAuthorizedRequirement()
+        public PolicyBasedAuthRequirement()
         {
 
         }

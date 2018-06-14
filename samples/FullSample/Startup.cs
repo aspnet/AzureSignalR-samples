@@ -21,8 +21,6 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoom
 {
     public class Startup
     {
-        private readonly SymmetricSecurityKey SecurityKey = new SymmetricSecurityKey(Guid.NewGuid().ToByteArray());
-
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -34,25 +32,26 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoom
         {
             services.AddAuthorization(option =>
             {
-                option.AddPolicy("Authorized_User", policy =>
+                option.AddPolicy("ClaimBasedAuth", policy =>
                     {
-                        policy.RequireClaim("AuthorizedUser");
+                        policy.RequireClaim(ClaimTypes.NameIdentifier);
                     });
-                option.AddPolicy("FullAuthorized", policy => policy.Requirements.Add(new FullAuthorizedRequirement()));
+                option.AddPolicy("PolicyBasedAuth", policy => policy.Requirements.Add(new PolicyBasedAuthRequirement()));
             });
 
-            services.AddSingleton<IAuthorizationHandler, FullAuthorizedHandler>();
+            services.AddSingleton<IAuthorizationHandler, PolicyBasedAuthHandler>();
 
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie()
+                .AddCookie();
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(option =>
                 {
                     option.TokenValidationParameters = new TokenValidationParameters
                     {
-                        ValidateAudience = false,
-                        ValidateIssuer = false,
-                        ValidateActor = false,
-                        IssuerSigningKey = SecurityKey
+                        ValidIssuer = JwtController.Issuer,
+                        ValidAudience = JwtController.Audience,
+                        IssuerSigningKey = JwtController.SigningCreds.Key
                     };
                 });
 
@@ -74,8 +73,8 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoom
             app.UseFileServer();
             app.UseAzureSignalR(routes =>
             {
-                routes.MapHub<Chat>("/chat");
                 routes.MapHub<ChatJwt>("/chatjwt");
+                routes.MapHub<ChatCookie>("/chatcookie");
             });
         }
 

@@ -8,10 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Microsoft.Azure.SignalR.Samples.ChatRoom
 {
-    [Authorize(Policy = "Authorized_User")]
-    [Authorize(Roles = "Admin")]
-    [Authorize(Policy = "FullAuthorized")]
-    public class Chat : Hub
+    public class ChatBase : Hub
     {
         public void BroadcastMessage(string name, string message)
         {
