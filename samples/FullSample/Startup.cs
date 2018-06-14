@@ -77,6 +77,5 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoom
                 routes.MapHub<ChatCookie>("/chatcookie");
             });
         }
-
     }
 }
