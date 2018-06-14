@@ -4,9 +4,11 @@
 FROM microsoft/dotnet:2.1-sdk-stretch AS build-env
 WORKDIR /app
 
+ARG SDKVersion
+
 # copy csproj and restore as distinct layers
 COPY NuGet.config ./
-RUN mkdir ChatRoom && cd ChatRoom/
+RUN mkdir FullSample && cd FullSample/
 COPY *.csproj ./
 RUN dotnet restore
 
@@ -17,5 +19,7 @@ RUN dotnet publish -c Release -o out
 # build runtime image
 FROM microsoft/dotnet:2.1-aspnetcore-runtime
 WORKDIR /app
+ENV Azure__SignalR__ConnectionString ""
+EXPOSE 5000
 COPY --from=build-env /app/out .
-ENTRYPOINT ["dotnet", "ChatRoom.dll"]
+ENTRYPOINT ["dotnet", "FullSample.dll"]
