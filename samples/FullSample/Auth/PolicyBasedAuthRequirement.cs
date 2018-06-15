@@ -13,7 +13,6 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoom
     {
         public PolicyBasedAuthRequirement()
         {
-
         }
     }
 }

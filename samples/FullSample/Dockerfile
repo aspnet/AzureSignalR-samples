@@ -19,6 +19,6 @@ RUN dotnet publish -c Release -o out
 FROM microsoft/dotnet:2.1-aspnetcore-runtime
 WORKDIR /app
 ENV Azure__SignalR__ConnectionString ""
-EXPOSE 5000
+EXPOSE 80
 COPY --from=build-env /app/out .
 ENTRYPOINT ["dotnet", "FullSample.dll"]
