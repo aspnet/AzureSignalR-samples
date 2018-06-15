@@ -15,14 +15,11 @@
     <div class="container" style="height: calc(100% - 110px);">
         <div id="messages" style="background-color: whitesmoke; "></div>
 
-        <div style="width: 100%; border-left-style: ridge; border-right-style: ridge;">
-            <textarea id="message"
-                      style="width: 100%; padding: 5px 10px; border-style: hidden;"
-                      placeholder="Type message and press Enter to send..."></textarea>
-        </div>
-        <div style="overflow: auto; border-style: ridge; border-top-style: hidden;">
-            <button class="btn-warning pull-right" id="echo">Echo</button>
-            <button class="btn-success pull-right" id="sendmessage">Send</button>
+        <div class="input-prepend input-append" style="padding-bottom: 5px; padding-top: 5px;">
+            <input type="text" id="message" style="width: 50%; padding: 5px 10px;"
+                      placeholder="Type message and press Enter to send...">
+            <button class="btn-success" id="echo">Echo</button>
+            <button class="btn-success" id="sendmessage">Broadcast</button>
         </div>
 
         <div class="input-prepend input-append" style="padding-bottom: 5px; padding-top: 5px;">
