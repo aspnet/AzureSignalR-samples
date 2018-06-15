@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Microsoft.Azure.SignalR.Samples.ChatRoom
+namespace Microsoft.Azure.SignalR.Samples.AdvancedChatRoom
 {
     [Route("cookie")]
     public class CookieController : Controller

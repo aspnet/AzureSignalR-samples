@@ -17,7 +17,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Microsoft.Azure.SignalR.Samples.ChatRoom
+namespace Microsoft.Azure.SignalR.Samples.AdvancedChatRoom
 {
     public class Startup
     {

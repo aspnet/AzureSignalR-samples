@@ -7,7 +7,7 @@ WORKDIR /app
 ARG SDKVersion
 
 # copy csproj and restore as distinct layers
-RUN mkdir FullSample && cd FullSample/
+RUN mkdir AdvancedChatRoom && cd AdvancedChatRoom/
 COPY *.csproj ./
 RUN dotnet restore
 
@@ -21,4 +21,4 @@ WORKDIR /app
 ENV Azure__SignalR__ConnectionString ""
 EXPOSE 80
 COPY --from=build-env /app/out .
-ENTRYPOINT ["dotnet", "FullSample.dll"]
+ENTRYPOINT ["dotnet", "AdvancedChatRoom.dll"]
