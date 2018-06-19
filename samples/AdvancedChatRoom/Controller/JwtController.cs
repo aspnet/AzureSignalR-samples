@@ -32,9 +32,9 @@ namespace Microsoft.Azure.SignalR.Samples.AdvancedChatRoom
                 return BadRequest("Username and role is required.");
             }
 
-            if (!IsExistUser(username))
+            if (!IsExistingUser(username))
             {
-                return Ok();
+                return Unauthorized();
             }
 
             var claims = new List<Claim>
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.SignalR.Samples.AdvancedChatRoom
             return Ok(JwtTokenHandler.WriteToken(token));
         }
 
-        private bool IsExistUser(string username)
+        private bool IsExistingUser(string username)
         {
             return username.StartsWith("jwt");
         }

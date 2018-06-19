@@ -11,5 +11,4 @@ for version in "${SDKVersion[@]}"; do
     docker build -t signalr-advancedchatroom:$version --build-arg SDKVersion=$version .
 done
 
-
 popd

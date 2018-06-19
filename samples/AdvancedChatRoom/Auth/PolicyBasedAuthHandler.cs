@@ -8,7 +8,6 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 
-
 namespace Microsoft.Azure.SignalR.Samples.AdvancedChatRoom
 {
     public class PolicyBasedAuthHandler : AuthorizationHandler<PolicyBasedAuthRequirement>

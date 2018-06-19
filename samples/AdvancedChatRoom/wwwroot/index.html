@@ -62,7 +62,6 @@
     <!--Add script to update the page and send messages.-->
     <script type="text/javascript">
         document.addEventListener('DOMContentLoaded', function () {
-
             function get(url) {
                 return new Promise((resolve, reject) => {
                     var xhr = new XMLHttpRequest();
@@ -269,7 +268,6 @@
                 modal.style = 'display: block;';
             }
 
-
             var jwtToken = '';
             var connection = new signalR.HubConnectionBuilder()
                 .withUrl(`/chat${authType}?username=${username}`,
@@ -278,7 +276,7 @@
                     })
                 .build();
 
-            var url = `http://${document.location.host}/${authType}/login?username=${username}&role=${role}`;
+            var url = `/${authType}/login?username=${username}&role=${role}`;
             get(url).then((token) => {
                     jwtToken = token;
                     bindConnectionMessage(connection);
@@ -293,14 +291,13 @@
                     }
 
                     if (error.statusCode && error.statusCode === 401) {
-                        appendMessage('_SYSTEM_', 'You\'re not logged in, refresh and choose a valid username to login');
+                        appendMessage('_SYSTEM_', 'You\'re not logged in. Refresh and choose a valid username to login');
                     }
 
                     if (error.statusCode && error.statusCode === 403) {
-                        appendMessage('_SYSTEM_', 'The role cannot be authrized, refresh and choose Admin to login');
+                        appendMessage('_SYSTEM_', 'The role cannot be authrized. Refresh and choose Admin to login');
                     }
                 });
-            
         });
     </script>
 </body>
