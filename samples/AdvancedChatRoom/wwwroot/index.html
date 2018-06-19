@@ -72,11 +72,11 @@
                         if (xhr.status >= 200 && xhr.status < 300) {
                             resolve(xhr.response || xhr.responseText);
                         } else {
-                            reject(new Error(xhr.statusText));
+                            reject({message: xhr.statusText, statusCode: xhr.status});
                         }
                     }
                     xhr.onerror = () => {
-                        reject(new Error(xhr.statusText));
+                        reject({message: xhr.statusText, statusCode: xhr.status});
                     }
                 });
             }
