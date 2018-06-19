@@ -15,7 +15,7 @@ Now the sample supports:
 
 ## Build Docker Images
 
-First check the SDK version needed. Each SDKVerison will build a separate docker image.
+First check the SDK version needed. Each SDKVerison will build a separate docker image and the tag is the sdk version.
 ```bash
 # build-image.sh
 declare -a SDKVersion=("1.0.0-preview1-10009" "1.0.0-preview1-10011")
@@ -28,7 +28,7 @@ Then run the script to build docker images.
 
 You can run the image with Azure Signalr Service.
 ```bash
-docker run -ti -e Azure__SignalR__ConnectionString=<SDKVersion> -p 5000:80 signalr-advancedchatroom:<sdk-version>
+docker run -e Azure__SignalR__ConnectionString="<your connection string>" -p 5000:80 signalr-advancedchatroom:<sdk version>
 ```
 
 Open the broswer with url `localhost:5000`, you can see the sample just like Chat Sample but has more operations. 
