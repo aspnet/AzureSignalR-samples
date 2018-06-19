@@ -1,14 +1,4 @@
-﻿/*html, body {
-    font-size: 16px;
-}
-
-@media all and (max-device-width: 720px) {
-    html, body {
-        font-size: 20px;
-    }
-}*/
-
-html, body {
+﻿html, body {
     padding: 0;
     height: 100%;
 }

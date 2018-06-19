@@ -9,7 +9,7 @@ Now the sample supports:
 * Broadcast
 * Join Group / Leave Group
 * Send to Group / Groups / Group except connection
-* Send to User / Users+
+* Send to User / Users
 * Cookie / JWT based Authentication
 * Role / Claim / Policy based Authrization
 
