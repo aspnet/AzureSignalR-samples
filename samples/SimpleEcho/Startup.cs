@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -21,7 +24,9 @@ namespace Microsoft.Azure.SignalR.Samples.SimpleEcho
             {
                 routes.MapHub<EchoHub>("/echo");
             });
-            applicationLifetime.ApplicationStarted.Register(async () =>
+            applicationLifetime.ApplicationStarted.Register(LaunchClient);
+
+            async void LaunchClient()
             {
                 try
                 {
@@ -35,7 +40,7 @@ namespace Microsoft.Azure.SignalR.Samples.SimpleEcho
                 {
                     applicationLifetime.StopApplication();
                 }
-            });
+            }
         }
     }
 }
