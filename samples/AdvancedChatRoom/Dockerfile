@@ -9,6 +9,7 @@ ARG SDKVersion
 # copy csproj and restore as distinct layers
 RUN mkdir AdvancedChatRoom && cd AdvancedChatRoom/
 COPY *.csproj ./
+COPY NuGet.config ./
 RUN dotnet restore
 
 # copy everything else and build
