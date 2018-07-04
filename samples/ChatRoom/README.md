@@ -62,7 +62,7 @@ Let's look at the key changes:
     You also need to reference the service SDK before using these APIs. This is how that would look in your ChatRoom.csproj file:
 
     ```xml
-    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.0.0-preview1-10011" />
+    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.0.0-*" />
     ```
 
 Other than these changes, everything else remains the same, you can still use the hub interface you're already familiar with to write business logic.
