@@ -13,20 +13,21 @@ namespace Microsoft.Azure.SignalR.Samples.SimpleEcho
     {
         public static async Task Main(string[] args)
         {
-            var cts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
-            var serverTask = CreateWebHostBuilder(args).Build().RunAsync(cts.Token);
-
-
-            await Task.Delay(TimeSpan.FromSeconds(5));
-
-            try
+            // Set timeout for both client and server
+            using (var cts = new CancellationTokenSource(TimeSpan.FromMinutes(1)))
             {
-                await Task.Run(() => new Client().StartAsync(cts.Token));
-            }
-            finally
-            {
-                cts.Cancel();
-                await serverTask;
+                var serverTask = CreateWebHostBuilder(args).Build().RunAsync(cts.Token);
+                await Task.Delay(TimeSpan.FromSeconds(5));
+                try
+                {
+                    // Launch the SignalR client in a new thread
+                    await Task.Run(() => new Client().StartAsync(cts.Token));
+                }
+                finally
+                {
+                    cts.Cancel();
+                    await serverTask;
+                }
             }
         }
 
