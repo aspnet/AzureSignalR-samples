@@ -1,11 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Azure.SignalR.Samples.SimpleEcho
@@ -24,23 +21,6 @@ namespace Microsoft.Azure.SignalR.Samples.SimpleEcho
             {
                 routes.MapHub<EchoHub>("/echo");
             });
-            applicationLifetime.ApplicationStarted.Register(LaunchClient);
-
-            async void LaunchClient()
-            {
-                try
-                {
-                    var task = new Client().Run();
-                    if (await Task.WhenAny(task, Task.Delay(TimeSpan.FromMinutes(1))) != task)
-                    {
-                        throw new TimeoutException();
-                    }
-                }
-                finally
-                {
-                    applicationLifetime.StopApplication();
-                }
-            }
         }
     }
 }
