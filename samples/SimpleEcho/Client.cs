@@ -13,21 +13,14 @@ namespace Microsoft.Azure.SignalR.Samples.SimpleEcho
         private const string message = "Hello!";
         private readonly TaskCompletionSource<string> resp = new TaskCompletionSource<string>();
 
-        public async Task Run()
+        public async Task StartAsync(CancellationToken cancellationToken = default)
         {
-            try
-            {
-                var connection = new HubConnectionBuilder().WithUrl("http://localhost:5000/echo").Build();
-                connection.On<string>("echo", _resp => resp.SetResult(_resp));
-                await connection.StartAsync();
-                await connection.InvokeAsync<string>("echo", message);
-                Console.WriteLine(await resp.Task);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine(ex);
-                throw;
-            }
+            cancellationToken.Register(() => resp.TrySetCanceled());
+            var connection = new HubConnectionBuilder().WithUrl("http://localhost:5000/echo").Build();
+            connection.On<string>("echo", _resp => resp.TrySetResult(_resp));
+            await connection.StartAsync(cancellationToken);
+            await connection.InvokeAsync<string>("echo", message, cancellationToken);
+            Console.WriteLine(await resp.Task);
         }
     }
 }
