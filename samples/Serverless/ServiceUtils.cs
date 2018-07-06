@@ -1,11 +1,14 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Microsoft.Azure.SignalR.Sample.ConsoleSample
+namespace Microsoft.Azure.SignalR.Samples.Serverless
 {
     public class ServiceUtils
     {

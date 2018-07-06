@@ -1,10 +1,12 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Azure.SignalR.Sample.ConsoleSample;
 using Newtonsoft.Json;
 
 namespace Microsoft.Azure.SignalR.Samples.Serverless
