@@ -1,9 +1,9 @@
 Azure SignalR Service Serverless Sample
 =================================
 
-This sample demostrate a serverless Azure SignalR Service. One console app call REST API in service to send message and another console app work as a client to receive message through listening the service.
+This sample demonstrate a serverless Azure SignalR Service. One console app call REST API in service to send message and another console app work as a client to receive message through listening the service.
 
-The sample also demostrate how to generate access token to communicate with service.
+The sample also demonstrate how to generate access token to communicate with service.
 
 ## Run the sample
 
