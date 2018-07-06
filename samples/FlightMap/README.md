@@ -48,6 +48,24 @@ In real world scenarios you can replace the web server and the blob storage with
         --deployment-container-image-name nginx
     ```
 
+1.  Prepare flight data
+
+    This sample reads flight data from a JSON file, which is a two dimenstion array whose first dimension is time and second dimension is flight. Each element of the array is in the following format:
+
+    ```json
+    {
+        "Icao": <unique_id>,
+        "PosTime": <time>,
+        "Lat": <latitude>,
+        "Long": <longitude>
+    }
+    ```
+
+    Here `Icao` is the unique ID of a flight and `PosTime` is the numeric value of a date time (milliseconds from midnight 1970/1/1).
+    `Lat` and `Long` are latitude and longitude of the flight postion respectively.
+
+    A simple data generator can be found in [generate.js](data/generate.js). You can use it to generate some random flight data from input time range, plane count, and coordinates. You can also write your own data generate or download real data from other websites (e.g. https://www.adsbexchange.com/). Then upload the flight data to an online storage (recommend to use Azure blob storage) so it can be referenced in the web app.
+
 1.  Update web app with above docker image:
 
     ```
@@ -62,6 +80,8 @@ In real world scenarios you can replace the web server and the blob storage with
         --setting Azure__SignalR__ConnectionString=<connection_string>
     az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> \
         --setting AdminKey=<admin_key>
+    az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> \
+        --setting DataFileUrl=<data_file_url>
     ```
 
 ## How to run
