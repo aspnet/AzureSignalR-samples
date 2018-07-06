@@ -108,7 +108,6 @@ Go to the url that was deployed as part of your Function App:
 
    ```
    https://<function_name>.azurewebsites.net/
-
    ``` 
 
 It should show you an output similar to this:
@@ -123,7 +122,7 @@ What's happening behind the scene is Azure SignalR Service exposed a set of REST
 POST https://<service_endpoint>:5002/api/v1-preview/hub/<hub_name>
 ```
 
-The body of the request is a JSON object with three properties:
+The body of the request is a JSON object with two properties:
 
 1. `target`: The target method you want to call in clients.
 2. `arguments`: an array of arguments you want to send to clients.

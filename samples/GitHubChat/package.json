@@ -1,7 +1,0 @@
-{
-    "name": "chatsample",
-    "private": true,
-    "dependencies": {
-        "@aspnet/signalr": "^1.0.0"
-    }
-}
