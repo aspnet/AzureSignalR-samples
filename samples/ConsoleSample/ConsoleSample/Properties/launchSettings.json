@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "ConsoleSample": {
-      "commandName": "Project",
-      "commandLineArgs": " client a "
-    }
-  }
-}

@@ -1,23 +1,24 @@
 ﻿using System;
 using Microsoft.Extensions.CommandLineUtils;
 
-namespace ConsoleSample
+namespace Microsoft.Azure.SignalR.Samples.Serverless
 {
     class Program
     {
         static void Main(string[] args)
         {
             var app = new CommandLineApplication();
-            app.FullName = "Azure SignalR Rest Sample";
+            app.FullName = "Azure SignalR Serverless Sample";
             app.HelpOption("--help");
+
+            var connectionString = app.Option("-c|--connectionstring", "Set ConnectionString", CommandOptionType.SingleValue, true);
+            var hub = app.Option("-h|--hub", "Set hub", CommandOptionType.SingleValue, true);
 
             app.Command("client", cmd =>
             {
                 cmd.Description = "Start a client to listen to the service";
                 cmd.HelpOption("--help");
 
-                var connectionString = cmd.Option("-c|--connectionstring", "Set ConnectionString", CommandOptionType.SingleValue);
-                var hub = cmd.Option("-h|--hub", "Set hub", CommandOptionType.SingleValue);
                 var userId = cmd.Argument("<userId>", "Set User ID");
 
                 cmd.OnExecute(async () =>
@@ -40,9 +41,6 @@ namespace ConsoleSample
             {
                 cmd.Description = "Start a server to send message through RestAPI";
                 cmd.HelpOption("--help");
-
-                var connectionString = cmd.Option("-c|--connectionstring", "Set ConnectionString", CommandOptionType.SingleValue);
-                var hub = cmd.Option("-h|--hub", "Set hub", CommandOptionType.SingleValue);
 
                 cmd.OnExecute(async () =>
                 {
