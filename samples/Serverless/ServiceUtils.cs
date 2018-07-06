@@ -20,7 +20,7 @@ namespace Microsoft.Azure.SignalR.Sample.ConsoleSample
             (Endpoint, AccessKey) = ParseConnectionString(connectionString);
         }
 
-        public string GenerateServerAccessToken(string audience, string userId, TimeSpan? lifetime = null)
+        public string GenerateAccessToken(string audience, string userId, TimeSpan? lifetime = null)
         {
             IEnumerable<Claim> claims = null;
             if (userId != null)
@@ -31,15 +31,10 @@ namespace Microsoft.Azure.SignalR.Sample.ConsoleSample
                 };
             }
 
-            return GenerateAccessTokenCore(audience, claims, lifetime ?? TimeSpan.FromHours(1));
+            return GenerateAccessTokenInternal(audience, claims, lifetime ?? TimeSpan.FromHours(1));
         }
 
-        public string GenerateClientAccessToken(string audience, IEnumerable<Claim> claims = null, TimeSpan? lifetime = null)
-        {
-            return GenerateAccessTokenCore(audience, claims, lifetime ?? TimeSpan.FromHours(1));
-        }
-
-        public string GenerateAccessTokenCore(string audience, IEnumerable<Claim> claims, TimeSpan lifetime)
+        public string GenerateAccessTokenInternal(string audience, IEnumerable<Claim> claims, TimeSpan lifetime)
         {
             var expire = DateTime.UtcNow.Add(lifetime);
 

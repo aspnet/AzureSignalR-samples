@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Azure.SignalR.Sample.ConsoleSample;
 using Microsoft.Extensions.CommandLineUtils;
 
-namespace ConsoleSample
+namespace Microsoft.Azure.SignalR.Samples.Serverless
 {
     public class ClientHandler
     {
@@ -22,10 +22,7 @@ namespace ConsoleSample
                 {
                     option.AccessTokenProvider = () =>
                     {
-                        return Task.FromResult(serviceUtils.GenerateClientAccessToken(url, new Claim[]
-                        {
-                            new Claim(ClaimTypes.NameIdentifier, userId),
-                        }));
+                        return Task.FromResult(serviceUtils.GenerateAccessToken(url, userId));
                     };
                 }).Build();
 

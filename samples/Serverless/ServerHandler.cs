@@ -1,48 +1,42 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.Azure.SignalR.Sample.ConsoleSample;
-using Microsoft.Extensions.CommandLineUtils;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.ObjectPool;
-using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 
-namespace ConsoleSample
+namespace Microsoft.Azure.SignalR.Samples.Serverless
 {
     public class ServerHandler
     {
         private static readonly HttpClient Client = new HttpClient();
-        private static string _serverName;
-        private readonly ServiceUtils ServiceUtils;
-        private string _hubName;
-        private string _endpoint;
 
-        private readonly PayloadMessage DefaultPayloadMessage;
+        private readonly string _serverName;
+
+        private readonly ServiceUtils _serviceUtils;
+
+        private readonly string _hubName;
+
+        private readonly string _endpoint;
+
+        private readonly PayloadMessage _defaultPayloadMessage;
 
         public ServerHandler(string connectionString, string hubName)
         {
             _serverName = GenerateServerName();
-
-            ServiceUtils = new ServiceUtils(connectionString);
+            _serviceUtils = new ServiceUtils(connectionString);
             _hubName = hubName;
-            _endpoint = ServiceUtils.Endpoint;
+            _endpoint = _serviceUtils.Endpoint;
 
-            DefaultPayloadMessage = new PayloadMessage
+            _defaultPayloadMessage = new PayloadMessage
             {
                 Target = "SendMessage",
                 Arguments = new[]
                 {
                     _serverName,
-                    "Sent from rest api call",
+                    "Hello from server",
                 }
             };
         }
@@ -61,61 +55,53 @@ namespace ConsoleSample
 
                 if (args.Length == 1 && args[0].Equals("broadcast"))
                 {
-                    await BroadCast(_hubName);
+                    await SendRequest(args[0], _hubName);
                 }
                 else if (args.Length == 3 && args[0].Equals("send"))
                 {
-                    switch (args[1])
-                    {
-                        case "user":
-                            await SendToUser(_hubName, args[2]);
-                            break;
-                        case "users":
-                            await SendToUsers(_hubName, args[2]);
-                            break;
-                    }
+                    await SendRequest(args[1], _hubName, args[2]);
+                }
+                else
+                {
+                    Console.WriteLine($"Can't recognize command {argLine}");
                 }
             }
         }
 
-        public async Task SendToUser(string hubName, string userId)
+        public async Task SendRequest(string command, string hubName, string arg = null)
         {
-            try
+            string url = null;
+            switch (command)
             {
-                var url = GetSendToUserUrl(hubName, userId);
+                case "user":
+                    url = GetSendToUserUrl(hubName, arg);
+                    break;
+                case "users":
+                    url = GetSendToUsersUrl(hubName, arg);
+                    break;
+                case "group":
+                    url = GetSendToGroupUrl(hubName, arg);
+                    break;
+                case "groups":
+                    url = GetSendToGroupsUrl(hubName, arg);
+                    break;
+                case "broadcast":
+                    url = GetBroadcastUrl(hubName);
+                    break;
+                default:
+                    Console.WriteLine($"Can't recognize command {command}");
+                    break;
+            }
+
+            if (!string.IsNullOrEmpty(url))
+            {
                 var request = BuildRequest(url);
 
                 var response = await Client.SendAsync(request);
                 if (response.StatusCode != HttpStatusCode.Accepted)
                 {
-                    throw new Exception("sent error");
+                    Console.WriteLine($"Sent error: {response.StatusCode}");
                 }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
-        }
-
-        public async Task SendToUsers(string hubName, string userList)
-        {
-            var url = GetSendToUsersUrl(hubName, userList);
-            var request = BuildRequest(url);
-            var response = await Client.SendAsync(request);
-            if (response.StatusCode != HttpStatusCode.Accepted)
-            {
-                Console.WriteLine($"Sent error: {response.StatusCode}");
-            }
-        }
-
-        public async Task BroadCast(string hubName)
-        {
-            var url = GetBroadcastUrl(hubName);
-            var request = BuildRequest(url);
-            var response = await Client.SendAsync(request);
-            if (response.StatusCode != HttpStatusCode.Accepted)
-            {
-                Console.WriteLine($"Sent error: {response.StatusCode}");
             }
         }
 
@@ -134,6 +120,16 @@ namespace ConsoleSample
             return $"{GetBaseUrl(hubName)}/users/{userList}";
         }
 
+        private string GetSendToGroupUrl(string hubName, string group)
+        {
+            return $"{GetBaseUrl(hubName)}/group/{group}";
+        }
+
+        private string GetSendToGroupsUrl(string hubName, string groupList)
+        {
+            return $"{GetBaseUrl(hubName)}/groups/{groupList}";
+        }
+
         private string GetBroadcastUrl(string hubName)
         {
             return $"{GetBaseUrl(hubName)}";
@@ -146,8 +142,6 @@ namespace ConsoleSample
 
         private string GenerateServerName()
         {
-            // Use the machine name for convenient diagnostics, but add a guid to make it unique.
-            // Example: MyServerName_02db60e5fab243b890a847fa5c4dcb29
             return $"{Environment.MachineName}_{Guid.NewGuid():N}";
         }
 
@@ -156,9 +150,9 @@ namespace ConsoleSample
             var request = new HttpRequestMessage(HttpMethod.Post, GetUrl(url));
 
             request.Headers.Authorization =
-                new AuthenticationHeaderValue("Bearer", ServiceUtils.GenerateServerAccessToken(url, _serverName));
+                new AuthenticationHeaderValue("Bearer", _serviceUtils.GenerateAccessToken(url, _serverName));
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            request.Content = new StringContent(JsonConvert.SerializeObject(DefaultPayloadMessage), Encoding.UTF8, "application/json");
+            request.Content = new StringContent(JsonConvert.SerializeObject(_defaultPayloadMessage), Encoding.UTF8, "application/json");
 
             return request;
         }
@@ -167,7 +161,9 @@ namespace ConsoleSample
         {
             Console.WriteLine("*********Usage*********\n" +
                               "send user <User Id>\n" +
-                              "send users <User Id List>\n" + 
+                              "send users <User Id List>\n" +
+                              "send group <Group Name>\n" +
+                              "send groups <Group List>\n" +
                               "broadcase\n" +
                               "***********************");
         }
