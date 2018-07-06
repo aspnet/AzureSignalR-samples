@@ -2,9 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
@@ -13,9 +11,24 @@ namespace Microsoft.Azure.SignalR.Samples.SimpleEcho
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
-            CreateWebHostBuilder(args).Build().Run();
+            // Set timeout for both client and server
+            using (var cts = new CancellationTokenSource(TimeSpan.FromMinutes(1)))
+            {
+                var serverTask = CreateWebHostBuilder(args).Build().RunAsync(cts.Token);
+                await Task.Delay(TimeSpan.FromSeconds(5));
+                try
+                {
+                    // Launch the SignalR client in a new thread
+                    await Task.Run(() => new Client().StartAsync(cts.Token));
+                }
+                finally
+                {
+                    cts.Cancel();
+                    await serverTask;
+                }
+            }
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>

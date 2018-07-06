@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <UserSecretsId>2da0d60d-9962-455e-97af-f0d2668c4ea1</UserSecretsId>
     <RootNamespace>Microsoft.Azure.SignalR.Samples.SimpleEcho</RootNamespace>
+    <LangVersion>7.1</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
