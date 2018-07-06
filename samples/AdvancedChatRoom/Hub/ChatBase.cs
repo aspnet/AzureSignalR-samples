@@ -3,8 +3,6 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
 
 namespace Microsoft.Azure.SignalR.Samples.AdvancedChatRoom
 {

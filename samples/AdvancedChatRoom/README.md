@@ -18,7 +18,7 @@ Now the sample supports:
 First check the SDK version needed. Each SDKVerison will build a separate docker image and the tag is the sdk version.
 ```bash
 # build-image.sh
-declare -a SDKVersion=("1.0.0-preview1-10009" "1.0.0-preview1-10011")
+declare -a SDKVersion=("1.0.0-preview1-10009" "1.0.0-preview1-10011" "1.0.0-preview1-10015")
 ```
 
 Then run the script to build docker images.
