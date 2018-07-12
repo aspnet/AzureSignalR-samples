@@ -2,7 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.IO;
 using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Azure.SignalR.Samples.Serverless
 {
@@ -14,8 +16,13 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
             app.FullName = "Azure SignalR Serverless Sample";
             app.HelpOption("--help");
 
-            var connectionString = app.Option("-c|--connectionstring", "Set ConnectionString", CommandOptionType.SingleValue, true);
-            var hub = app.Option("-h|--hub", "Set hub", CommandOptionType.SingleValue, true);
+            var connectionStringOption = app.Option("-c|--connectionstring", "Set ConnectionString", CommandOptionType.SingleValue, true);
+            var hubOption = app.Option("-h|--hub", "Set hub", CommandOptionType.SingleValue, true);
+
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddUserSecrets<Program>()
+                .Build();
 
             app.Command("client", cmd =>
             {
@@ -26,16 +33,21 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
 
                 cmd.OnExecute(async () =>
                 {
-                    if (!connectionString.HasValue() || !hub.HasValue())
+                    var connectionString = connectionStringOption.Value() ?? configuration["Azure:SignalR:ConnectionString"];
+
+                    if (string.IsNullOrEmpty(connectionString) || !hubOption.HasValue())
                     {
                         MissOptions();
                         return 0;
                     }
 
-                    var client = new ClientHandler(connectionString.Value(), hub.Value(), userId.Value);
+                    var client = new ClientHandler(connectionString, hubOption.Value(), userId.Value);
+
                     await client.StartAsync();
                     Console.WriteLine("Client started...");
                     Console.ReadLine();
+                    await client.DisposeAsync();
+
                     return 0;
                 });
             });
@@ -47,13 +59,15 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
 
                 cmd.OnExecute(async () =>
                 {
-                    if (!connectionString.HasValue() || !hub.HasValue())
+                    var connectionString = connectionStringOption.Value() ?? configuration["Azure:SignalR:ConnectionString"];
+
+                    if (string.IsNullOrEmpty(connectionString) || !hubOption.HasValue())
                     {
                         MissOptions();
                         return 0;
                     }
 
-                    var server = new ServerHandler(connectionString.Value(), hub.Value());
+                    var server = new ServerHandler(connectionString, hubOption.Value());
                     await server.Start();
                     return 0;
                 });
