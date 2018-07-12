@@ -38,6 +38,11 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
             await _connection.StartAsync();
         }
 
+        public async Task DisposeAsync()
+        {
+            await _connection.DisposeAsync();
+        }
+
         private string GetClientUrl(string endpoint, string hubName)
         {
             return $"{endpoint}:5001/client/?hub={hubName}";
