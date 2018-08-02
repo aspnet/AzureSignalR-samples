@@ -166,7 +166,7 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
                               "send users <User Id List>\n" +
                               "send group <Group Name>\n" +
                               "send groups <Group List>\n" +
-                              "broadcase\n" +
+                              "broadcast\n" +
                               "***********************");
         }
     }
