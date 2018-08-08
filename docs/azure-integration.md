@@ -1,6 +1,6 @@
 # Integrate with Azure Services
 
-In the [ChatRoom sample](../ChatRoom) you have learned how to use Azure SignalR Service in your application, but you still need to host the hub implementation on a web server.
+In the [ChatRoom sample](../samples/ChatRoom/) you have learned how to use Azure SignalR Service in your application, but you still need to host the hub implementation on a web server.
 In this tutorial you'll learn how to use Azure web app to host your hub logic and also integrate with serverless applications like Azure functions.
 
 ## Deploy SignalR Hub to Azure Web App
