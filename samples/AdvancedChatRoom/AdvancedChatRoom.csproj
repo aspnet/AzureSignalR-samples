@@ -3,7 +3,7 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <UserSecretsId>advancedchatroom</UserSecretsId>
     <RootNamespace>Microsoft.Azure.SignalR.Samples.AdvancedChatRoom</RootNamespace>
-    <PackageVersion>1.0.0-preview1-10015</PackageVersion>
+    <PackageVersion>1.0.0-preview1-10200</PackageVersion>
     <PackageVersion Condition=" '$(SDKVersion)' != '' ">$(SDKVersion)</PackageVersion>
   </PropertyGroup>
 
