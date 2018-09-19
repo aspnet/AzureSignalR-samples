@@ -34,14 +34,12 @@ Let's implement this feature step by step.
 3. Open the **Tools | Library Package Manager | Package Manager Console** and run command:
 
     ```powershell
-    Install-Package Microsoft.AspNet.SignalR -Version 2.4.0-preview1-20180918-02 -Source https://dotnet.myget.org/F/aspnet-signalr/api/v3/index.json
+    Install-Package Microsoft.AspNet.SignalR -Version 2.4.0-preview1-20180919-05 -Source https://dotnet.myget.org/F/aspnet-signalr/api/v3/index.json
     ```
 
     > NOTE
     >
     > The latest one is currently in prerelease version. The older ones does not support Azure SignalR feature.
-
-    ![install package](../images/1-3.package.png)
 
 4. In **Solution Explorer**, right-click the project, select **Add | SignalR Hub Class (v2)**. Name the class **ChatHub.cs** and add it to the project. This step creates the **ChatHub** class and adds to the project a set of script files and assembly references that support SignalR.
 
@@ -169,10 +167,6 @@ Let's implement this feature step by step.
 10. **Save All** for the project.
 
 11. Press **F5** to run the project in debug mode. The HTML page loads in a browser instance and prompts for a user name. Enter a name to start a simple chat. Copy the URL from the address line of the browser and use it to open two more browser instances. In each browser instance, enter a unique user name. In each browser instance, add a comment and click Send. The comments should display in all browser instances.
-
-    > Note
-    >
-    > Current preview version SDK has Delay Signing enabled, please use `sn -Vr *,31bf3856ad364e35` to disable strong name verification for now until the SDK is officially signed.
 
 12. If you are interested in how the sample works, you can refer to [Tutorial: Getting Started with SignalR 2](https://docs.microsoft.com/en-us/aspnet/signalr/overview/getting-started/tutorial-getting-started-with-signalr#examine-the-code) for a detailed code walk through.
 
