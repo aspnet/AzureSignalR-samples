@@ -51,27 +51,28 @@ Let's look at the key changes:
 
     You also need to reference the service SDK before using these APIs. Open the **Tools | Library Package Manager | Package Manager Console** and run command:
 
-    ```ps
+    ```powershell
     Install-Package Microsoft.Azure.SignalR.AspNet -Version 1.0.0-preview1-aspnet-0003 -Source https://www.myget.org/F/azure-signalr-dev/api/v3/index.json
     ```
 
     > Note
+    >
     > This is a preview version of SDK, the version number is tend to change.
 
-Other than these changes, everything else remains the same, you can still use the hub interface you're already familiar with to write business logic.
+    Other than these changes, everything else remains the same, you can still use the hub interface you're already familiar with to write business logic.
 
-> Under the hood, an endpoint `/signalr/negotiate` is exposed for negotiation by Azure SignalR Service SDK. It will return a special negotiation response when clients try to connect and redirect clients to service endpoint from the connection string.
+    > Under the hood, an endpoint `/signalr/negotiate` is exposed for negotiation by Azure SignalR Service SDK. It will return a special negotiation response when clients try to connect and redirect clients to service endpoint from the connection string.
 
-Now set the connection string in the web.config file.
+2. Now set the connection string in the web.config file.
 
-```xml
-<configuration>
-  <connectionStrings>
-    <add name="Azure:SignalR:ConnectionString" connectionString="Endpoint=...;AccessKey=..."/>
-  </connectionStrings>
-  ...
-</configuration>
-```
+    ```xml
+    <configuration>
+    <connectionStrings>
+        <add name="Azure:SignalR:ConnectionString" connectionString="Endpoint=...;AccessKey=..."/>
+    </connectionStrings>
+    ...
+    </configuration>
+    ```
 
 Press **F5** to run the project in debug mode. You can see the application runs as usual, just instead of hosting a SignalR runtime by itself, it connects to the SignalR service running on Azure.
 
