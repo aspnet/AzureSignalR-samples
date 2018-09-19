@@ -4,17 +4,17 @@ In this sample you'll learn how to use ASP.NET SignalR to build a chat room appl
 
 > This tutorial is to give you a brief introduction about how ASP.NET SignalR works, if you're already familiar with it, you can skip this sample.
 >
-> Please be noted this sample is based on the ASP.NET version. You can find detailed tutorials in [SignalR Docs Site](https://docs.microsoft.com/en-us/aspnet/signalr/)
+> Please be noted this sample is based on the ASP.NET version. You can find detailed tutorials talking about ASP.NET SignalR in [SignalR Docs Site](https://docs.microsoft.com/en-us/aspnet/signalr/).
 
 Our chat room is a web page application that anyone can login to and chat with other users in the room.
 
-The first time you open the application you'll be asked for your name:
+When you open the application you'll be asked for your name:
 
-![chat-room-1](../../docs/images/chat-room-1.png)
+![chat-room-1](../images/1.chat-room-1.png)
 
 Then you can send a message and everyone in the room can see it:
 
-![chat-room-2](../../docs/images/chat-room-2.png)
+![chat-room-2](../images/1.chat-room-2.png)
 
 > Prerequisites
 > * [Visual Studio 2017](https://visualstudio.microsoft.com/downloads/)
@@ -23,127 +23,154 @@ Then you can send a message and everyone in the room can see it:
 
 Let's implement this feature step by step.
 
-1.  First create a ASP.NET web application.
-The following steps use Visual Studio 2017 to create an ASP.NET Empty Web Application and add the SignalR library:
 1. In Visual Studio, create an ASP.NET Web Application
-[![create the application](images/1.create.png)]
 
-2. 
+![create the application](../images/1-1.create.png)
 
-    ```
-    dotnet new web
-    ```
+2. In the **New ASP.NET Project** window, leave **Empty** selected and click **Create** Project.
 
-    > Before you start, make sure you installed the latest [.NET Core 2.1 SDK](https://www.microsoft.com/net/download/dotnet-core/sdk-2.1.300).
+![select template](../images/1-2.select.template.png)
 
-2.  Create a `Chat.cs` that defines a `Chat` hub class.
+   
+3. Open the **Tools | Library Package Manager | Package Manager Console** and run command:
 
-    ```cs
-    using Microsoft.AspNetCore.SignalR;
+```ps
+Install-Package Microsoft.AspNet.SignalR -Version 2.4.0-preview1-20180918-02 -Source https://dotnet.myget.org/F/aspnet-signalr/api/v3/index.json
+```
 
-    public class Chat : Hub
+> NOTE: The latest one is currently in prerelease version. The older ones does not support Azure SignalR feature.
+
+![install package](../images/1-3.package.png)
+
+4. In **Solution Explorer**, right-click the project, select **Add | SignalR Hub Class (v2)**. Name the class **ChatHub.cs** and add it to the project. This step creates the **ChatHub** class and adds to the project a set of script files and assembly references that support SignalR.
+
+![new hub](../images/1-4.new.hub.png)
+
+1.5. Replace the code in the new **ChatHub** class with the following code.
+
+```csharp
+using System;
+using System.Web;
+using Microsoft.AspNet.SignalR;
+namespace ChatRoom
+{
+    public class ChatHub : Hub
     {
-        public void BroadcastMessage(string name, string message)
+        public void Send(string name, string message)
         {
-            Clients.All.SendAsync("broadcastMessage", name, message);
-        }
-
-        public void Echo(string name, string message)
-        {
-            Clients.Client(Context.ConnectionId).SendAsync("echo", name, message + " (echo from server)");
+            // Call the broadcastMessage method to update clients.
+            Clients.All.broadcastMessage(name, message);
         }
     }
-    ```
+}
+```
 
-    > SignalR SDK is already *included* in `Microsoft.AspNetCore.App` package reference in ChatRoomLocal.csproj file.
+6. In **Solution Explorer**, right-click the project, then click **Add | OWIN Startup Class**. Name the new class `Startup` and click OK.
 
-    Hub is the core concept in SignalR which exposes a set of methods that can be called from clients. Here we define two methods: `Broadcast()` which broadcasts the message to all clients and `Echo()` which sends the message back to the caller.
+![new startup class](../images/1-6.new.startup.png)
 
-    In each method you can see there is a `Clients` interface that gives you access to all connected clients so you can directly call back to these clients.
+7. Change the connects of the new `Startup` class to the following.
 
-3.  Then we need to initialize the SignalR runtime when the application starts up. Add the following in `Startup.cs`:
+```csharp
+using System;
+using System.Threading.Tasks;
+using Microsoft.Owin;
+using Owin;
 
-    ```cs
-    public void ConfigureServices(IServiceCollection services)
+[assembly: OwinStartup(typeof(ChatRoom.Startup))]
+
+namespace ChatRoom
+{
+    public class Startup
     {
-        services.AddSignalR();
-    }
-
-    public void Configure(IApplicationBuilder app)
-    {
-        ...
-        app.UseSignalR(routes =>
+        public void Configuration(IAppBuilder app)
         {
-            routes.MapHub<Chat>("/chat");
+            // Any connection or hub wire up and configuration should go here
+            app.MapSignalR();
+        }
+    }
+}
+```
+
+8. In **Solution Explorer**, right-click the project, then click **Add | HTML Page**. Name the new page `index.html`.
+
+> Note
+> You might need to change the version numbers for the references to JQuery and SignalR libraries
+
+9. Replace the default code in the HTML page with the following code.
+
+> Note
+> A later version of the SignalR scripts may be installed by the package manager. Verify that the script references below correspond to the versions of the script files in the project
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SignalR Simple Chat</title>
+    <style type="text/css">
+        .container {
+            background-color: #99CCFF;
+            border: thick solid #808080;
+            padding: 20px;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <input type="text" id="message" />
+        <input type="button" id="sendmessage" value="Send" />
+        <input type="hidden" id="displayname" />
+        <ul id="discussion"></ul>
+    </div>
+    <!--Script references. -->
+    <!--Reference the jQuery library. -->
+    <script src="Scripts/jquery-1.6.4.min.js"></script>
+    <!--Reference the SignalR library. -->
+    <script src="Scripts/jquery.signalR.js"></script>
+    <!--Reference the autogenerated SignalR hub script. -->
+    <script src="signalr/hubs"></script>
+    <!--Add script to update the page and send messages.-->
+    <script type="text/javascript">
+        $(function () {
+            // Declare a proxy to reference the hub.
+            var chat = $.connection.chatHub;
+            // Create a function that the hub can call to broadcast messages.
+            chat.client.broadcastMessage = function (name, message) {
+                // Html encode display name and message.
+                var encodedName = $('<div />').text(name).html();
+                var encodedMsg = $('<div />').text(message).html();
+                // Add the message to the page.
+                $('#discussion').append('<li><strong>' + encodedName
+                    + '</strong>:&nbsp;&nbsp;' + encodedMsg + '</li>');
+            };
+            // Get the user name and store it to prepend to messages.
+            $('#displayname').val(prompt('Enter your name:', ''));
+            // Set initial focus to message input box.
+            $('#message').focus();
+            // Start the connection.
+            $.connection.hub.start().done(function () {
+                $('#sendmessage').click(function () {
+                    // Call the Send method on the hub.
+                    chat.server.send($('#displayname').val(), $('#message').val());
+                    // Clear text box and reset focus for next comment.
+                    $('#message').val('').focus();
+                });
+            });
         });
-    }
-    ```
-
-    > Make sure you remove `app.Run(...)` from `Configure()`, which will always give you a Hello World page.
-
-    The key changes here are `AddSignalR()` which initializes the SignalR runtime and `MapHub()` which maps the hub to the `/chat` endpoint so clients can access the hub using this url.
-
-4.  The last step is to create the UI of the chat room. In this sample, we will use HTML and Javascript to build a web application:
-
-    Copy the HTML and script files from [wwwroot](wwwroot/) of the sample project to the `wwwroot` folder of your project.
-    Add the following code to `Startup.cs` to make the application serve the pages:
-
-    ```cs
-    public void Configure(IApplicationBuilder app, IHostingEnvironment env)
-    {
-        ...
-        app.UseFileServer();
-    }
-    ```
-
-    Let's take a look at key changes in [index.html](wwwroot/index.html). First it creates a hub connection to the server:
-
-    ```js
-    var connection = new signalR.HubConnectionBuilder()
-                                .withUrl('/chat')
-                                .build();
-    ```
-
-    When the user clicks the send button, it calls `broadcastMessage()` to broadcast the message to other clients:
-
-    ```js
-    document.getElementById('sendmessage').addEventListener('click', function (event) {
-        // Call the broadcastMessage method on the hub.
-        if (messageInput.value) {
-            connection.send('broadcastMessage', username, messageInput.value);
-        }
-        ...
-    });
-    ```
-
-    Also, it registers a callback to receive messages from the server:
-
-    ```js
-    var messageCallback = function(name, message) {
-        if (!message) return;
-        // Html encode display name and message.
-        var encodedName = name;
-        var encodedMsg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        var messageEntry = createMessageEntry(encodedName, encodedMsg);
-
-        var messageBox = document.getElementById('messages');
-        messageBox.appendChild(messageEntry);
-        messageBox.scrollTop = messageBox.scrollHeight;
-    };
-    // Create a function that the hub can call to broadcast messages.
-    connection.on('broadcastMessage', messageCallback);
-    ```
-
-Now, build and run the application:
-
-```
-dotnet build
-dotnet run
+    </script>
+</body>
+</html>
 ```
 
-> You can also use `dotnet watch run` to watch and reload the code changes.
+10. **Save All** for the project.
 
-Open http://localhost:5000, and you'll see the chat room running on your local machine.
+11. Press **F5** to run the project in debug mode. The HTML page loads in a browser instance and prompts for a user name. Enter a name to start a simple chat. Copy the URL from the address line of the browser and use it to open two more browser instances. In each browser instance, enter a unique user name. In each browser instance, add a comment and click Send. The comments should display in all browser instances.
+
+> Note
+> Current preview version SDK has Delay Signing enabled, please use `sn -Vr *,31bf3856ad364e35` to disable strong name verification for now until the SDK is officially signed.
+
+12. If you are interested in how the sample works, you can refer to [Tutorial: Getting Started with SignalR 2](https://docs.microsoft.com/en-us/aspnet/signalr/overview/getting-started/tutorial-getting-started-with-signalr#examine-the-code) for a detailed code walk through.
 
 In this sample you have learned the basics of SignalR and how to use it to build a chat room application.
 In other samples you'll learn how to use Azure SignalR service and host your chat room on Azure.
