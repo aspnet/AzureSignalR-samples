@@ -1,7 +1,7 @@
 /* jquery.signalR.core.js */
 /*global window:false */
 /*!
- * ASP.NET SignalR JavaScript Library v2.3.0-rtm
+ * ASP.NET SignalR JavaScript Library 2.4.0-preview1-20180920-03
  * http://signalr.net/
  *
  * Copyright (c) .NET Foundation. All rights reserved.
@@ -3046,5 +3046,6 @@
 /*global window:false */
 /// <reference path="jquery.signalR.core.js" />
 (function ($, undefined) {
-    $.signalR.version = "2.3.0-rtm";
+    // This will be modified by the build script
+    $.signalR.version = "2.4.0-preview1-20180920-03";
 }(window.jQuery));

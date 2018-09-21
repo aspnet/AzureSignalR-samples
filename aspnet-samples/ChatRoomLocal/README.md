@@ -34,7 +34,7 @@ Let's implement this feature step by step.
 3. Open the **Tools | Library Package Manager | Package Manager Console** and run command:
 
     ```powershell
-    Install-Package Microsoft.AspNet.SignalR -Version 2.4.0-preview1-20180919-06 -Source https://dotnet.myget.org/F/aspnet-signalr/api/v3/index.json
+    Install-Package Microsoft.AspNet.SignalR -Version 2.4.0-preview1-20180920-03 -Source https://dotnet.myget.org/F/aspnet-signalr/api/v3/index.json
     ```
 
     > NOTE
