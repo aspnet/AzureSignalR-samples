@@ -66,10 +66,10 @@
       <HintPath>packages\Microsoft.AspNetCore.Http.Features.2.1.0\lib\netstandard2.0\Microsoft.AspNetCore.Http.Features.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Azure.SignalR.AspNet, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Azure.SignalR.AspNet.1.0.0-preview1-10232\lib\net461\Microsoft.Azure.SignalR.AspNet.dll</HintPath>
+      <HintPath>packages\Microsoft.Azure.SignalR.AspNet.1.0.0-preview1-10233\lib\net461\Microsoft.Azure.SignalR.AspNet.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Azure.SignalR.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Azure.SignalR.AspNet.1.0.0-preview1-10232\lib\net461\Microsoft.Azure.SignalR.Common.dll</HintPath>
+      <HintPath>packages\Microsoft.Azure.SignalR.AspNet.1.0.0-preview1-10233\lib\net461\Microsoft.Azure.SignalR.Common.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Azure.SignalR.Protocols, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.Azure.SignalR.Protocols.1.0.0\lib\netstandard2.0\Microsoft.Azure.SignalR.Protocols.dll</HintPath>
@@ -179,7 +179,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="README.md" />
-    <Content Include="NuGet.config" />
     <None Include="Scripts\jquery-1.6.4-vsdoc.js" />
     <Content Include="index.html" />
     <Content Include="Scripts\jquery-1.6.4.js" />
@@ -194,7 +193,9 @@
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

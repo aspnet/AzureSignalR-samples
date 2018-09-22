@@ -52,7 +52,7 @@ Let's look at the key changes:
     You also need to reference the service SDK before using these APIs. Open the **Tools | Library Package Manager | Package Manager Console** and run command:
 
     ```powershell
-    Install-Package Microsoft.Azure.SignalR.AspNet -Version 1.0.0-preview1-10232 -Source https://www.myget.org/F/azure-signalr-dev/api/v3/index.json
+    Install-Package Microsoft.Azure.SignalR.AspNet -Version 1.0.0-preview1-10233
     ```
 
     > Note
