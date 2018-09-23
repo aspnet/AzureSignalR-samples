@@ -1,7 +1,7 @@
 Azure SignalR Service Advanced Chat Room
 =================================
 
-Just like [ChatRoom sample](../ChatRoom), you can leverage Azure SignalR Service to handle more clients and offload the conncetion management part. This sample demonstrates more operations available in Azure SignalR Service. Also provided docker image to simplify build environment problems.
+Just like [ChatRoom sample](../ChatRoom), you can leverage Azure SignalR Service to handle more clients and offload the connection management part. This sample demonstrates more operations available in Azure SignalR Service. Also provided docker image to simplify build environment problems.
 
 Now the sample supports:
 
