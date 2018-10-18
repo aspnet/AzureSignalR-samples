@@ -3,7 +3,6 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <UserSecretsId>advancedchatroom</UserSecretsId>
     <RootNamespace>Microsoft.Azure.SignalR.Samples.AdvancedChatRoom</RootNamespace>
-    <PackageVersion>1.0.0-preview1-10200</PackageVersion>
     <PackageVersion Condition=" '$(SDKVersion)' != '' ">$(SDKVersion)</PackageVersion>
   </PropertyGroup>
 
@@ -12,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.0" />
-    <PackageReference Include="Microsoft.Azure.SignalR" Version="$(PackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.1.4" />
+    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.0.*" />
   </ItemGroup>
 </Project>
