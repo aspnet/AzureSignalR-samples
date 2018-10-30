@@ -139,7 +139,7 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
 
         private string GetBaseUrl(string hubName)
         {
-            return $"{_endpoint}:5002/api/v1-preview/hub/{hubName.ToLower()}";
+            return $"{_endpoint}/api/v1/hubs/{hubName.ToLower()}";
         }
 
         private string GenerateServerName()
