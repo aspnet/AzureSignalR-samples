@@ -45,7 +45,7 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
 
         private string GetClientUrl(string endpoint, string hubName)
         {
-            return $"{endpoint}:5001/client/?hub={hubName}";
+            return $"{endpoint}/client/?hub={hubName}";
         }
     }
 }
