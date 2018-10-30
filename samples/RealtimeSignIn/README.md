@@ -43,7 +43,6 @@ Here is a diagram that illustrates the structure of this appliaction:
 
    ```
    az storage blob upload -c content --account-name <account_name> -n index.html -f index.html
-   az storage blob upload -c content --account-name <account_name> -n scripts/signalr.min.js -f scripts/signalr.min.js
    az storage blob upload -c content --account-name <account_name> -n scripts/qrcode.min.js -f scripts/qrcode.min.js
    az storage blob upload -c content --account-name <account_name> -n images/signalr-logo.png -f images/signalr-logo.png
    ```
@@ -119,7 +118,7 @@ It should show you an output similar to this:
 What's happening behind the scene is Azure SignalR Service exposed a set of REST APIs to for you to send message to clients. For example, the API that broadcasts message to all clients is exposed through this endpoint:
 
 ```
-POST https://<service_endpoint>:5002/api/v1-preview/hub/<hub_name>
+POST https://<service_endpoint>/api/v1/hubs/<hub_name>
 ```
 
 The body of the request is a JSON object with two properties:
@@ -143,7 +142,7 @@ Clients also connect to SignalR service using JWT token, since there is no web s
 2. Client hub is the following format:
 
    ```
-   https://<service_endpoint>:5001/client/?hub=<hubName>
+   https://<service_endpoint>/client/?hub=<hubName>
    ```
 
    This is also the endpoint client should connect to using SignalR client SDK.
