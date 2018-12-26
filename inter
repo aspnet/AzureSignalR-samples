@@ -1,0 +1,66 @@
+/**
+    * This sample is for ASP.NET core. 
+    */
+    public class Startup
+    {
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+
+        public IConfiguration Configuration { get; }
+
+        // This method gets called by the runtime. Use this method to add services to the container.
+        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddMvc();
+            services.AddSignalR()
+                    .AddAzureSignalR();
+        }
+
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        {
+            app.UseMvc();
+            app.UseFileServer();
+            app.UseAzureSignalR(routes =>
+            {
+                routes.MapHub<Chat>("/chat");
+            });
+        }
+    }  public class Chat : Hub
+    {
+        public void BroadcastMessage(string name, string message)
+        {
+            Clients.All.SendAsync("broadcastMessage", name, message);
+        }
+
+        public void Echo(string name, string message)
+        {
+            Clients.Client(Context.ConnectionId).SendAsync("echo", name, message + " (echo from server)");
+        }
+    }
+        function bindConnectionMessage(connection) {
+            var messageCallback = function (name, message) {
+                if (!message) return;
+                // deal with the message
+                    alert("message received:" + message);
+                };
+                // Create a function that the hub can call to broadcast messages.
+                connection.on('broadcastMessage', messageCallback);
+                connection.on('echo', messageCallback);
+            }
+            
+            var connection = new signalR.HubConnectionBuilder()
+                .withUrl('/chat')
+                .build();
+            
+            bindConnectionMessage(connection);
+            connection.start()
+                .then(function () {
+                    onConnected(connection);
+                })
+                .catch(function (error) {
+                    console.error(error.message);
+                });       
