@@ -34,12 +34,8 @@ Let's implement this feature step by step.
 3. Open the **Tools | Library Package Manager | Package Manager Console** and run command:
 
     ```powershell
-    Install-Package Microsoft.AspNet.SignalR -Version 2.4.0-preview1-20180920-03
+    Install-Package Microsoft.AspNet.SignalR -Version 2.4.0
     ```
-
-    > NOTE
-    >
-    > The latest one is currently in prerelease version. The older ones does not support Azure SignalR feature.
 
 4. In **Solution Explorer**, right-click the project, select **Add | SignalR Hub Class (v2)**. Name the class **ChatHub.cs** and add it to the project. This step creates the **ChatHub** class and adds to the project a set of script files and assembly references that support SignalR.
 
