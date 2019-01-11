@@ -1,7 +1,7 @@
 /* jquery.signalR.core.js */
 /*global window:false */
 /*!
- * ASP.NET SignalR JavaScript Library 2.4.0-preview1-20180920-03
+ * ASP.NET SignalR JavaScript Library 2.4.0
  * http://signalr.net/
  *
  * Copyright (c) .NET Foundation. All rights reserved.
@@ -22,10 +22,12 @@
         errorParsingNegotiateResponse: "Error parsing negotiate response.",
         errorRedirectionExceedsLimit: "Negotiate redirection limit exceeded.",
         errorDuringStartRequest: "Error during start request. Stopping the connection.",
+        errorFromServer: "Error message received from the server: '{0}'.",
         stoppedDuringStartRequest: "The connection was stopped during the start request.",
         errorParsingStartResponse: "Error parsing start response: '{0}'. Stopping the connection.",
         invalidStartResponse: "Invalid start response: '{0}'. Stopping the connection.",
         protocolIncompatible: "You are using a version of the client that isn't compatible with the server. Client version {0}, server version {1}.",
+        aspnetCoreSignalrServer: "Detected a connection attempt to an ASP.NET Core SignalR Server. This client only supports connecting to an ASP.NET SignalR Server. See https://aka.ms/signalr-core-differences for details.",
         sendFailed: "Send failed.",
         parseFailed: "Failed at parsing response: {0}",
         longPollFailed: "Long polling request failed.",
@@ -613,7 +615,7 @@
                     connection._.initHandler.start(transport, function () { // success
                         // Firefox 11+ doesn't allow sync XHR withCredentials: https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest#withCredentials
                         var isFirefox11OrGreater = signalR._.firefoxMajorVersion(window.navigator.userAgent) >= 11,
-                            asyncAbort = !!connection.withCredentials && isFirefox11OrGreater;
+                            asyncAbort = true;
 
                         connection.log("The start request succeeded. Transitioning to the connected state.");
 
@@ -720,6 +722,14 @@
                             return;
                         }
 
+                        // Check if the server is an ASP.NET Core app
+                        if (res.availableTransports) {
+                            protocolError = signalR._.error(resources.aspnetCoreSignalrServer);
+                            $(connection).triggerHandler(events.onError, [protocolError]);
+                            deferred.reject(protocolError);
+                            return;
+                        }
+
                         if (!res.ProtocolVersion || (connection.supportedProtocols.indexOf(res.ProtocolVersion) === -1)) {
                             protocolError = signalR._.error(signalR._.format(resources.protocolIncompatible, connection.clientProtocol, res.ProtocolVersion));
                             $(connection).triggerHandler(events.onError, [protocolError]);
@@ -729,86 +739,95 @@
                         }
 
                         // Check for a redirect response (which must have a ProtocolVersion of 2.0)
-                        if (res.ProtocolVersion === "2.0" && res.RedirectUrl) {
-                            if (redirects === MAX_REDIRECTS) {
-                                onFailed(signalR._.error(resources.errorRedirectionExceedsLimit), connection);
+                        if (res.ProtocolVersion === "2.0") {
+                            if (res.Error) {
+                                protocolError = signalR._.error(signalR._.format(resources.errorFromServer, res.Error));
+                                $(connection).triggerHandler(events.onError, [protocolError]);
+                                deferred.reject(protocolError);
                                 return;
                             }
-
-                            if (config.transport === "auto") {
-                                // Redirected connections do not support foreverFrame
-                                config.transport = ["webSockets", "serverSentEvents", "longPolling"];
-                            }
-
-                            connection.log("Received redirect to: " + res.RedirectUrl);
-                            connection.accessToken = res.AccessToken;
-
-                            setConnectionUrl(connection, res.RedirectUrl);
-
-                            if (connection.ajaxDataType === "jsonp" && connection.accessToken) {
-                                onFailed(signalR._.error(resources.jsonpNotSupportedWithAccessToken), connection);
-                                return;
-                            }
-
-                            redirects++;
-                            negotiate(connection, callback);
-                        } else {
-                            keepAliveData = connection._.keepAliveData;
-                            connection.appRelativeUrl = res.Url;
-                            connection.id = res.ConnectionId;
-                            connection.token = res.ConnectionToken;
-                            connection.webSocketServerUrl = res.WebSocketServerUrl;
-
-                            // The long poll timeout is the ConnectionTimeout plus 10 seconds
-                            connection._.pollTimeout = res.ConnectionTimeout * 1000 + 10000; // in ms
-
-                            // Once the server has labeled the PersistentConnection as Disconnected, we should stop attempting to reconnect
-                            // after res.DisconnectTimeout seconds.
-                            connection.disconnectTimeout = res.DisconnectTimeout * 1000; // in ms
-
-                            // Add the TransportConnectTimeout from the response to the transportConnectTimeout from the client to calculate the total timeout
-                            connection._.totalTransportConnectTimeout = connection.transportConnectTimeout + res.TransportConnectTimeout * 1000;
-
-                            // If we have a keep alive
-                            if (res.KeepAliveTimeout) {
-                                // Register the keep alive data as activated
-                                keepAliveData.activated = true;
-
-                                // Timeout to designate when to force the connection into reconnecting converted to milliseconds
-                                keepAliveData.timeout = res.KeepAliveTimeout * 1000;
-
-                                // Timeout to designate when to warn the developer that the connection may be dead or is not responding.
-                                keepAliveData.timeoutWarning = keepAliveData.timeout * connection.keepAliveWarnAt;
-
-                                // Instantiate the frequency in which we check the keep alive.  It must be short in order to not miss/pick up any changes
-                                connection._.beatInterval = (keepAliveData.timeout - keepAliveData.timeoutWarning) / 3;
-                            } else {
-                                keepAliveData.activated = false;
-                            }
-
-                            connection.reconnectWindow = connection.disconnectTimeout + (keepAliveData.timeout || 0);
-
-                            $.each(signalR.transports, function (key) {
-                                if ((key.indexOf("_") === 0) || (key === "webSockets" && !res.TryWebSockets)) {
-                                    return true;
+                            else if (res.RedirectUrl) {
+                                if (redirects === MAX_REDIRECTS) {
+                                    onFailed(signalR._.error(resources.errorRedirectionExceedsLimit), connection);
+                                    return;
                                 }
-                                supportedTransports.push(key);
-                            });
 
-                            if ($.isArray(config.transport)) {
-                                $.each(config.transport, function (_, transport) {
-                                    if ($.inArray(transport, supportedTransports) >= 0) {
-                                        transports.push(transport);
-                                    }
-                                });
-                            } else if (config.transport === "auto") {
-                                transports = supportedTransports;
-                            } else if ($.inArray(config.transport, supportedTransports) >= 0) {
-                                transports.push(config.transport);
+                                if (config.transport === "auto") {
+                                    // Redirected connections do not support foreverFrame
+                                    config.transport = ["webSockets", "serverSentEvents", "longPolling"];
+                                }
+
+                                connection.log("Received redirect to: " + res.RedirectUrl);
+                                connection.accessToken = res.AccessToken;
+
+                                setConnectionUrl(connection, res.RedirectUrl);
+
+                                if (connection.ajaxDataType === "jsonp" && connection.accessToken) {
+                                    onFailed(signalR._.error(resources.jsonpNotSupportedWithAccessToken), connection);
+                                    return;
+                                }
+
+                                redirects++;
+                                negotiate(connection, callback);
+                                return;
                             }
-
-                            initialize(transports);
                         }
+
+                        keepAliveData = connection._.keepAliveData;
+                        connection.appRelativeUrl = res.Url;
+                        connection.id = res.ConnectionId;
+                        connection.token = res.ConnectionToken;
+                        connection.webSocketServerUrl = res.WebSocketServerUrl;
+
+                        // The long poll timeout is the ConnectionTimeout plus 10 seconds
+                        connection._.pollTimeout = res.ConnectionTimeout * 1000 + 10000; // in ms
+
+                        // Once the server has labeled the PersistentConnection as Disconnected, we should stop attempting to reconnect
+                        // after res.DisconnectTimeout seconds.
+                        connection.disconnectTimeout = res.DisconnectTimeout * 1000; // in ms
+
+                        // Add the TransportConnectTimeout from the response to the transportConnectTimeout from the client to calculate the total timeout
+                        connection._.totalTransportConnectTimeout = connection.transportConnectTimeout + res.TransportConnectTimeout * 1000;
+
+                        // If we have a keep alive
+                        if (res.KeepAliveTimeout) {
+                            // Register the keep alive data as activated
+                            keepAliveData.activated = true;
+
+                            // Timeout to designate when to force the connection into reconnecting converted to milliseconds
+                            keepAliveData.timeout = res.KeepAliveTimeout * 1000;
+
+                            // Timeout to designate when to warn the developer that the connection may be dead or is not responding.
+                            keepAliveData.timeoutWarning = keepAliveData.timeout * connection.keepAliveWarnAt;
+
+                            // Instantiate the frequency in which we check the keep alive.  It must be short in order to not miss/pick up any changes
+                            connection._.beatInterval = (keepAliveData.timeout - keepAliveData.timeoutWarning) / 3;
+                        } else {
+                            keepAliveData.activated = false;
+                        }
+
+                        connection.reconnectWindow = connection.disconnectTimeout + (keepAliveData.timeout || 0);
+
+                        $.each(signalR.transports, function (key) {
+                            if ((key.indexOf("_") === 0) || (key === "webSockets" && !res.TryWebSockets)) {
+                                return true;
+                            }
+                            supportedTransports.push(key);
+                        });
+
+                        if ($.isArray(config.transport)) {
+                            $.each(config.transport, function (_, transport) {
+                                if ($.inArray(transport, supportedTransports) >= 0) {
+                                    transports.push(transport);
+                                }
+                            });
+                        } else if (config.transport === "auto") {
+                            transports = supportedTransports;
+                        } else if ($.inArray(config.transport, supportedTransports) >= 0) {
+                            transports.push(config.transport);
+                        }
+
+                        initialize(transports);
                     };
 
                 return negotiate(connection, callback);
@@ -2627,6 +2646,7 @@
 
 (function ($, window, undefined) {
 
+    var nextGuid = 0;
     var eventNamespace = ".hubProxy",
         signalR = $.signalR;
 
@@ -2711,38 +2731,70 @@
             return hasMembers(this._.callbackMap);
         },
 
-        on: function (eventName, callback) {
+        on: function (eventName, callback, callbackIdentity) {
             /// <summary>Wires up a callback to be invoked when a invocation request is received from the server hub.</summary>
             /// <param name="eventName" type="String">The name of the hub event to register the callback for.</param>
             /// <param name="callback" type="Function">The callback to be invoked.</param>
+            /// <param name="callbackIdentity" type="Object">An optional object to use as the "identity" for the callback when checking if the handler has already been registered. Defaults to the value of 'callback' if not provided.</param>
             var that = this,
                 callbackMap = that._.callbackMap;
+
+            // We need the third "identity" argument because the registerHubProxies call made by signalr/js wraps the user-provided callback in a custom wrapper which breaks the identity comparison.
+            // callbackIdentity allows the caller of `on` to provide a separate object to use as the "identity". `registerHubProxies` uses the original user callback as this identity object.
+            callbackIdentity = callbackIdentity || callback;
+
+            // Assign a global ID to the identity object. This tags the object so we can detect the same object when it comes back.
+            if(!callbackIdentity._signalRGuid) {
+                callbackIdentity._signalRGuid = nextGuid++;
+            }
 
             // Normalize the event name to lowercase
             eventName = eventName.toLowerCase();
 
             // If there is not an event registered for this callback yet we want to create its event space in the callback map.
-            if (!callbackMap[eventName]) {
-                callbackMap[eventName] = {};
+            var callbackSpace = callbackMap[eventName];
+            if (!callbackSpace) {
+                callbackSpace = [];
+                callbackMap[eventName] = callbackSpace;
             }
 
-            // Map the callback to our encompassed function
-            callbackMap[eventName][callback] = function (e, data) {
+            // Check if there's already a registration
+            var registration;
+            for (var i = 0; i < callbackSpace.length; i++) {
+                if (callbackSpace[i].guid === callbackIdentity._signalRGuid) {
+                    registration = callbackSpace[i];
+                }
+            }
+
+            // Create a registration if there isn't one already
+            if (!registration) {
+                registration = {
+                    guid: callbackIdentity._signalRGuid,
+                    eventHandlers: []
+                };
+                callbackMap[eventName].push(registration);
+            }
+
+            var handler = function (e, data) {
                 callback.apply(that, data);
             };
+            registration.eventHandlers.push(handler);
 
-            $(that).bind(makeEventName(eventName), callbackMap[eventName][callback]);
+            $(that).bind(makeEventName(eventName), handler);
 
             return that;
         },
 
-        off: function (eventName, callback) {
+        off: function (eventName, callback, callbackIdentity) {
             /// <summary>Removes the callback invocation request from the server hub for the given event name.</summary>
             /// <param name="eventName" type="String">The name of the hub event to unregister the callback for.</param>
-            /// <param name="callback" type="Function">The callback to be invoked.</param>
+            /// <param name="callback" type="Function">The callback to be removed.</param>
+            /// <param name="callbackIdentity" type="Object">An optional object to use as the "identity" when looking up the callback. Corresponds to the same parameter provided to 'on'. Defaults to the value of 'callback' if not provided.</param>
             var that = this,
                 callbackMap = that._.callbackMap,
                 callbackSpace;
+
+            callbackIdentity = callbackIdentity || callback;
 
             // Normalize the event name to lowercase
             eventName = eventName.toLowerCase();
@@ -2751,16 +2803,32 @@
 
             // Verify that there is an event space to unbind
             if (callbackSpace) {
-                // Only unbind if there's an event bound with eventName and a callback with the specified callback
-                if (callbackSpace[callback]) {
-                    $(that).unbind(makeEventName(eventName), callbackSpace[callback]);
 
-                    // Remove the callback from the callback map
-                    delete callbackSpace[callback];
+                if (callback) {
+                    // Find the callback registration
+                    var callbackRegistration;
+                    var callbackIndex;
+                    for (var i = 0; i < callbackSpace.length; i++) {
+                        if (callbackSpace[i].guid === callbackIdentity._signalRGuid) {
+                            callbackIndex = i;
+                            callbackRegistration = callbackSpace[i];
+                        }
+                    }
 
-                    // Check if there are any members left on the event, if not we need to destroy it.
-                    if (!hasMembers(callbackSpace)) {
-                        delete callbackMap[eventName];
+                    // Only unbind if there's an event bound with eventName and a callback with the specified callback
+                    if (callbackRegistration) {
+                        // Unbind all event handlers associated with the registration.
+                        for (var j = 0; j < callbackRegistration.eventHandlers.length; j++) {
+                            $(that).unbind(makeEventName(eventName), callbackRegistration.eventHandlers[j]);
+                        }
+
+                        // Remove the registration from the list
+                        callbackSpace.splice(i, 1);
+
+                        // Check if there are any registrations left, if not we need to destroy it.
+                        if (callbackSpace.length === 0) {
+                            delete callbackMap[eventName];
+                        }
                     }
                 } else if (!callback) { // Check if we're removing the whole event and we didn't error because of an invalid callback
                     $(that).unbind(makeEventName(eventName));
@@ -2794,7 +2862,7 @@
                         if (d.notifyWith) {
                             // Progress is only supported in jQuery 1.7+
                             d.notifyWith(that, [result.Progress.Data]);
-                        } else if(!connection._.progressjQueryVersionLogged) {
+                        } else if (!connection._.progressjQueryVersionLogged) {
                             connection.log("A hub method invocation progress update was received but the version of jQuery in use (" + $.prototype.jquery + ") does not support progress updates. Upgrade to jQuery 1.7+ to receive progress notifications.");
                             connection._.progressjQueryVersionLogged = true;
                         }
@@ -2873,10 +2941,10 @@
 
     hubConnection.fn.init = function (url, options) {
         var settings = {
-                qs: null,
-                logging: false,
-                useDefaultPath: true
-            },
+            qs: null,
+            logging: false,
+            useDefaultPath: true
+        },
             connection = this;
 
         $.extend(settings, options);
@@ -3047,5 +3115,5 @@
 /// <reference path="jquery.signalR.core.js" />
 (function ($, undefined) {
     // This will be modified by the build script
-    $.signalR.version = "2.4.0-preview1-20180920-03";
+    $.signalR.version = "2.4.0";
 }(window.jQuery));
