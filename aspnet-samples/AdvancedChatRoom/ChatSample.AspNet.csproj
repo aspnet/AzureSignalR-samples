@@ -202,8 +202,8 @@
   <ItemGroup>
     <Content Include="css\site.css" />
     <Content Include="index.html" />
-    <Content Include="Scripts\jquery-3.3.1.js" />
-    <Content Include="Scripts\jquery.signalR.js" />
+    <Content Include="Scripts\jquery-1.6.4.min.js" />
+    <Content Include="Scripts\jquery.signalR-2.4.0.js" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
