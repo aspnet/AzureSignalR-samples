@@ -18,8 +18,8 @@ First let's provision a SignalR service on Azure.
 
    Select a pricing tier. There're two pricing tiers:
    
-   * Free: which can handle 100 connections at the same time and can send and receive one million messages in a month.
-   * Basic: which has 1000 concurrent connections and 75 millions message per month limit for *one unit*. You can scale up to 10 units for a single service instance and you'll be charged by the number of units you use.
+   * Free: which can handle 20 connections at the same time and can send and receive 20,000 messages in a day.
+   * Standard: which has 1000 concurrent connections and one million messages per day limit for *one unit*. You can scale up to 100 units for a single service instance and you'll be charged by the number of units you use.
 
 3. Click "Create", your SignalR service will be created in a few minutes.
 
