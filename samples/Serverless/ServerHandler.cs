@@ -114,7 +114,7 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
 
         private string GetSendToUserUrl(string hubName, string userId)
         {
-            return $"{GetBaseUrl(hubName)}/user/{userId}";
+            return $"{GetBaseUrl(hubName)}/users/{userId}";
         }
 
         private string GetSendToUsersUrl(string hubName, string userList)
