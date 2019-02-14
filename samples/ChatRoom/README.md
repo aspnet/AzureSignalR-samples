@@ -27,12 +27,6 @@ First let's provision a SignalR service on Azure.
 
 After your service is ready, go to the **Keys** page of your service instance and you'll get two connection strings that your application can use to connect to the service.
 
-The connection string is in the form of the following:
-
-```
-Endpoint=<service_endpoint>;AccessKey=<access_key>;
-```
-
 ## Update Chat Room to Use Azure SignalR Service
 
 Then, let's update the chat room sample to use the new service you just created.
