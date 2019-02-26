@@ -15,9 +15,6 @@ namespace ChatSample.AspNet
     {
         public void Configuration(IAppBuilder app)
         {
-            // Turn tracing on programmatically
-            GlobalHost.TraceManager.Switch.Level = SourceLevels.Information;
-
             ConfigureAuth(app);
 
             app
@@ -29,6 +26,9 @@ namespace ChatSample.AspNet
                 })
                 // TODO: Add your ConnectionString here
                 .MapAzureSignalR(this.GetType().FullName);
+
+            // Turn tracing on programmatically
+            GlobalHost.TraceManager.Switch.Level = SourceLevels.Information;
         }
 
         // For more information on configuring authentication, please visit https://go.microsoft.com/fwlink/?LinkId=301864
