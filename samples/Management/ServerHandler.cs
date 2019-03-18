@@ -41,7 +41,7 @@ namespace Microsoft.Azure.SignalR.Samples.Management
                 option.ServiceTransportType = _serviceTransportType;
             }).Build();
 
-            _hubContext = await serviceManager.CreateHubContextAsync(_hubName, null);
+            _hubContext = await serviceManager.CreateHubContextAsync(_hubName);
         }
 
         public async Task Start()
