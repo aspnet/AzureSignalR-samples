@@ -3,7 +3,7 @@ Azure SignalR Service Management SDK Sample
 
 This sample is a console app showing the use of Azure SignalR Service Management SDK. It provides two modes:
 
-- Server Mode: use simple commands to send messages to SignalR clients and manage group member for users.
+- Server Mode: use simple commands to send messages to SignalR clients and manage group membership for users.
 - Client Mode: connect to Azure SignalR Service and receive messages from server.
 
 Also you can find how to generate an access token to authenticate with Azure SignalR Service.
