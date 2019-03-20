@@ -80,7 +80,7 @@ namespace Microsoft.Azure.SignalR.Samples.Management
 
                     var server = new ServerHandler(connectionString, hubOption.Value(), serviceTransportType);
                     await server.InitAsync();
-                    await server.Start();
+                    await server.StartAsync();
                     return 0;
                 });
             });

@@ -31,6 +31,12 @@ namespace Microsoft.Azure.SignalR.Samples.Management
             _serviceTransportType = serviceTransportType;
 
             _serverName = GenerateServerName();
+
+            Console.CancelKeyPress += (sender, e) =>
+            {
+                _hubContext?.DisposeAsync();
+                Environment.Exit(0);
+            };
         }
 
         public async Task InitAsync()
@@ -44,35 +50,43 @@ namespace Microsoft.Azure.SignalR.Samples.Management
             _hubContext = await serviceManager.CreateHubContextAsync(_hubName);
         }
 
-        public async Task Start()
+        public async Task StartAsync()
         {
             ShowHelp();
-            while (true)
-            {
-                var argLine = Console.ReadLine();
-                if (argLine == null)
-                {
-                    continue;
-                }
-                var args = argLine.Split(' ');
 
-                if (args.Length == 1 && args[0].Equals("broadcast"))
+            try
+            {
+                while (true)
                 {
-                    Console.WriteLine($"{Target} {_serverName} {Message}");
-                    await _hubContext.Clients.All.SendAsync(Target, _serverName, Message);
+                    var argLine = Console.ReadLine();
+                    if (argLine == null)
+                    {
+                        continue;
+                    }
+                    var args = argLine.Split(' ');
+
+                    if (args.Length == 1 && args[0].Equals("broadcast"))
+                    {
+                        Console.WriteLine($"{Target} {_serverName} {Message}");
+                        await _hubContext.Clients.All.SendAsync(Target, _serverName, Message);
+                    }
+                    else if (args.Length == 3 && args[0].Equals("send"))
+                    {
+                        await SendMessages(args[1], args[2]);
+                    }
+                    else if (args.Length == 4 && args[0] == "usergroup")
+                    {
+                        await ManageUserGroup(args[1], args[2], args[3]);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Can't recognize command {argLine}");
+                    }
                 }
-                else if (args.Length == 3 && args[0].Equals("send"))
-                {
-                    await SendMessages(args[1], args[2]);
-                }
-                else if (args.Length == 4 && args[0] == "usergroup")
-                {
-                    await ManageUserGroup(args[1], args[2], args[3]);
-                }
-                else
-                {
-                    throw new NotSupportedException($"Can't recognize command {argLine}");
-                }
+            }
+            finally
+            {
+                await _hubContext.DisposeAsync();
             }
         }
 
@@ -85,7 +99,8 @@ namespace Microsoft.Azure.SignalR.Samples.Management
                 case "remove":
                     return _hubContext.UserGroups.RemoveFromGroupAsync(userId, groupName);
                 default:
-                    throw new NotSupportedException($"Can't recognize command {command}");
+                    Console.WriteLine($"Can't recognize command {command}");
+                    return Task.CompletedTask;
             }
         }
 
@@ -106,7 +121,8 @@ namespace Microsoft.Azure.SignalR.Samples.Management
                     var groupNames = parameter.Split(',');
                     return _hubContext.Clients.Groups(groupNames).SendAsync(Target, _serverName, Message);
                 default:
-                    throw new NotSupportedException($"Can't recognize command {command}");
+                    Console.WriteLine($"Can't recognize command {command}");
+                    return Task.CompletedTask;
             }
         }
 

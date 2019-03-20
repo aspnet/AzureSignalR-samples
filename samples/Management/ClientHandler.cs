@@ -38,14 +38,8 @@ namespace Microsoft.Azure.SignalR.Samples.Management
                 });
         }
 
-        public async Task StartAsync()
-        {
-            await _connection.StartAsync();
-        }
+        public Task StartAsync() => _connection.StartAsync();
 
-        public async Task DisposeAsync()
-        {
-            await _connection.DisposeAsync();
-        }
+        public Task DisposeAsync() => _connection.DisposeAsync();
     }
 }
