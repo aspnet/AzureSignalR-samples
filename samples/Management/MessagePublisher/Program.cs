@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.Azure.SignalR.Management;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Configuration;
@@ -47,13 +48,78 @@ namespace Microsoft.Azure.SignalR.Samples.Management
                     serviceTransportType = Enum.Parse<ServiceTransportType>(serviceTransportTypeOption.Value(), true);
                 }
 
-                var server = new ServerHandler(connectionString, serviceTransportType);
-                await server.InitAsync();
-                await server.StartAsync();
+                var publisher = new MessagePublisher(connectionString, serviceTransportType);
+                await publisher.InitAsync();
+
+                await StartAsync(publisher);
+
                 return 0;
             });
 
             app.Execute(args);
+        }
+
+        private static async Task StartAsync(MessagePublisher publisher)
+        {
+            Console.CancelKeyPress += async (sender, e) =>
+            {
+                await publisher.DisposeAsync();
+                Environment.Exit(0);
+            };
+
+            ShowHelp();
+
+            try
+            {
+                while (true)
+                {
+                    var argLine = Console.ReadLine();
+                    if (argLine == null)
+                    {
+                        continue;
+                    }
+                    var args = argLine.Split(' ');
+
+                    if (args.Length == 1 && args[0].Equals("broadcast"))
+                    {
+                        Console.WriteLine($"broadcast message '{MessagePublisher.Message}'");
+                        await publisher.SendMessages(args[0], null);
+                    }
+                    else if (args.Length == 3 && args[0].Equals("send"))
+                    {
+                        await publisher.SendMessages(args[1], args[2]);
+                        Console.WriteLine($"{args[0]} message '{MessagePublisher.Message}' to '{args[2]}'");
+                    }
+                    else if (args.Length == 4 && args[0] == "usergroup")
+                    {
+                        await publisher.ManageUserGroup(args[1], args[2], args[3]);
+                        var preposition = args[1] == "add" ? "to" : "from";
+                        Console.WriteLine($"{args[1]} user '{args[2]}' {preposition} group '{args[3]}'");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Can't recognize command {argLine}");
+                    }
+                }
+            }
+            finally
+            {
+                await publisher.DisposeAsync();
+            }
+        }
+
+        private static void ShowHelp()
+        {
+            Console.WriteLine(
+                "*********Usage*********\n" +
+                "send user <User Id>\n" +
+                "send users <User Id List (Seperated by ',')>\n" +
+                "send group <Group Name>\n" +
+                "send groups <Group List (Seperated by ',')>\n" +
+                "usergroup add <User Id> <Group Name>\n" +
+                "usergroup remove <User Id> <Group Name>\n" +
+                "broadcast\n" +
+                "***********************");
         }
 
         private static void MissOptions()
