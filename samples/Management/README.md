@@ -13,16 +13,14 @@ This sample shows the use of Azure SignalR Service Management SDK.
 
 ```
 cd NegotitationServer
-dotnet run -- -h <HubName> -c "<ConnectionString>"
+dotnet run -- -h <Hub Name> -c "<Connection String>"
 ```
-
-> \<ServiceTransportType\>: `transient` or `persistent`. `transient` is the default value.
 
 ## Start SignalR clients
 
 ```
 cd SignalRClient
-dotnet run -- -h <HubName> -c "<ConnectionString>" -u <User ID List>
+dotnet run -- -h <Hub Name> -n "<Neogotiation Endpoint>" -u <User ID List>
 ```
 
 > \<User ID List\> is seperated by `,`, for example: user0,user1 
@@ -31,19 +29,21 @@ dotnet run -- -h <HubName> -c "<ConnectionString>" -u <User ID List>
 
 ```
 cd MessagePublisher
-dotnet run -- -h <HubName> -c "<ConnectionString>" -t <ServiceTransportType>
+dotnet run -- -h <Hub Name> -c "<Connection String>" -t <Service Transport Type>
 
 ```
+
+> \<Service Transport Type\>: `transient` or `persistent`. `transient` is the default value.
 
 After the publisher started, use the command to send message
 
 ```
-send user <User Id List (Seperated by ',')>
+send user <User ID List (Seperated by ',')>
 send users <User List>
 send group <Group Name>
 send groups <Group List (Seperated by ',')>
-usergroup add <User Id> <Group Name>
-usergroup remove <User Id> <Group Name>
+usergroup add <User ID> <Group Name>
+usergroup remove <User ID> <Group Name>
 broadcast
 ```
 
