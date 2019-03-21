@@ -7,13 +7,9 @@
     <RootNamespace>Microsoft.Azure.SignalR.Samples.Management</RootNamespace>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <RestoreSources>$(RestoreSources);C:/Users/wanl/Documents/microsoft/workspace/localfeed;https://api.nuget.org/v3/index.json</RestoreSources>
-  </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="1.1.0" />
-    <PackageReference Include="Microsoft.Azure.SignalR.Management" Version="1.0.8-preview1-t000" />
+    <PackageReference Include="Microsoft.Azure.SignalR.Management" Version="1.0.8" />
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="2.2.0" />
   </ItemGroup>
