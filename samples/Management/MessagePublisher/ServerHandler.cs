@@ -14,9 +14,9 @@ namespace Microsoft.Azure.SignalR.Samples.Management
 
         private const string Message = "Hello from server";
 
-        private readonly string _serverName;
+        private const string HubName = "management";
 
-        private readonly string _hubName;
+        private readonly string _serverName;
 
         private readonly string _connectionString;
 
@@ -24,10 +24,9 @@ namespace Microsoft.Azure.SignalR.Samples.Management
 
         private IServiceHubContext _hubContext;
 
-        public ServerHandler(string connectionString, string hubName, ServiceTransportType serviceTransportType)
+        public ServerHandler(string connectionString, ServiceTransportType serviceTransportType)
         {
             _connectionString = connectionString;
-            _hubName = hubName;
             _serviceTransportType = serviceTransportType;
 
             _serverName = GenerateServerName();
@@ -47,7 +46,7 @@ namespace Microsoft.Azure.SignalR.Samples.Management
                 option.ServiceTransportType = _serviceTransportType;
             }).Build();
 
-            _hubContext = await serviceManager.CreateHubContextAsync(_hubName);
+            _hubContext = await serviceManager.CreateHubContextAsync(HubName);
         }
 
         public async Task StartAsync()

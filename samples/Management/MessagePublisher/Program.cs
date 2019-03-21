@@ -18,7 +18,6 @@ namespace Microsoft.Azure.SignalR.Samples.Management
             app.HelpOption("--help");
 
             var connectionStringOption = app.Option("-c|--connectionstring", "Set connection string.", CommandOptionType.SingleValue, true);
-            var hubOption = app.Option("-h|--hub", "Set hub", CommandOptionType.SingleValue, true);
             var serviceTransportTypeOption = app.Option("-t|--transport", "Set service transport type. Options: <transient>|<persistent>. Default value: transient. Transient: calls REST API for each message. Persistent: Establish a WebSockets connection and send all messages in the connection.", CommandOptionType.SingleValue, true); // todo: description
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -32,7 +31,7 @@ namespace Microsoft.Azure.SignalR.Samples.Management
             {
                 var connectionString = connectionStringOption.Value() ?? configuration["Azure:SignalR:ConnectionString"];
 
-                if (string.IsNullOrEmpty(connectionString) || !hubOption.HasValue())
+                if (string.IsNullOrEmpty(connectionString))
                 {
                     MissOptions();
                     return 0;
@@ -48,7 +47,7 @@ namespace Microsoft.Azure.SignalR.Samples.Management
                     serviceTransportType = Enum.Parse<ServiceTransportType>(serviceTransportTypeOption.Value(), true);
                 }
 
-                var server = new ServerHandler(connectionString, hubOption.Value(), serviceTransportType);
+                var server = new ServerHandler(connectionString, serviceTransportType);
                 await server.InitAsync();
                 await server.StartAsync();
                 return 0;
