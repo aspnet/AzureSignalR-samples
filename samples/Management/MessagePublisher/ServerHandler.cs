@@ -133,15 +133,16 @@ namespace Microsoft.Azure.SignalR.Samples.Management
 
         private static void ShowHelp()
         {
-            Console.WriteLine("*********Usage*********\n" +
-                              "send user <User Id>\n" +
-                              "send users <User Id List (Seperate with ',')>\n" +
-                              "send group <Group Name>\n" +
-                              "send groups <Group List (Seperate with ',')>\n" +
-                              "usergroup add <User Id> <Group Name>\n" +
-                              "usergroup remove <User Id> <Group Name>\n" +
-                              "broadcast\n" +
-                              "***********************");
+            Console.WriteLine(
+                "*********Usage*********\n" +
+                "send user <User Id>\n" +
+                "send users <User Id List (Seperated by ',')>\n" +
+                "send group <Group Name>\n" +
+                "send groups <Group List (Seperated by ',')>\n" +
+                "usergroup add <User Id> <Group Name>\n" +
+                "usergroup remove <User Id> <Group Name>\n" +
+                "broadcast\n" +
+                "***********************");
         }
     }
 }
