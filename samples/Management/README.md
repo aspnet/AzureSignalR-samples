@@ -13,14 +13,14 @@ This sample shows the use of Azure SignalR Service Management SDK.
 
 ```
 cd NegotitationServer
-dotnet run -- -h <Hub Name> -c "<Connection String>"
+dotnet run -- -c "<Connection String>"
 ```
 
 ## Start SignalR clients
 
 ```
 cd SignalRClient
-dotnet run -- -h <Hub Name> -n "<Neogotiation Endpoint>" -u <User ID List>
+dotnet run -- -n "<Neogotiation Endpoint>" -u <User ID List>
 ```
 
 > \<User ID List\> is seperated by `,`, for example: user0,user1 
@@ -29,7 +29,7 @@ dotnet run -- -h <Hub Name> -n "<Neogotiation Endpoint>" -u <User ID List>
 
 ```
 cd MessagePublisher
-dotnet run -- -h <Hub Name> -c "<Connection String>" -t <Service Transport Type>
+dotnet run -- -c "<Connection String>" -t <Service Transport Type>
 
 ```
 
