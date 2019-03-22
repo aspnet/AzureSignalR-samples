@@ -2,12 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.CommandLineUtils;
-using Microsoft.Extensions.Configuration;
 
 namespace SignalRClient
 {
@@ -25,21 +23,17 @@ namespace SignalRClient
             var negotiateEndpointOption = app.Option("-n|--negotiate", $"Set negotiation endpoint. Default value: {DefaultNegotiateEndpoint}", CommandOptionType.SingleValue, true);
             var userIdOption = app.Option("-u|--userIdList", "Set user ID list", CommandOptionType.MultipleValue, true);
 
-            var configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddUserSecrets<Program>()
-                .Build();
-
-            app.OnExecute(async() =>
+            app.OnExecute(async () =>
             {
                 var negotiateEndpoint = negotiateEndpointOption.Value() ?? DefaultNegotiateEndpoint;
-                var userIds = userIdOption.Value();
+                var userIds = userIdOption.Values;
 
-                var connections = (from userId in userIds select new
-                {
-                    Connection = new HubConnectionBuilder().WithUrl(negotiateEndpoint.TrimEnd('/') + $"?user={userId}").Build(),
-                    UserId = userId
-                }).ToList();
+                var connections = (from userId in userIds
+                                   select new
+                                   {
+                                       Connection = new HubConnectionBuilder().WithUrl(negotiateEndpoint.TrimEnd('/') + $"?user={userId}").Build(),
+                                       UserId = userId
+                                   }).ToList();
 
                 foreach (var conn in connections)
                 {
@@ -49,10 +43,18 @@ namespace SignalRClient
                     });
                 }
 
-                await Task.WhenAll(from conn in connections select conn.Connection.StartAsync());
+                await Task.WhenAll(from conn in connections
+                                   select conn.Connection.StartAsync());
 
+                Console.WriteLine("Client started...");
+                Console.ReadLine();
+
+                await Task.WhenAll(from conn in connections
+                                   select conn.Connection.StopAsync());
                 return 0;
             });
+
+            app.Execute(args);
         }
     }
 }
