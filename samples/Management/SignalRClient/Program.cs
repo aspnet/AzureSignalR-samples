@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,7 +15,6 @@ namespace SignalRClient
     {
         private const string DefaultNegotiateEndpoint = "http://localhost:5000";
         private const string Target = "Target";
-        private const string Message = "Have nice day.";
 
         static void Main(string[] args)
         {
