@@ -8,11 +8,9 @@ using Microsoft.Extensions.Configuration;
 
 namespace NegotiationServer.Controllers
 {
-    [Route("[controller]")]
     [ApiController]
     public class NegotiateController : ControllerBase
     {
-        private const string HubName = "Management";
         private readonly IServiceManager _serviceManager;
 
         public NegotiateController(IConfiguration configuration)
@@ -23,8 +21,8 @@ namespace NegotiationServer.Controllers
                 .Build();
         }
 
-        [HttpPost]
-        public ActionResult Post(string user)
+        [HttpPost("{hub}/negotiate")]
+        public ActionResult Index(string hub, string user)
         {
             if (string.IsNullOrEmpty(user))
             {
@@ -33,8 +31,8 @@ namespace NegotiationServer.Controllers
 
             return new JsonResult(new Dictionary<string, string>()
             {
-                { "url", _serviceManager.GetClientEndpoint(HubName) },
-                { "accessToken", _serviceManager.GenerateClientAccessToken(HubName, user) }
+                { "url", _serviceManager.GetClientEndpoint(hub) },
+                { "accessToken", _serviceManager.GenerateClientAccessToken(hub, user) }
             });
         }
     }
