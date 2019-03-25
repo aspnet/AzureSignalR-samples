@@ -10,7 +10,6 @@ namespace Microsoft.Azure.SignalR.Samples.Management
 {
     public class MessagePublisher
     {
-        public const string Message = "Hello from server";
         private const string Target = "Target";
         private const string HubName = "Management";
         private readonly string _connectionString;
