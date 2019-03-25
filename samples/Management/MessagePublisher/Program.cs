@@ -80,14 +80,14 @@ namespace Microsoft.Azure.SignalR.Samples.Management
                     }
                     var args = argLine.Split(' ');
 
-                    if (args.Length == 1 && args[0].Equals("broadcast"))
+                    if (args.Length == 2 && args[0].Equals("broadcast"))
                     {
                         Console.WriteLine($"broadcast message '{MessagePublisher.Message}'");
-                        await publisher.SendMessages(args[0], null);
+                        await publisher.SendMessages(args[0], null, args[1]);
                     }
-                    else if (args.Length == 3 && args[0].Equals("send"))
+                    else if (args.Length == 4 && args[0].Equals("send"))
                     {
-                        await publisher.SendMessages(args[1], args[2]);
+                        await publisher.SendMessages(args[1], args[2], args[3]);
                         Console.WriteLine($"{args[0]} message '{MessagePublisher.Message}' to '{args[2]}'");
                     }
                     else if (args.Length == 4 && args[0] == "usergroup")
@@ -112,13 +112,13 @@ namespace Microsoft.Azure.SignalR.Samples.Management
         {
             Console.WriteLine(
                 "*********Usage*********\n" +
-                "send user <User Id>\n" +
-                "send users <User Id List (Seperated by ',')>\n" +
-                "send group <Group Name>\n" +
-                "send groups <Group List (Seperated by ',')>\n" +
+                "send user <User Id> <Message>\n" +
+                "send users <User Id List (Seperated by ',')> <Message>\n" +
+                "send group <Group Name> <Message>\n" +
+                "send groups <Group List (Seperated by ',')> <Message>\n" +
                 "usergroup add <User Id> <Group Name>\n" +
                 "usergroup remove <User Id> <Group Name>\n" +
-                "broadcast\n" +
+                "broadcast <Message>\n" +
                 "***********************");
         }
 

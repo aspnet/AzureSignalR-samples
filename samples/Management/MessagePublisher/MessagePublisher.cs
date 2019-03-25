@@ -48,24 +48,24 @@ namespace Microsoft.Azure.SignalR.Samples.Management
             }
         }
 
-        public Task SendMessages(string command, string parameter)
+        public Task SendMessages(string command, string receiver, string message)
         {
             switch (command)
             {
                 case "broadcast":
-                    return _hubContext.Clients.All.SendAsync(Target, Message);
+                    return _hubContext.Clients.All.SendAsync(Target, message);
                 case "user":
-                    var userId = parameter;
-                    return _hubContext.Clients.User(userId).SendAsync(Target, Message);
+                    var userId = receiver;
+                    return _hubContext.Clients.User(userId).SendAsync(Target, message);
                 case "users":
-                    var userIds = parameter.Split(',');
-                    return _hubContext.Clients.Users(userIds).SendAsync(Target, Message);
+                    var userIds = receiver.Split(',');
+                    return _hubContext.Clients.Users(userIds).SendAsync(Target, message);
                 case "group":
-                    var groupName = parameter;
-                    return _hubContext.Clients.Group(groupName).SendAsync(Target, Message);
+                    var groupName = receiver;
+                    return _hubContext.Clients.Group(groupName).SendAsync(Target, message);
                 case "groups":
-                    var groupNames = parameter.Split(',');
-                    return _hubContext.Clients.Groups(groupNames).SendAsync(Target, Message);
+                    var groupNames = receiver.Split(',');
+                    return _hubContext.Clients.Groups(groupNames).SendAsync(Target, message);
                 default:
                     Console.WriteLine($"Can't recognize command {command}");
                     return Task.CompletedTask;
