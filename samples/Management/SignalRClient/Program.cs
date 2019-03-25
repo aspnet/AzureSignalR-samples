@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -11,8 +12,9 @@ namespace SignalRClient
 {
     class Program
     {
-        private const string DefaultNegotiateEndpoint = "http://localhost:5000";
+        private const string DefaultHubEndpoint = "http://localhost:5000/Management";
         private const string Target = "Target";
+        private const string DefaultUser = "User";
 
         static void Main(string[] args)
         {
@@ -20,41 +22,36 @@ namespace SignalRClient
             app.FullName = "Azure SignalR Management Sample";
             app.HelpOption("--help");
 
-            var negotiateEndpointOption = app.Option("-n|--negotiate", $"Set negotiation endpoint. Default value: {DefaultNegotiateEndpoint}", CommandOptionType.SingleValue, true);
+            var hubEndpointOption = app.Option("-h|--hubEndpoint", $"Set hub endpoint. Default value: {DefaultHubEndpoint}", CommandOptionType.SingleValue, true);
             var userIdOption = app.Option("-u|--userIdList", "Set user ID list", CommandOptionType.MultipleValue, true);
 
             app.OnExecute(async () =>
             {
-                var negotiateEndpoint = negotiateEndpointOption.Value() ?? DefaultNegotiateEndpoint;
-                var userIds = userIdOption.Values;
+                var hubEndpoint = hubEndpointOption.Value() ?? DefaultHubEndpoint;
+                var userIds = userIdOption.Values != null && userIdOption.Values.Count() > 0 ? userIdOption.Values : new List<string>() { "User" };
 
-                var connections = (from userId in userIds
-                                   select new
-                                   {
-                                       Connection = new HubConnectionBuilder().WithUrl(negotiateEndpoint.TrimEnd('/') + $"?user={userId}").Build(),
-                                       UserId = userId
-                                   }).ToList();
+                var connections = from userId in userIds
+                                  select CreateHubConnection(hubEndpoint, userId);
 
-                foreach (var conn in connections)
-                {
-                    conn.Connection.On(Target, (string message) =>
-                    {
-                        Console.WriteLine($"{conn.UserId}: gets message from service: '{message}'");
-                    });
-                }
+                await Task.WhenAll(from conn in connections select conn.StartAsync());
 
-                await Task.WhenAll(from conn in connections
-                                   select conn.Connection.StartAsync());
-
-                Console.WriteLine("Client started...");
+                Console.WriteLine($"{connections.Count()} Client(s) started...");
                 Console.ReadLine();
-
-                await Task.WhenAll(from conn in connections
-                                   select conn.Connection.StopAsync());
                 return 0;
             });
 
             app.Execute(args);
+        }
+
+        static HubConnection CreateHubConnection(string hubEndpoint, string userId)
+        {
+            var url = hubEndpoint.TrimEnd('/') + $"?user={userId}";
+            var connection = new HubConnectionBuilder().WithUrl(url).Build();
+            connection.On(Target, (string message) =>
+            {
+                Console.WriteLine($"{userId}: gets message from service: '{message}'");
+            });
+            return connection;
         }
     }
 }
