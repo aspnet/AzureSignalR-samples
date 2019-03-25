@@ -30,18 +30,24 @@ namespace SignalRClient
                 var hubEndpoint = hubEndpointOption.Value() ?? DefaultHubEndpoint;
                 var userIds = userIdOption.Values != null && userIdOption.Values.Count() > 0 ? userIdOption.Values : new List<string>() { "User" };
 
-                await Task.WhenAll(from userId in userIds
-                                   select EstablishHubConnection(hubEndpoint, userId));
+                var connections = (from userId in userIds
+                                   select CreateHubConnection(hubEndpoint, userId)).ToList();
 
-                Console.WriteLine($"{userIds.Count} Client(s) started...");
+                await Task.WhenAll(from conn in connections
+                                   select conn.StartAsync());
+
+                Console.WriteLine($"{connections.Count} Client(s) started...");
                 Console.ReadLine();
+
+                await Task.WhenAll(from conn in connections
+                                   select conn.StopAsync());
                 return 0;
             });
 
             app.Execute(args);
         }
 
-        static Task EstablishHubConnection(string hubEndpoint, string userId)
+        static HubConnection CreateHubConnection(string hubEndpoint, string userId)
         {
             var url = hubEndpoint.TrimEnd('/') + $"?user={userId}";
             var connection = new HubConnectionBuilder().WithUrl(url).Build();
@@ -49,7 +55,7 @@ namespace SignalRClient
             {
                 Console.WriteLine($"{userId}: gets message from service: '{message}'");
             });
-            return connection.StartAsync();
+            return connection;
         }
     }
 }
