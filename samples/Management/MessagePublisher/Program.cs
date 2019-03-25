@@ -24,6 +24,7 @@ namespace Microsoft.Azure.SignalR.Samples.Management
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddUserSecrets<Program>()
+                .AddEnvironmentVariables()
                 .Build();
 
 
