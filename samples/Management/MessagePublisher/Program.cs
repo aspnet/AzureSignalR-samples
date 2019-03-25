@@ -35,7 +35,7 @@ namespace Microsoft.Azure.SignalR.Samples.Management
                 if (string.IsNullOrEmpty(connectionString))
                 {
                     MissOptions();
-                    return 0;
+                    return -1;
                 }
 
                 ServiceTransportType serviceTransportType;
