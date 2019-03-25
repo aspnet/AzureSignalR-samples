@@ -82,13 +82,13 @@ namespace Microsoft.Azure.SignalR.Samples.Management
 
                     if (args.Length == 2 && args[0].Equals("broadcast"))
                     {
-                        Console.WriteLine($"broadcast message '{MessagePublisher.Message}'");
+                        Console.WriteLine($"broadcast message '{args[1]}'");
                         await publisher.SendMessages(args[0], null, args[1]);
                     }
                     else if (args.Length == 4 && args[0].Equals("send"))
                     {
                         await publisher.SendMessages(args[1], args[2], args[3]);
-                        Console.WriteLine($"{args[0]} message '{MessagePublisher.Message}' to '{args[2]}'");
+                        Console.WriteLine($"{args[0]} message '{args[3]}' to '{args[2]}'");
                     }
                     else if (args.Length == 4 && args[0] == "usergroup")
                     {
