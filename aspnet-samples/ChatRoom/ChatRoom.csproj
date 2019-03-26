@@ -73,7 +73,6 @@
     </Reference>
     <Reference Include="Microsoft.Azure.SignalR.Protocols, Version=1.0.8.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.Azure.SignalR.Protocols.1.0.8\lib\netstandard2.0\Microsoft.Azure.SignalR.Protocols.dll</HintPath>
-      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Extensions.Configuration, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
