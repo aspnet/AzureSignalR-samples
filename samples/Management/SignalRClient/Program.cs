@@ -19,7 +19,7 @@ namespace SignalRClient
         static void Main(string[] args)
         {
             var app = new CommandLineApplication();
-            app.FullName = "Azure SignalR Management Sample";
+            app.FullName = "Azure SignalR Management Sample: SignalR Client Tool";
             app.HelpOption("--help");
 
             var hubEndpointOption = app.Option("-h|--hubEndpoint", $"Set hub endpoint. Default value: {DefaultHubEndpoint}", CommandOptionType.SingleValue, true);
@@ -28,7 +28,7 @@ namespace SignalRClient
             app.OnExecute(async () =>
             {
                 var hubEndpoint = hubEndpointOption.Value() ?? DefaultHubEndpoint;
-                var userIds = userIdOption.Values != null && userIdOption.Values.Count() > 0 ? userIdOption.Values : new List<string>() { "User" };
+                var userIds = userIdOption.Values != null && userIdOption.Values.Count > 0 ? userIdOption.Values : new List<string>() { "User" };
 
                 var connections = (from userId in userIds
                                    select CreateHubConnection(hubEndpoint, userId)).ToList();
