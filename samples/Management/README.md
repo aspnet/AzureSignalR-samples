@@ -20,10 +20,8 @@ dotnet run -- -c "<Connection String>"
 
 ```
 cd SignalRClient
-dotnet run -- -n "<Neogotiation Endpoint>" -u <User ID List>
+dotnet run -- -n "<Neogotiation Endpoint>" -u <User ID A> -u <User ID B>
 ```
-
-> \<User ID List\> is seperated by `,`, for example: user0,user1 
 
 ## Start Message Publisher
 
@@ -38,13 +36,13 @@ dotnet run -- -c "<Connection String>" -t <Service Transport Type>
 After the publisher started, use the command to send message
 
 ```
-send user <User ID List (Seperated by ',')>
-send users <User List>
-send group <Group Name>
-send groups <Group List (Seperated by ',')>
+send user <User ID List (Seperated by ',')> <Message>
+send users <User List> <Message>
+send group <Group Name> <Message>
+send groups <Group List (Seperated by ',')> <Message>
 usergroup add <User ID> <Group Name>
 usergroup remove <User ID> <Group Name>
-broadcast
+broadcast <Message>
 ```
 
 ### Use user-secrets to specify Connection String
