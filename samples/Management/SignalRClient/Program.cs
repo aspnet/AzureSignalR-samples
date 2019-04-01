@@ -23,7 +23,7 @@ namespace SignalRClient
             app.HelpOption("--help");
 
             var hubEndpointOption = app.Option("-h|--hubEndpoint", $"Set hub endpoint. Default value: {DefaultHubEndpoint}", CommandOptionType.SingleValue, true);
-            var userIdOption = app.Option("-u|--userIdList", "Set user ID list", CommandOptionType.MultipleValue, true);
+            var userIdOption = app.Option("-u|--user", "Set user ID", CommandOptionType.MultipleValue, true);
 
             app.OnExecute(async () =>
             {

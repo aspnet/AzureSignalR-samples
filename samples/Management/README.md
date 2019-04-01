@@ -13,25 +13,31 @@ This sample shows the use of Azure SignalR Service Management SDK.
 
 ```
 cd NegotitationServer
-dotnet run -- -c "<Connection String>"
+setx Azure:SignalR:ConnectionString "<your connection string>"
+dotnet run
 ```
 
 ## Start SignalR clients
 
 ```
 cd SignalRClient
-dotnet run -- -n "<Neogotiation Endpoint>" -u <User ID A> -u <User ID B>
+dotnet run
 ```
+
+Parameters:
+* -h|--hubEndpoint: Set hub endpoint. Default value: "http://localhost:5000/Management".
+* -u|--user: Set user ID. Default value: "User". You can set multiple users like this: "-u user1 -u user2".
 
 ## Start Message Publisher
 
 ```
 cd MessagePublisher
-dotnet run -- -c "<Connection String>" -t <Service Transport Type>
-
+dotnet run
 ```
 
-> \<Service Transport Type\>: `transient` or `persistent`. `transient` is the default value.
+Parameters:
+* -c|--connectionstring: Set connection string.
+* -t|--transport: Set service transport type. Options: \<transient\>|\<persistent\>. Default value: transient. `Transient`: calls REST API for each message. `Persistent`: Establish a WebSockets connection and send all messages in the connection.
 
 After the publisher started, use the command to send message
 
