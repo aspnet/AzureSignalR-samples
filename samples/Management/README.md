@@ -7,9 +7,9 @@ This sample shows the use of Azure SignalR Service Management SDK.
 * [Negotitation Server](https://github.com/aspnet/AzureSignalR-samples/tree/master/samples/Management/NegotiationServer): shows how to negotiate client from you app server to Azure SignalR Service using Management SDK.
 * [SignalR Client](https://github.com/aspnet/AzureSignalR-samples/tree/master/samples/Management/SignalRClient): is a tool to start multiple SignalR clients and these clients listen messages for this sample.
 
-## Run the sample
+## Run the Sample
 
-### Start the negotiation server
+### Start the Negotiation Server
 
 ```
 cd NegotitationServer
@@ -17,7 +17,7 @@ setx Azure:SignalR:ConnectionString "<Your Connection String>"
 dotnet run
 ```
 
-## Start SignalR clients
+## Start SignalR Client
 
 ```
 cd SignalRClient
@@ -51,11 +51,11 @@ usergroup remove <User ID> <Group Name>
 broadcast <Message>
 ```
 
-### Use user-secrets to specify Connection String
+### Use user-secrets to Specify Connection String
 
 You can run `dotnet user-secrets set Azure:SignalR:ConnectionString "<Connection String>"` in the root directory of the sample. After that, you don't need the option `-c "<Connection String>"` anymore.
 
-## Build A Simple Message Publisher With Management SDK from Scratch
+## Build a Simple Message Publisher with Management SDK from Scratch
 
 Simple **message publisher** is a console application that uses Management SDK to to publish messages to SignalR clients directly. We also need **SignalR clients** to receive mesages. To connect SignalR clients to Azure SignalR Service, we also need a **negotiation server**.
 
