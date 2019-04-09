@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.CommandLineUtils;
@@ -55,6 +56,13 @@ namespace SignalRClient
             {
                 Console.WriteLine($"{userId}: gets message from service: '{message}'");
             });
+
+            connection.Closed += async ex =>
+            {
+                Console.WriteLine(ex);
+                Environment.Exit(1);
+            };
+
             return connection;
         }
     }
