@@ -3,8 +3,6 @@ Message Publisher
 
 This sample shows how to use [Microsoft.Azure.SignalR.Management](https://www.nuget.org/packages/Microsoft.Azure.SignalR.Management) to publish messages to SignalR clients that connect to Azure SignalR Service.
 
-
-
 ## Build from Scratch
 
 ### Add Management SDK to your project
@@ -12,8 +10,6 @@ This sample shows how to use [Microsoft.Azure.SignalR.Management](https://www.nu
 ```
 dotnet add package Microsoft.Azure.SignalR.Management
 ```
-
-
 
 ### Create instance of `IServiceManager`
 
@@ -28,8 +24,6 @@ var serviceManager = new ServiceManagerBuilder()
     .Build();
 ```
 
-
-
 ### Create instance of `IServiceHubContext` 
 
 The `IServiceHubContext` is used to publish messages to a specific hub.
@@ -37,8 +31,6 @@ The `IServiceHubContext` is used to publish messages to a specific hub.
 ```C#
 var hubContext = await serviceManager.CreateHubContextAsync("<Your Hub Name>");
 ```
-
-
 
 ### Publish messages to a specific hub
 
@@ -69,11 +61,7 @@ hubContext.UserGroups.RemoveFromGroupAsync("<User ID>", "<Group Name>");
 ...
 ```
 
-
-
 All features can be found [here](<https://github.com/Azure/azure-signalr/blob/dev/docs/management-sdk-guide.md#features>).
-
-
 
 ### Dispose the instance of `IServiceHubContext` 
 
@@ -81,11 +69,6 @@ All features can be found [here](<https://github.com/Azure/azure-signalr/blob/de
 await hubContext.DisposeAsync();
 ```
 
-
-
-
-
 ## Full Sample
 
 The full message publisher sample can be found [here](.). The usage of this sample can be found [here](<https://github.com/aspnet/AzureSignalR-samples/tree/master/samples/Management#start-message-publisher>).
-

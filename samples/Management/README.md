@@ -7,8 +7,6 @@ This sample shows the use of Azure SignalR Service Management SDK.
 * Negotiation Server: shows how to negotiate client from you app server to Azure SignalR Service using Management SDK.
 * SignalR Client: is a tool to start multiple SignalR clients and these clients listen messages for this sample.
 
-
-
 ## Run the sample
 
 ### Start the negotiation server
@@ -18,8 +16,6 @@ cd NegotitationServer
 dotnet user-secrets set Azure:SignalR:ConnectionString "<Connection String>"
 dotnet run
 ```
-
-
 
 ### Start SignalR clients
 
@@ -32,8 +28,6 @@ dotnet run
 > 
 > - -h|--hubEndpoint: Set hub endpoint. Default value: "<http://localhost:5000/Management>".
 > - -u|--user: Set user ID. Default value: "User". You can set multiple users like this: "-u user1 -u user2".
-
-
 
 ### Start message publisher
 
@@ -63,14 +57,9 @@ broadcast <Message>
 
 You will see `User: gets message from service: 'hello'` from your SignalR client tool.
 
-
-
-
 ### Use `user-secrets` to specify Connection String
 
 You can run `dotnet user-secrets set Azure:SignalR:ConnectionString "<Connection String>"` in the root directory of the sample. After that, you don't need the option `-c "<Connection String>"` anymore.
-
-
 
 ## Build Management Sample from Scratch
 

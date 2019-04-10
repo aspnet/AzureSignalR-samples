@@ -6,8 +6,6 @@ This sample shows how to use [Microsoft.Azure.SignalR.Management](https://www.nu
 >
 > For details what is negotiation and why we need a negotiation endpoint can be found [here](<https://github.com/Azure/azure-signalr/blob/dev/docs/management-sdk-guide.md#quick-start>).
 
-
-
 ## Build from Scratch
 
 ### create a webapi app
@@ -16,15 +14,11 @@ This sample shows how to use [Microsoft.Azure.SignalR.Management](https://www.nu
 dotnet new webapi
 ```
 
-
-
 ### Add Management SDK to your project
 
 ```
 dotnet add package Microsoft.Azure.SignalR.Management
 ```
-
-
 
 ### Create a controller for negotiation
 
@@ -38,8 +32,6 @@ namespace NegotiationServer.Controllers
     }
 }
 ```
-
- 
 
 ### Create instance of `IServiceManger`
 
@@ -56,10 +48,6 @@ public NegotiateController(IConfiguration configuration)
         .Build();
 }
 ```
-
-
-
-
 
 ### Provide Negotiation Endpoint
 
@@ -85,8 +73,6 @@ public ActionResult Index(string hub, string user)
     });
 }
 ```
-
- 
 
 ## Full Sample
 
