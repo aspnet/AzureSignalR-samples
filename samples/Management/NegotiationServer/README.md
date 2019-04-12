@@ -17,7 +17,7 @@ dotnet new webapi
 ### Add Management SDK to your project
 
 ```
-dotnet add package Microsoft.Azure.SignalR.Management
+dotnet add package Microsoft.Azure.SignalR.Management -v 1.0.0-*
 ```
 
 ### Create a controller for negotiation
