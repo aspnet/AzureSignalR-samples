@@ -13,7 +13,7 @@ dotnet add package Microsoft.Azure.SignalR.Management -v 1.0.0-*
 ### Connect SignalR clients to a hub endpoint with user ID
 
 ```C# 
-var url = hubEndpoint.TrimEnd('/') + $"?user={<User ID>}";
+var url = $"{hubEndpoint.TrimEnd('/')}?user={<User ID>}";
 var connection = new HubConnectionBuilder().WithUrl(url).Build();
 ```
 
