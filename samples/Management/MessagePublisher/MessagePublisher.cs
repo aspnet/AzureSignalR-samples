@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Azure.SignalR.Management;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Azure.SignalR.Samples.Management
 {
@@ -30,7 +31,7 @@ namespace Microsoft.Azure.SignalR.Samples.Management
                 option.ServiceTransportType = _serviceTransportType;
             }).Build();
 
-            _hubContext = await serviceManager.CreateHubContextAsync(HubName);
+            _hubContext = await serviceManager.CreateHubContextAsync(HubName, new LoggerFactory());
         }
 
         public Task ManageUserGroup(string command, string userId, string groupName)
