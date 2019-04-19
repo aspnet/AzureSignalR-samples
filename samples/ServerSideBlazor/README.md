@@ -27,7 +27,7 @@ dotnet new blazorserverside
 
 2. Add reference to Azure SignalR SDK
 ```
-dotnet add package Microsoft.Azure.SignalR --version 1.1.0-preview1-10382 --source https://www.myget.org/F/azure-signalr-dev/api/v3/index.json
+dotnet add package Microsoft.Azure.SignalR --version 1.1.0-preview1-10384
 ```
 
 3. Add configuration to use Azure SignalR Service in `appsetting.json`
@@ -45,9 +45,9 @@ dotnet add package Microsoft.Azure.SignalR --version 1.1.0-preview1-10382 --sour
 "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.Azure.SignalR"
 ```
 
-5. Configure Azure SignalR Service `ConnectionString` either in appsettings.json or use [Secret Manager](https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-2.1&tabs=visual-studio#secret-manager) tool.
+5. Configure Azure SignalR Service `ConnectionString` either in `appsettings.json` or use [Secret Manager](https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-2.1&tabs=visual-studio#secret-manager) tool.
 
-> Notes: Step 3 and 4 can be replaced by directly calling AddAzureSignalR(), update `ConfigureServices()` in `StartUp.cs` like below.
+> Notes: Step 3 and 4 can be replaced by directly calling `AddAzureSignalR()`, update `ConfigureServices()` in `StartUp.cs` like below.
 > 
 > ```
 > services.AddServerSideBlazor().AddSignalR().AddAzureSignalR();
