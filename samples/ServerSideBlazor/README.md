@@ -16,7 +16,7 @@ dotnet run
 
 After running, you will see that the web server starts, makes connections to the Azure SignalR Service instance and creates an endpoint at `http://localhost:5001/`. Browser the page and click F12, you can find the connection to Azure SignalR Service is created. See snapshot 
 
-![blazorserverside](../../docs/images/blazorserverside.png)
+![serversideblazor](../../docs/images/serversideblazor.png)
 
 ## Steps one by one
 1. Create Blazor-server side project.
