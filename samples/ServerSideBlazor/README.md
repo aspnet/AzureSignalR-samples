@@ -19,7 +19,7 @@ After running, you will see that the web server starts, makes connections to the
 ![serversideblazor](../../docs/images/serversideblazor.png)
 
 ## Steps one by one
-1. Create Blazor-server side project.
+1. Create Server-side Blazor project.
 
 ```
 dotnet new blazorserverside 
@@ -30,26 +30,33 @@ dotnet new blazorserverside
 dotnet add package Microsoft.Azure.SignalR --version 1.1.0-preview1-10384
 ```
 
-3. Add configuration to use Azure SignalR Service in `appsetting.json`
+3. Add configuration to turn on Azure SignalR Service in [appsetting.json](appsettings.json)
 ```
   "Azure": {
     "SignalR": {
-      "Enabled": true,
-      "ConnectionString": ""
+      "Enabled": true
     }
   }
 ```
 
-4. Assign hosted startup assembly to use Azure SignalR. Edit `launchSettings.json` in Properties folder and add a configuration like below inside `environmentVariables`.
+4. Assign hosted startup assembly to use Azure SignalR. Edit [launchSettings.json](Properties\launchSettings.json) and add a configuration like below inside `environmentVariables`.
 ```
-"ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.Azure.SignalR"
+"environmentVariables": {
+    ...,
+    "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.Azure.SignalR"
+  }
 ```
 
-5. Configure Azure SignalR Service `ConnectionString` either in `appsettings.json` or use [Secret Manager](https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-2.1&tabs=visual-studio#secret-manager) tool.
+5. Configure Azure SignalR Service `ConnectionString` either in [appsetting.json](appsettings.json) or use [Secret Manager](https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-2.1&tabs=visual-studio#secret-manager) tool.
 
-> Notes: Step 3 and 4 can be replaced by directly calling `AddAzureSignalR()`, update `ConfigureServices()` in `StartUp.cs` like below.
+> Notes: Step 3 and 4 can be replaced by directly calling `AddAzureSignalR()`. Update `ConfigureServices()` in [StartUp.cs](Startup.cs) like below.
 > 
 > ```
-> services.AddServerSideBlazor().AddSignalR().AddAzureSignalR();
+> public void ConfigureServices(IServiceCollection services)
+> {
+>     ...
+>     services.AddServerSideBlazor().AddSignalR().AddAzureSignalR();
+>     ...
+> }
 > ```
 
