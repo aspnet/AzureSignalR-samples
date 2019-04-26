@@ -46,12 +46,8 @@ Let's look at the key changes:
     You also need to reference the service SDK before using these APIs. Open the **Tools | Library Package Manager | Package Manager Console** and run command:
 
     ```powershell
-    Install-Package Microsoft.Azure.SignalR.AspNet -Prerelease
+    Install-Package Microsoft.Azure.SignalR.AspNet
     ```
-
-    > Note
-    >
-    > This is a preview version of SDK, the version number is tend to change.
 
     Other than these changes, everything else remains the same, you can still use the hub interface you're already familiar with to write business logic.
 

@@ -1,0 +1,40 @@
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.Internal.WebSocketsTransport]Starting transport. Transfer mode: Binary. Url: 'wss://lianwei-us.service.signalr.net/aspnetserver/?hub=ChatRoom.Startup&cid=855e0240-a0d2-4c92-bd08-6d0d24ae4382'.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.Internal.WebSocketsTransport]Starting transport. Transfer mode: Binary. Url: 'wss://lianwei-us.service.signalr.net/aspnetserver/?hub=ChatRoom.Startup&cid=4777b112-641c-41a3-9355-63ff6db40ab8'.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.Internal.WebSocketsTransport]Starting transport. Transfer mode: Binary. Url: 'wss://lianwei-us.service.signalr.net/aspnetserver/?hub=ChatRoom.Startup&cid=bd384a48-5cbf-405e-8648-3c59ebb24aa3'.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.Internal.WebSocketsTransport]Starting transport. Transfer mode: Binary. Url: 'wss://lianwei-us.service.signalr.net/aspnetserver/?hub=ChatRoom.Startup&cid=1740fc9d-626d-4a1e-bdf5-21ab4295104e'.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.Internal.WebSocketsTransport]Starting transport. Transfer mode: Binary. Url: 'wss://lianwei-us.service.signalr.net/aspnetserver/?hub=ChatRoom.Startup&cid=b61a29bb-a46a-435e-9ef1-e14d14735e9f'.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.Internal.WebSocketsTransport]Starting transport. Transfer mode: Binary. Url: 'wss://lianwei-us.service.signalr.net/aspnetserver/?hub=ChatHub&cid=e02be3e9-67f7-46c1-bed2-380f8be28bfe'.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.Internal.WebSocketsTransport]Starting transport. Transfer mode: Binary. Url: 'wss://lianwei-us.service.signalr.net/aspnetserver/?hub=ChatHub&cid=a7e45fcd-516a-4e66-aa85-24ae582c5966'.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.Internal.WebSocketsTransport]Starting transport. Transfer mode: Binary. Url: 'wss://lianwei-us.service.signalr.net/aspnetserver/?hub=ChatHub&cid=a6ad5067-74c4-4810-81c9-391c3ee1e7cc'.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.Internal.WebSocketsTransport]Starting transport. Transfer mode: Binary. Url: 'wss://lianwei-us.service.signalr.net/aspnetserver/?hub=ChatHub&cid=b043b8b7-6407-4de0-8fb5-1a4c5aa46a28'.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.Internal.WebSocketsTransport]Starting transport. Transfer mode: Binary. Url: 'wss://lianwei-us.service.signalr.net/aspnetserver/?hub=ChatHub&cid=43b3668b-17f3-4f40-a944-7c9d5cfa4dbc'.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.HttpConnection]HttpConnection Started.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.HttpConnection]HttpConnection Started.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.HttpConnection]HttpConnection Started.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.HttpConnection]HttpConnection Started.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.HttpConnection]HttpConnection Started.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.HttpConnection]HttpConnection Started.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.HttpConnection]HttpConnection Started.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.HttpConnection]HttpConnection Started.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.HttpConnection]HttpConnection Started.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.HttpConnection]HttpConnection Started.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.Internal.WebSocketsTransport]Starting transport. Transfer mode: Binary. Url: 'wss://lianwei-us.service.signalr.net/aspnetserver/?hub=ChatRoom.Startup&cid=dcc77eb6-a6e3-4e8a-bd91-9d3ce42f98f7'.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.Internal.WebSocketsTransport]Starting transport. Transfer mode: Binary. Url: 'wss://lianwei-us.service.signalr.net/aspnetserver/?hub=ChatRoom.Startup&cid=856580a0-3988-4749-8a7f-bddbdcfb6792'.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.Internal.WebSocketsTransport]Starting transport. Transfer mode: Binary. Url: 'wss://lianwei-us.service.signalr.net/aspnetserver/?hub=ChatRoom.Startup&cid=18853aba-d07b-460e-b718-afb4fbc3259b'.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.Internal.WebSocketsTransport]Starting transport. Transfer mode: Binary. Url: 'wss://lianwei-us.service.signalr.net/aspnetserver/?hub=ChatRoom.Startup&cid=a78f7ee8-f072-473f-8781-9ed845dcd400'.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.Internal.WebSocketsTransport]Starting transport. Transfer mode: Binary. Url: 'wss://lianwei-us.service.signalr.net/aspnetserver/?hub=ChatRoom.Startup&cid=9685910c-8aa9-455c-8d78-31a57c8b4180'.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.Internal.WebSocketsTransport]Starting transport. Transfer mode: Binary. Url: 'wss://lianwei-us.service.signalr.net/aspnetserver/?hub=ChatHub&cid=8712a6f4-84cc-49ef-9c87-3e4976706665'.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.Internal.WebSocketsTransport]Starting transport. Transfer mode: Binary. Url: 'wss://lianwei-us.service.signalr.net/aspnetserver/?hub=ChatHub&cid=db3a6cf6-887c-4d34-8036-1315187c89af'.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.Internal.WebSocketsTransport]Starting transport. Transfer mode: Binary. Url: 'wss://lianwei-us.service.signalr.net/aspnetserver/?hub=ChatHub&cid=90540c59-5755-4c06-b641-3c510504e080'.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.Internal.WebSocketsTransport]Starting transport. Transfer mode: Binary. Url: 'wss://lianwei-us.service.signalr.net/aspnetserver/?hub=ChatHub&cid=7876bad2-fe66-4ecf-879f-6f4c94068ad4'.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.Internal.WebSocketsTransport]Starting transport. Transfer mode: Binary. Url: 'wss://lianwei-us.service.signalr.net/aspnetserver/?hub=ChatHub&cid=dbcbf3be-3b12-47a0-90e3-4ca83d7de96b'.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.HttpConnection]HttpConnection Started.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.HttpConnection]HttpConnection Started.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.HttpConnection]HttpConnection Started.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.HttpConnection]HttpConnection Started.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.HttpConnection]HttpConnection Started.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.HttpConnection]HttpConnection Started.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.HttpConnection]HttpConnection Started.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.HttpConnection]HttpConnection Started.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.HttpConnection]HttpConnection Started.
+Microsoft.Azure.SignalR Information: 0 : [Microsoft.AspNetCore.Http.Connections.Client.HttpConnection]HttpConnection Started.
