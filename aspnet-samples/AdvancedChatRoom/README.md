@@ -12,3 +12,25 @@ Now the sample supports:
 * Send to User / Users
 * Cookie / JWT based Authentication
 * Role / Claim / Policy based Authrization
+
+You can add the following into `Web.config` to enable diagnostics traces for Azure SignalR SDK:
+```xml
+ <system.diagnostics>
+    <sources>
+      <source name="Microsoft.Azure.SignalR" switchName="SignalRSwitch">
+        <listeners>
+          <add name="ASRS" />
+        </listeners>
+      </source>
+    </sources>
+    <!-- Sets the trace verbosity level -->
+    <switches>
+      <add name="SignalRSwitch" value="Information" />
+    </switches>
+    <!-- Specifies the trace writer for output -->
+    <sharedListeners>
+      <add name="ASRS" type="System.Diagnostics.TextWriterTraceListener" initializeData="asrs.log.txt" />
+    </sharedListeners>
+    <trace autoflush="true" />
+  </system.diagnostics>
+```
