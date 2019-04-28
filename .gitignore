@@ -5,3 +5,4 @@ obj/
 packages/
 **.csproj.user
 node_modules/
+asrs.log.txt
