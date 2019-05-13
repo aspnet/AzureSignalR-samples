@@ -30,7 +30,7 @@ dotnet new blazorserverside
 dotnet add package Microsoft.Azure.SignalR --version 1.1.0-preview1-10384
 ```
 
-3. Add a call to Azure SignalR Service
+3. Add a call to Azure SignalR Service in [Startup.cs](Startup.cs)
 
 ```cs
 public void ConfigureServices(IServiceCollection services)
@@ -41,34 +41,24 @@ public void ConfigureServices(IServiceCollection services)
 }
 ```
 
-4. Add configuration to turn on Azure SignalR Service in [appsetting.json](appsettings.json)
-```js
-  "Azure": {
-    "SignalR": {
-      "Enabled": true,
-      "ConnectionString": <ConnectionString>
-    }
-  }
-```
+4. Configure Azure SignalR Service `ConnectionString` either in [appsetting.json](appsettings.json) or with [Secret Manager](https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-2.1&tabs=visual-studio#secret-manager) tool
 
-4. Assign hosted startup assembly to use Azure SignalR. Edit [launchSettings.json](Properties\launchSettings.json) and add a configuration like below inside `environmentVariables`.
-```js
-"environmentVariables": {
-    ...,
-    "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.Azure.SignalR"
-  }
-```
-
-5. Configure Azure SignalR Service `ConnectionString` either in [appsetting.json](appsettings.json) or use [Secret Manager](https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-2.1&tabs=visual-studio#secret-manager) tool.
-
-> Notes: Step 3 and 4 can be replaced by directly calling `AddAzureSignalR()`. Update `ConfigureServices()` in [StartUp.cs](Startup.cs) like below.
+> Notes: Step 3 can be replaced by using hosting startup assemblies to SignalR SDK.
 > 
-> ```cs
-> public void ConfigureServices(IServiceCollection services)
-> {
->     ...
->     services.AddServerSideBlazor().AddSignalR().AddAzureSignalR();
->     ...
-> }
+> 1. Add configuration to turn on Azure SignalR Service in [appsetting.json](appsettings.json)
+> ```js
+>   "Azure": {
+>     "SignalR": {
+>       "Enabled": true,
+>       "ConnectionString": <your-connection-string>
+>     }
+>   }
 > ```
-
+> 
+> 2. Assign hosting startup assembly to use Azure SignalR SDK. Edit [launchSettings.json](Properties\launchSettings.json) and add a configuration like below inside `environmentVariables`.
+> ```js
+> "environmentVariables": {
+>     ...,
+>     "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.Azure.SignalR"
+>   }
+> ```
