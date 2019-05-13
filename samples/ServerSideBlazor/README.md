@@ -30,17 +30,29 @@ dotnet new blazorserverside
 dotnet add package Microsoft.Azure.SignalR --version 1.1.0-preview1-10384
 ```
 
-3. Add configuration to turn on Azure SignalR Service in [appsetting.json](appsettings.json)
+3. Add a call to Azure SignalR Service
+
+```cs
+public void ConfigureServices(IServiceCollection services)
+{
+    ...
+    services.AddServerSideBlazor().AddSignalR().AddAzureSignalR();
+    ...
+}
 ```
+
+4. Add configuration to turn on Azure SignalR Service in [appsetting.json](appsettings.json)
+```js
   "Azure": {
     "SignalR": {
-      "Enabled": true
+      "Enabled": true,
+      "ConnectionString": <ConnectionString>
     }
   }
 ```
 
 4. Assign hosted startup assembly to use Azure SignalR. Edit [launchSettings.json](Properties\launchSettings.json) and add a configuration like below inside `environmentVariables`.
-```
+```js
 "environmentVariables": {
     ...,
     "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.Azure.SignalR"
@@ -51,7 +63,7 @@ dotnet add package Microsoft.Azure.SignalR --version 1.1.0-preview1-10384
 
 > Notes: Step 3 and 4 can be replaced by directly calling `AddAzureSignalR()`. Update `ConfigureServices()` in [StartUp.cs](Startup.cs) like below.
 > 
-> ```
+> ```cs
 > public void ConfigureServices(IServiceCollection services)
 > {
 >     ...
