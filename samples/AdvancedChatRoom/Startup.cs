@@ -26,9 +26,6 @@ namespace Microsoft.Azure.SignalR.Samples.AdvancedChatRoom
             Configuration = configuration;
         }
 
-~Startup(){
-    
-}
         public IConfiguration Configuration { get; }
 
         public void ConfigureServices(IServiceCollection services)
