@@ -10,11 +10,15 @@ This sample is to show how to make Server-side Blazor work with Azure SignalR Se
 First let's provision a SignalR service on Azure. 
 > If you don't have an Azure subscription, **[start now](https://azure.microsoft.com/en-us/free/)** to create a free account.
 
-1. Open Azure portal, click "Create a resource" and find "SignalR Service" in "Web + Mobile".
+1. Open Azure portal, click "Create a resource" and search "SignalR Service".
 
-   ![signalr-1](../../docs/images/signalr-1.png)
+   ![signalr-4](../../docs/images/signalr-4.png)
 
-2. Click "Create", and then fill in basic information including resource name, resource group and location.
+2. Navigate to "SignalR Service" and click "Create".
+   
+   ![signalr-5](../../docs/images/signalr-5.png)
+
+3. Fill in basic information including resource name, resource group and location.
 
    ![signalr-2](../../docs/images/signalr-2.png)
 
@@ -25,13 +29,15 @@ First let's provision a SignalR service on Azure.
    * Free: which can handle 20 connections at the same time and can send and receive 20,000 messages in a day.
    * Standard: which has 1000 concurrent connections and one million messages per day limit for *one unit*. You can scale up to 100 units for a single service instance and you'll be charged by the number of units you use.
 
-3. Click "Create", your SignalR service will be created in a few minutes.
+4. Click "Create", your SignalR service will be created in a few minutes.
 
    ![signalr-3](../../docs/images/signalr-3.png)
 
-## Run the app
-
 After your service is ready, go to the **Keys** page of your service instance and you'll get two connection strings that your application can use to connect to the service.
+
+## Run the sample
+
+Then let's update Server-side Blazor sample to use the new service you just created.
 
 Set the connection string in the [Secret Manager](https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-2.1&tabs=visual-studio#secret-manager) tool for .NET Core, and run this app.
 
@@ -46,6 +52,9 @@ After running, you will see that the web server starts, makes connections to the
 ![serversideblazor](../../docs/images/serversideblazor.png)
 
 ## Steps one by one
+
+Let's take a look at each step about how to create this sample app.
+
 1. Create Server-side Blazor project.
 
 ```
@@ -53,12 +62,13 @@ dotnet new blazorserverside
 ```
 
 2. Add reference to Azure SignalR SDK
+   
 ```
 dotnet add package Microsoft.Azure.SignalR --version 1.1.0-preview1-10384
 ```
 
 3. Add a call to Azure SignalR Service in [Startup.cs](Startup.cs)
-
+   
 ```cs
 public void ConfigureServices(IServiceCollection services)
 {
