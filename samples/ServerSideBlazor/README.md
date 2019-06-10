@@ -47,9 +47,14 @@ dotnet user-secrets set Azure:SignalR:ConnectionString "<your connection string>
 dotnet run
 ```
 
-After running, you will see that the web server starts, makes connections to the Azure SignalR Service instance and creates an endpoint at `http://localhost:5001/`. Browser the page and click F12, you can find the connection to Azure SignalR Service is created. See snapshot 
+After running, you will see that the web server starts, makes connections to the Azure SignalR Service instance and creates an endpoint at `https://localhost:5001/`. Browser the page and click F12, you can find the connection to Azure SignalR Service is created. See snapshot 
 
 ![serversideblazor](../../docs/images/serversideblazor.png)
+
+> If you're blocked when visit the localhost endpoint related to `Not secure` or `This site can’t be reached`, it's caused by local cert is not trusted. Run command below to trust the dotnet built-in dev-certs before start the app.
+> ```
+> dotnet dev-certs https --trust
+> ```
 
 ## Steps one by one
 
