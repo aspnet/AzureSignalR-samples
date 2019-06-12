@@ -3,7 +3,7 @@
 This sample is to show how to make Server-side Blazor work with Azure SignalR Service.
 
 ## Prerequisites
-* Install .NET Core 3.0 SDK (Version >= 3.0.100-preview4-011136)
+* Install .NET Core 3.0 SDK (Version >= 3.0.100-preview6-011264)
 
 ## Provision a SignalR Service
 
