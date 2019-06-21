@@ -6,9 +6,47 @@ In this tutorial you'll learn how to use Azure web app to host your hub logic an
 ## Deploy SignalR Hub to Azure Web App
 
 Azure Web App is a service for hosting web applications, which is a perfect choice for hosting our SignalR hub.
-Azure Web App supports container, so we will build our application into a Docker container and deploy it to web app.
 
-### Build Docker Image
+In this topic we will introduce two ways to deploy web apps:
+
+### Deploy through Local Git
+
+The easiest way to deploy web app is using local Git:
+
+1. Create a web app:
+    ```
+    az appservice plan create --name <plan_name> --resource-group <resource_group_name> --sku S1 --is-linux
+    az webapp create \
+        --resource-group <resource_group_name> --plan <plan_name> --name <app_name> \
+        --runtime "dotnetcore|2.1"
+    ```
+
+2.  Deploy your app to web app:
+
+    ```
+    az webapp deployment source config-local-git --resource-group <resource_group_name> --name <app_name>
+    az webapp deployment user set --user-name <user_name> --password <password>
+
+    git init
+    git remote add origin <deploy_git_url>
+    git add -A
+    git commit -m "init commit"
+    git push origin master
+    ```
+
+3.  Update app settings:
+
+    ```
+    az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> --setting PORT=5000
+    az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> \
+        --setting Azure__SignalR__ConnectionString=<connection_string>
+    ```
+
+### Deploy through Docker Image
+
+Azure Web App also supports container, so we can build our application into a Docker container and deploy it to web app.
+
+#### Build Docker Image
 
 First use the [Dockerfile](../samples/ChatRoom/Dockerfile) to build our application into a Docker container image:
 
@@ -58,7 +96,7 @@ docker tag chatroom <acr_name>.azurecr.io/chatroom
 docker push <acr_name>.azurecr.io/chatroom
 ```
 
-### Deploy to Azure Web App
+#### Deploy Docker Image to Azure Web App
 
 First create an Azure Web App:
 
