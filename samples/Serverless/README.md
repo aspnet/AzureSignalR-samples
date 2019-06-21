@@ -1,6 +1,12 @@
 Azure SignalR Service Serverless Sample
 =================================
 
+## **Deprecated**
+
+This sample have been **deprecated**. Users are not recommend to generate access token by themselves. In the Serverless scenario, we recommend to use Management SDK to build a negotiation server. For more samples and details, take [Management Sample](../Management) as reference.
+
+----
+
 This sample is a console app showing the use of Azure SignalR Service in server-less pattern. It provides two modes:
 
 - Server Mode: use simple commands to call Azure SignalR Service REST API.
