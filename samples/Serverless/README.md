@@ -3,7 +3,7 @@ Azure SignalR Service Serverless Sample
 
 ## **Deprecated**
 
-This sample have been **deprecated**. Users are not recommend to generate access token by themselves. In the Serverless scenario, we recommend to use Management SDK to build a negotiation server. For more samples and details, take [Management Sample](../Management) as reference.
+This sample have been **deprecated**. Users are not recommended to generate access token by themselves. In the Serverless scenario, users are recommended to use Management SDK to build a negotiation server which is responsible for generating access token. For more samples and details, take [Management Sample](../Management) as reference.
 
 ----
 
