@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.Azure.WebJobs.Host;
+using Microsoft.Extensions.Logging;
 using UAParser;
 
 namespace RealtimeSignIn
@@ -17,14 +17,14 @@ namespace RealtimeSignIn
         private const string HubName = "signin";
 
         [FunctionName("signin")]
-        public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")]HttpRequestMessage req, TraceWriter log)
+        public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")]HttpRequestMessage req, ILogger log)
         {
             var table = new SignInTable(Environment.GetEnvironmentVariable("TableConnectionString"));
             var signalR = new AzureSignalR(Environment.GetEnvironmentVariable("AzureSignalRConnectionString"));
 
             var ua = Parser.GetDefault().Parse(req.Headers.UserAgent.ToString());
             // add sign-in record
-            table.Add(ua.OS.Family, ua.UserAgent.Family);
+            table.Add(ua.OS.Family, ua.UA.Family);
 
             // calculate statistics
             var stats = table.GetStats();
