@@ -3,7 +3,9 @@
 This sample is to show how to make Server-side Blazor work with Azure SignalR Service.
 
 ## Prerequisites
-* Install .NET Core 3.0 SDK (Version >= 3.0.100-preview4-011136)
+* Install .NET Core 3.0 SDK (Version >= 3.0.100-preview6-012264)
+* Install Visual Studio 2019 (preview)
+> Preview is releasing with latest Blazor Server-side template target .NET Core 3.0 preview6
 
 ## Provision a SignalR Service
 
@@ -56,7 +58,28 @@ After running, you will see that the web server starts, makes connections to the
 > dotnet dev-certs https --trust
 > ```
 
-## Steps one by one
+## Publish the App to Azure
+
+From Visual Studio 2019.2(in preview now), Azure SignalR Service is build-in web app publish process, and manage dependencies between web app and SignalR service would be much more convenient. You can experience working on local signalr in dev local environment and working on Azure SignalR Service for Azure Web Apps at same time without any code changes.
+
+### Create Server-side Blazor project from Visual Studio template.
+
+* From Visual Studio
+
+* Or run cmd
+```
+dotnet new blazorserverside 
+```
+
+### Create publish profile.
+
+### Add Azure SignalR Service dependencies.
+
+### Publish the app.
+
+### Validation.
+
+## Steps in details
 
 Let's take a look at each step about how to create this sample app.
 
