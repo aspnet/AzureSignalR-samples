@@ -9,7 +9,6 @@ var connections = {};
 //
 window.ChatClient = {
 
-
     // key: key to use to access the SignalR client created
     // hubUrl: url to the chat hub
     // assembly:   the assembly containing the method

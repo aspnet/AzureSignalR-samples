@@ -47,35 +47,33 @@
         <hr />
     }
     <textarea class="input-lg" placeholder="enter your comment" @bind="@newMessage"></textarea>
-    <button class="btn btn-default" @onclick="@Send">Send</button>
+    <button class="btn btn-info" @onclick="@Send">Send</button>
 </div>
 }
 
-@code       {
-        // flag to indicate chat status
-        bool chatting = false;
+@code  {
+    // flag to indicate chat status
+    bool chatting = false;
+    
+    // name of the user who will be chatting
+    string username = null;
+    
+    ChatClient client = null;
+    
+    // on-screen message
+    string message = null;
+    
+    // new message input
+    string newMessage = null;
+    
+    // list of messages in chat
+    List<Message> messages = new List<Message>();
 
-        // name of the user who will be chatting
-        string username = null;
-
-        ChatClient client = null;
-
-        // on-screen message
-        string message = null;
-
-        // new message input
-        string newMessage = null;
-
-        // list of messages in chat
-        List<Message>
-    messages = new List<Message>
-        ();
-
-        /// <summary>
-            /// Start chat client
-            ///</summary>
-        async Task Chat()
-        {
+    /// <summary>
+    /// Start chat client
+    ///</summary>
+    async Task Chat()
+    {
         // check username is valid
         if (string.IsNullOrWhiteSpace(username))
         {
@@ -85,40 +83,40 @@
 
         try
         {
-        // remove old messages if any
-        messages.Clear();
+            // remove old messages if any
+            messages.Clear();
 
-        // Create the chat client
-        client = new ChatClient(username, jsRuntime);
-        // add an event handler for incoming messages
-        client.MessageReceived += MessageReceived;
-        // start the client
-        Console.WriteLine($"Index: chart starting...");
-        await client.Start();
-        Console.WriteLine($"Index: chart started?");
+            // Create the chat client
+            client = new ChatClient(username, jsRuntime);
+            // add an event handler for incoming messages
+            client.MessageReceived += MessageReceived;
+            // start the client
+            Console.WriteLine($"Index: chart starting...");
+            await client.Start();
+            Console.WriteLine($"Index: chart started?");
 
-        chatting = true;
+            chatting = true;
         }
         catch (Exception e)
         {
-        message = $"ERROR: Failed to start chat client: {e.Message}";
-        Console.WriteLine(e.Message);
-        Console.WriteLine(e.StackTrace);
+            message = $"ERROR: Failed to start chat client: {e.Message}";
+            Console.WriteLine(e.Message);
+            Console.WriteLine(e.StackTrace);
         }
-        }
+    }
 
-        /// <summary>
-            /// Inbound message
-            ///</summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void MessageReceived(object sender, MessageReceivedEventArgs e)
-        {
+    /// <summary>
+    /// Inbound message
+    ///</summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    void MessageReceived(object sender, MessageReceivedEventArgs e)
+    {
         Console.WriteLine($"Blazor: receive {e.Username}: {e.Message}");
         bool isMine = false;
         if (!string.IsNullOrWhiteSpace(e.Username))
         {
-        isMine = string.Equals(e.Username, username, StringComparison.CurrentCultureIgnoreCase);
+            isMine = string.Equals(e.Username, username, StringComparison.CurrentCultureIgnoreCase);
         }
 
         var newMsg = new Message(e.Username, e.Message, isMine);
@@ -126,38 +124,38 @@
 
         // Inform blazor the UI needs updating
         StateHasChanged();
-        }
+    }
 
-        async Task Disconnect()
-        {
+    async Task Disconnect()
+    {
         if (chatting)
         {
-        await client.Stop();
-        client.Dispose();
-        client = null;
-        message = "chat ended";
-        chatting = false;
+            await client.Stop();
+            client.Dispose();
+            client = null;
+            message = "chat ended";
+            chatting = false;
         }
-        }
+    }
 
-        async Task Send()
-        {
+    async Task Send()
+    {
         if (chatting && !string.IsNullOrWhiteSpace(newMessage))
         {
-        // send message to hub
-        await client.Send(newMessage);
-        // clear input box
-        newMessage = "";
+            // send message to hub
+            await client.Send(newMessage);
+            // clear input box
+            newMessage = "";
         }
-        }
+    }
 
-        class Message
-        {
+    class Message
+    {
         public Message(string username, string body, bool mine)
         {
-        Username = username;
-        Body = body;
-        Mine = mine;
+            Username = username;
+            Body = body;
+            Mine = mine;
         }
 
         public string Username { get; set; }
@@ -165,14 +163,14 @@
         public bool Mine { get; set; }
 
         /// <summary>
-            /// Determine CSS classes to use for message div
-            /// </summary>
+        /// Determine CSS classes to use for message div
+        /// </summary>
         public string CSS
         {
-        get
-        {
-        return Mine ? "sent" : "received";
+            get
+            {
+                return Mine ? "sent" : "received";
+            }
         }
-        }
-        }
-        }
+    }
+}
