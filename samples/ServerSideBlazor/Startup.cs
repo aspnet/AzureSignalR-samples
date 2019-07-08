@@ -54,6 +54,8 @@ namespace ServerSideBlazor
             {
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
+                endpoints.MapDefaultControllerRoute();
+                endpoints.MapHub<Hubs.ChatHub>("/chathub");
             });
         }
     }
