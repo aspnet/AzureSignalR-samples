@@ -4,6 +4,8 @@ This sample is to show how to make Server-side Blazor work with Azure SignalR Se
 
 ## Prerequisites
 * Install .NET Core 3.0 SDK (Version >= 3.0.100-preview6-012264)
+* Install Visual Studio 2019 (preview)
+> Preview is releasing with latest Blazor Server-side template target .NET Core 3.0 preview6
 
 ## Provision a SignalR Service
 
@@ -56,9 +58,47 @@ After running, you will see that the web server starts, makes connections to the
 > dotnet dev-certs https --trust
 > ```
 
-## Steps one by one
+## Work with Azure Web App
 
-Let's take a look at each step about how to create this sample app.
+From Visual Studio 2019 version 16.2.0, Azure SignalR Service is build-in web app publish process, and manage dependencies between web app and SignalR service would be much more convenient. You can experience working on local SignalR in dev local environment and working on Azure SignalR Service for Azure Web Apps at the same time without any code changes.
+
+### Create project
+
+In Visual Studio, choose Create a new project -> ASP.NET Core Web Application -> name project -> choose template(Blazor Server App) under ASP.NET Core 3.0. Make sure you've already installed ASP.NET Core SDK 3.0 to enable Visual Studio correctly recognize the target framework.
+
+![serversideblazor-create](../../docs/images/serversideblazor-create.png)
+
+Or run cmd
+```
+dotnet new blazorserverside 
+```
+
+### Create publish profile
+1. Switch to create profile first to be able to manage dependent service.
+   
+![serversideblazor-createprofile](../../docs/images/serversideblazor-createprofile.png)
+
+2. Change **Advanced...** and use [**Self-Contained**](https://docs.microsoft.com/en-us/dotnet/core/deploying/#self-contained-deployments-scd) deployment mode to enable publish app with .NET Core runtime as well, cause ASP.NET Core 3 runtime is not yet officially supported in Azure Web App. You can also change deployment mode after create profile by clicking :pencil2: under summary section in the publish dashboard.
+
+![serversideblazor-advanced](../../docs/images/serversideblazor-advanced.png)
+
+3. Create new/select existing Azure Web App in your subscription.
+
+### Add Azure SignalR Service dependencies
+
+After publish profile created, you can see a warning remind you adding Azure SignalR Service dependency. Click **Add** to create new/select existing Azure SignalR service in the panel.
+
+![serversideblazor-dependency](../../docs/images/serversideblazor-dependency.png)
+
+### Publish the app
+
+Then it's ready to publish. And it'll auto browser the page after publish complete. 
+> It may not immediately work in the first time visiting page due to Azure Web App deployment start up latency and try refresh the page to give some delay.
+> Besides, you can use browser debugger mode with F12 to validate the traffic has already redirect to Azure SignalR Service.
+
+![serversideblazor-publish](../../docs/images/serversideblazor-publish.png)
+
+## Enable Azure SignalR Service in local development
 
 1. Create Server-side Blazor project.
 
@@ -78,7 +118,8 @@ dotnet add package Microsoft.Azure.SignalR --version 1.1.0-preview1-10384
 public void ConfigureServices(IServiceCollection services)
 {
     ...
-    services.AddServerSideBlazor().AddSignalR().AddAzureSignalR();
+    services.AddServerSideBlazor();
+    services.AddSignalR().AddAzureSignalR();
     ...
 }
 ```

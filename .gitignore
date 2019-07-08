@@ -7,3 +7,4 @@ packages/
 node_modules/
 asrs.log.txt
 **/global.json
+PublishProfiles/
