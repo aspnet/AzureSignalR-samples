@@ -78,21 +78,23 @@ dotnet new blazorserverside
    
 ![serversideblazor-createprofile](../../docs/images/serversideblazor-createprofile.png)
 
-1. Change `Advanced` to select [*Self-Contained*](https://docs.microsoft.com/en-us/dotnet/core/deploying/#self-contained-deployments-scd) deployment mode to enable publish with .NET Core runtime as well, cause ASP.NET Core 3 runtime is not yet officially supported in Azure Web App. You can also change deployment mode after create profile by clicking :pencil2: under summary section in the publish dashboard.
+2. Change **Advanced...** and use [**Self-Contained**](https://docs.microsoft.com/en-us/dotnet/core/deploying/#self-contained-deployments-scd) deployment mode to enable publish app with .NET Core runtime as well, cause ASP.NET Core 3 runtime is not yet officially supported in Azure Web App. You can also change deployment mode after create profile by clicking :pencil2: under summary section in the publish dashboard.
 
 ![serversideblazor-advanced](../../docs/images/serversideblazor-advanced.png)
 
-3. Create new/select exist Azure Web App.
+3. Create new/select existing Azure Web App in your subscription.
 
 ### Add Azure SignalR Service dependencies
 
-After publish profile created, you can see a warning shows to remind you adding Azure SignalR Service dependency. Click add to choose exist/create new Azure SignalR service from the panel.
+After publish profile created, you can see a warning remind you adding Azure SignalR Service dependency. Click **Add** to create new/select existing Azure SignalR service in the panel.
 
 ![serversideblazor-dependency](../../docs/images/serversideblazor-dependency.png)
 
 ### Publish the app
 
-Then it's ready to publish. And it'll auto browser the page after publish complete. It may not immediately work in the first time visiting page due to Azure Web App deployment start up latency and try refresh the page to give some delay. Besides, you can use browser debugger mode with F12 to validate the traffic has already redirect to Azure SignalR Service.
+Then it's ready to publish. And it'll auto browser the page after publish complete. 
+> It may not immediately work in the first time visiting page due to Azure Web App deployment start up latency and try refresh the page to give some delay.
+> Besides, you can use browser debugger mode with F12 to validate the traffic has already redirect to Azure SignalR Service.
 
 ![serversideblazor-publish](../../docs/images/serversideblazor-publish.png)
 
