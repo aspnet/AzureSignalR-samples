@@ -37,7 +37,6 @@ namespace NegotiationServer
                 app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
             app.UseMvc();
         }
     }

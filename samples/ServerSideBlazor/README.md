@@ -138,7 +138,7 @@ public void ConfigureServices(IServiceCollection services)
 >   }
 > ```
 > 
-> 2. Assign hosting startup assembly to use Azure SignalR SDK. Edit [launchSettings.json](Properties\launchSettings.json) and add a configuration like below inside `environmentVariables`.
+> 2. Assign hosting startup assembly to use Azure SignalR SDK. Edit [launchSettings.json](Properties/launchSettings.json) and add a configuration like below inside `environmentVariables`.
 > ```js
 > "environmentVariables": {
 >     ...,

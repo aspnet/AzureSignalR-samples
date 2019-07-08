@@ -2,7 +2,7 @@
 
 This sample shows how to use Azure SignalR Service to build a realtime monitoring dashboard. Open the application, and you'll see flight locations in realtime.
 
-A live demo can be found [here](http://flightmap-demo1.azurewebsites.net/).
+A live demo can be found [here](https://signalr-flightmap-demo.azurewebsites.net/).
 
 ## How does it work?
 
@@ -16,36 +16,39 @@ In real world scenarios you can replace the web server and the blob storage with
 
 ## Deploy to Azure
 
-1. Add your bing map key to `index.html`:
+1. Create a Bing Maps API for Enterprise on Azure and add your Bing map key to `index.html`:
 
     ```
     <script src='https://www.bing.com/api/maps/mapcontrol?callback=getMap&key=<bing_map_key>'
     ```
 
-1. Build docker image
+1.  Create a SignalR Service instance using [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest):
 
     ```
-    docker build -t flightmap .
+    az group create --name <resource_group_name> --location WestUS
+    az signalr create --resource-group <resource_group_name> --name <signalr_name> --sku Standard_S1
     ```
 
-1. Push the docker image to a docker registry such as DockHub or[Azure Container Registry](https://azure.microsoft.com/en-us/services/container-registry/). Below are the commands to push to Azure Container Registry.
+1.  Create a web app using [Azure CLI].
 
     ```
-    docker login <acr_name>.azurecr.io
-    docker tag flightmap <acr_name>.azurecr.io/flightmap
-    docker push <acr_name>.azurecr.io/flightmap
-    ```
-
-1.  Create a SignalR Service in Azure portal.
-
-1.  Create a web app using [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest).
-
-    ```
-    az group create --name <resource_group_name> --location CentralUS
     az appservice plan create --name <plan_name> --resource-group <resource_group_name> --sku S1 --is-linux
     az webapp create \
         --resource-group <resource_group_name> --plan <plan_name> --name <app_name> \
-        --deployment-container-image-name nginx
+        --runtime "dotnetcore|2.1"
+    ```
+
+1.  Deploy flight map to web app:
+
+    ```
+    az webapp deployment source config-local-git --resource-group <resource_group_name> --name <app_name>
+    az webapp deployment user set --user-name <user_name> --password <password>
+
+    git init
+    git remote add origin <deploy_git_url>
+    git add -A
+    git commit -m "init commit"
+    git push origin master
     ```
 
 1.  Prepare flight data
@@ -66,16 +69,18 @@ In real world scenarios you can replace the web server and the blob storage with
 
     A simple data generator can be found in [generate.js](data/generate.js). You can use it to generate some random flight data from input time range, plane count, and coordinates. You can also write your own data generate or download real data from other websites (e.g. https://www.adsbexchange.com/). Then upload the flight data to an online storage (recommend to use Azure blob storage) so it can be referenced in the web app.
 
-1.  Update web app with above docker image:
+    Below commands creates an Azure storage account and upload the flight data to Azure blob:
 
     ```
-    az webapp config container set \
-        --resource-group <resource_group_name> --name <app_name> \
-        --docker-custom-image-name <acr_name>.azurecr.io/flightmap \
-        --docker-registry-server-url https://<acr_name>.azurecr.io \
-        --docker-registry-server-user <acr_name> \
-        --docker-registry-server-password <acr_password>
-    az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> --setting PORT=80
+    az storage account create --location WestUS --name <account_name> --resource-group <resource_group_name> --sku Standard_LRS
+    az storage container create --account-name <account_name> --name <container_name> --public-access blob
+    az storage blob upload --container-name <container_name> --account-name <account_name> -n data.json -f data.json
+    ```
+
+1.  Update settings of web app:
+
+    ```
+    az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> --setting PORT=5000
     az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> \
         --setting Azure__SignalR__ConnectionString=<connection_string>
     az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> \
@@ -83,6 +88,15 @@ In real world scenarios you can replace the web server and the blob storage with
     az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> \
         --setting DataFileUrl=<data_file_url>
     ```
+
+    Connection string and date file url can be get from the following commands:
+
+    ```
+    az signalr key list --resource-group <resource_group_name> --name <signalr_name>
+    az storage blob url --container-name <container_name> --account-name <account_name> --name data.json
+    ```
+
+> There're different ways to deploy web app to Azure, please refer to [this doc](../../docs/azure-integration.md) for more details.
 
 ## How to run
 
