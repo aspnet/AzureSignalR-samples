@@ -27,6 +27,7 @@ namespace ServerSideBlazor
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
+            services.AddSignalR().AddAzureSignalR();
             services.AddSingleton<WeatherForecastService>();
         }
 
@@ -51,9 +52,7 @@ namespace ServerSideBlazor
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapDefaultControllerRoute();
                 endpoints.MapBlazorHub();
-                endpoints.MapHub<Hubs.ChatHub>("/chathub");
                 endpoints.MapFallbackToPage("/_Host");
             });
         }
