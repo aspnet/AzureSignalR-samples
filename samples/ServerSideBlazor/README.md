@@ -109,7 +109,7 @@ dotnet new blazorserverside
 2. Add reference to Azure SignalR SDK
    
 ```
-dotnet add package Microsoft.Azure.SignalR --version 1.1.0-preview1-10384
+dotnet add package Microsoft.Azure.SignalR --version 1.1.0-preview1-10462
 ```
 
 3. Add a call to Azure SignalR Service in [Startup.cs](Startup.cs)
