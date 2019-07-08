@@ -78,14 +78,8 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
                 case "user":
                     url = GetSendToUserUrl(hubName, arg);
                     break;
-                case "users":
-                    url = GetSendToUsersUrl(hubName, arg);
-                    break;
                 case "group":
                     url = GetSendToGroupUrl(hubName, arg);
-                    break;
-                case "groups":
-                    url = GetSendToGroupsUrl(hubName, arg);
                     break;
                 case "broadcast":
                     url = GetBroadcastUrl(hubName);
@@ -99,10 +93,16 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
             {
                 var request = BuildRequest(url);
 
-                var response = await Client.SendAsync(request);
-                if (response.StatusCode != HttpStatusCode.Accepted)
+                // ResponseHeadersRead instructs SendAsync to return once headers are read
+                // rather than buffer the entire response. This gives a small perf boost.
+                // Note that it is important to dispose of the response when doing this to
+                // avoid leaving the connection open.
+                using (var response = await Client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead))
                 {
-                    Console.WriteLine($"Sent error: {response.StatusCode}");
+                    if (response.StatusCode != HttpStatusCode.Accepted)
+                    {
+                        Console.WriteLine($"Sent error: {response.StatusCode}");
+                    }
                 }
             }
         }
@@ -117,19 +117,9 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
             return $"{GetBaseUrl(hubName)}/users/{userId}";
         }
 
-        private string GetSendToUsersUrl(string hubName, string userList)
-        {
-            return $"{GetBaseUrl(hubName)}/users/{userList}";
-        }
-
         private string GetSendToGroupUrl(string hubName, string group)
         {
-            return $"{GetBaseUrl(hubName)}/group/{group}";
-        }
-
-        private string GetSendToGroupsUrl(string hubName, string groupList)
-        {
-            return $"{GetBaseUrl(hubName)}/groups/{groupList}";
+            return $"{GetBaseUrl(hubName)}/groups/{group}";
         }
 
         private string GetBroadcastUrl(string hubName)
@@ -163,9 +153,7 @@ namespace Microsoft.Azure.SignalR.Samples.Serverless
         {
             Console.WriteLine("*********Usage*********\n" +
                               "send user <User Id>\n" +
-                              "send users <User Id List>\n" +
                               "send group <Group Name>\n" +
-                              "send groups <Group List>\n" +
                               "broadcast\n" +
                               "***********************");
         }
