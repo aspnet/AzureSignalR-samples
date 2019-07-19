@@ -8,3 +8,5 @@ node_modules/
 asrs.log.txt
 **/global.json
 PublishProfiles/
+**.log.txt
+**.log
