@@ -13,28 +13,33 @@ module.exports = async function (context, eventGridEvent) {
     context.log(typeof eventGridEvent);
     context.log(eventGridEvent);
 
-    var newConnectionCount;
-    var token = true;
-
     // Use resource name and hub as partition key and row key separately
-    var partitionKey = getLastPart(eventGridEvent.topic);
-    var rowKey = eventGridEvent.data.hubName;
-
-    var deltaCount = eventGridEvent.eventType == 'Microsoft.SignalRService.ClientConnectionConnected' ? 1 : -1
+    let partitionKey = getLastPart(eventGridEvent.topic);
+    let rowKey = eventGridEvent.data.hubName;
+    let operation;
+    let newConnectionCount;
+    let token = true;
 
     while (token) {
         try {
+            let entity;
             try {
-                var entity = await getEntry(partitionKey, rowKey);
-                newConnectionCount = parseInt(entity.Count._) + deltaCount;
+                entity = await getEntry(partitionKey, rowKey);
+                operation = 'replace';
+            } catch (error) {
+                context.log(error);
+                operation = 'insert';
+            }
+
+            if (operation === 'replace') {
+                newConnectionCount = parseInt(entity.Count._) + eventGridEvent.eventType == 'Microsoft.SignalRService.ClientConnectionConnected' ? 1 : -1;
                 entity.Count._ = newConnectionCount;
                 await replaceEntity(entity);
                 token = false;
-
-            } catch (error) {
+            } else if (operation === 'insert') {
                 newConnectionCount = eventGridEvent.eventType == 'Microsoft.SignalRService.ClientConnectionConnected' ? 1 : 0;
-                var entryGen = azure.TableUtilities.entityGenerator;
-                var entity = {
+                let entryGen = azure.TableUtilities.entityGenerator;
+                entity = {
                     PartitionKey: entryGen.String(partitionKey),
                     RowKey: entryGen.String(rowKey),
                     Count: entryGen.Int32(newConnectionCount),
@@ -42,16 +47,15 @@ module.exports = async function (context, eventGridEvent) {
                 await insertEntity(entity);
                 token = false;
             }
-
         } catch (error) {
             context.log(error);
         }
     }
     
     if (eventGridEvent.eventType == 'Microsoft.SignalRService.ClientConnectionConnected') {
-        var message = new Map();
-        message.text = 'Welcome to Serverless Chat'
-        message.sender = '__SYSTEM__'
+        let message = new Map();
+        message.text = 'Welcome to Serverless Chat';
+        message.sender = '__SYSTEM__';
         context.bindings.sendToConnection = [{
             "connectionId": eventGridEvent.data.connectionId,
             "target": "newMessage",
@@ -96,10 +100,10 @@ const insertEntity = (entry) => new Promise((resolve, reject) => {
 });
 
 const getLastPart = (data) => {
-    var n = data.lastIndexOf('/');
+    let n = data.lastIndexOf('/');
     if (n == -1) {
         return data;
     } else {
         return data.substring(n+1);
     }
-}
+};
