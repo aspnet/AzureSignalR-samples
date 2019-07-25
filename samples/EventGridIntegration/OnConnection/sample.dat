@@ -1,0 +1,14 @@
+{
+  "id": "2708b626-2185-418f-a6ad-45f29837a934",
+  "topic": "/subscriptions/685ba005-af8d-4b04-8f16-a7bf38b2eb5a/resourceGroups/wcus_placehoder/providers/Microsoft.SignalRService/SignalR/wcusfree",
+  "subject": "hub/chat",
+  "data": {
+    "timestamp": "2019-07-10T03:03:41.0790413Z",
+    "hubName": "chat",
+    "connectionId": "KjBw4Wp0wXN5EjiicFPX-w"
+  },
+  "eventType": "Microsoft.SignalRService.ClientConnectionConnected",
+  "eventTime": "2019-07-10T03:03:41.0790413Z",
+  "dataVersion": "1.0",
+  "metadataVersion": "1"
+}
