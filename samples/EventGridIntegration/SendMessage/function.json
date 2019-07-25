@@ -19,7 +19,7 @@
     {
       "type": "signalR",
       "name": "$return",
-      "hubName": "chat",
+      "hubName": "EventGridIntegrationSampleChat",
       "direction": "out"
     }
   ]
