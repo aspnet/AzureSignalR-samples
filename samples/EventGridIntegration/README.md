@@ -20,8 +20,7 @@ The following software is required to build this tutorial.
 
 You will build and test the Azure Functions app locally. The app will access a SignalR Service instance in Azure that needs to be created ahead of time.
 
-1. Please take the [tutorial](https://docs.microsoft.com/en-us/azure/azure-signalr/signalr-quickstart-azure-functions-javascript#create-an-azure-signalr-service-instance) in document to create a
-Azure SignalR Service instance.
+1. Please take the [tutorial](https://docs.microsoft.com/en-us/azure/azure-signalr/signalr-quickstart-azure-functions-javascript#create-an-azure-signalr-service-instance) in document to create an Azure SignalR Service instance.
 
 1. After the instance is deployed, open it in the portal and locate its Settings page. Change the Service Mode setting to **Serverless**.
 

@@ -10,13 +10,13 @@
     {
       "type": "signalR",
       "name": "sendToConnection",
-      "hubName": "chat",
+      "hubName": "EventGridIntegrationSampleChat",
       "direction": "out"
     },
     {
       "type": "signalR",
       "name": "broadcast",
-      "hubName": "chat",
+      "hubName": "EventGridIntegrationSampleChat",
       "direction": "out"
     }
   ]
