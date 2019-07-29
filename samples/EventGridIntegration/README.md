@@ -18,34 +18,28 @@ The following software is required to build this tutorial.
 
 ## Create an Azure SignalR Service instance
 
-You will build and test the Azure Functions app locally. The app will access a SignalR Service instance in Azure that needs to be created ahead of time.
+Whatever you want to build and test the Azure Functions app on Azure or locally. The app will access a SignalR Service instance in Azure that needs to be created ahead of time.
 
-1. Please take the [tutorial](https://docs.microsoft.com/en-us/azure/azure-signalr/signalr-quickstart-azure-functions-javascript#create-an-azure-signalr-service-instance) in document to create an Azure SignalR Service instance.
+1. Create Azure SignalR Service using `az cli`
 
-1. After the instance is deployed, open it in the portal and locate its Settings page. Change the Service Mode setting to **Serverless**.
+    ```bash
+    az signalr create -n <signalr-name> -g <resource-group-name> --sku Free_F1
+    ```
+
+    For more details about creating Azure SignalR Service, see the [tutorial](https://docs.microsoft.com/en-us/azure/azure-signalr/signalr-quickstart-azure-functions-javascript#create-an-azure-signalr-service-instance).
+
+1. After the instance is deployed, open it in the portal and locate its `Settings` page. Change the Service Mode setting to **Serverless**.
+    ![signalr-serverless](media/signalr-serverless.png)
 
 ## Create a Storage account
 
 An Azure Storage account is required by a function app using Event Grid trigger. You will also host the web page for the chat UI using the static websites feature of Azure Storage if you try to deploy the application to Azure.
 
-1. In the Azure portal, click on the **Create a resource** (**+**) button for creating a new Azure resource.
+1. Create a storage with kind `StorageV2` using `az cli`
 
-1. Select the **Storage** category, then select **Storage account**.
-
-1. Enter the following information.
-
-    | Name | Value |
-    |---|---|
-    | Subscription | Select the subscription containing the SignalR Service instance |
-    | Resource group | Select the same resource group |
-    | Resource name | A unique name for the Storage account |
-    | Location | Select the same location as your other resources |
-    | Performance | Standard |
-    | Account kind | StorageV2 (general purpose V2) |
-    | Replication | Locally-redundant storage (LRS) |
-    | Access Tier | Hot |
-
-1. Click **Review + create**, then **Create**.
+    ```bash
+     az storage account create -n <storage-account-name> -g <resource-group-name> -l <location> --sku Standard_LRS --kind StorageV2
+    ```
 
 ## Initialize the function app
 
@@ -77,8 +71,8 @@ When running and debugging the Azure Functions runtime locally, application sett
 
    * Enter the Azure SignalR Service connection string into a setting named `AzureSignalRConnectionString`. Obtain the value from the **Keys** page in the Azure SignalR Service resource in the Azure portal; either the primary or secondary connection string can be used.
    * The `WEBSITE_NODE_DEFAULT_VERSION` setting is not used locally, but is required when deployed to Azure.
-   * The `Host` section configures the port and CORS settings for the local Functions host (this setting has no effect when running in Azure).
    * The `AzureWebJobsStorage` is used by Event Grid trigger and the `AZURE_STORAGE_CONNECTION_STRING` is used by storage client in codes. Either using the same or using separate one is fine.
+   * The `Host` section configures the port and CORS settings for the local Functions host (this setting has no effect when running in Azure).
 
        > [!NOTE]
        > Live Server is typically configured to serve content from `http://127.0.0.1:5500`. If you find that it is using a different URL or you are using a different HTTP server, change the `CORS` setting to reflect the correct origin.
@@ -86,6 +80,161 @@ When running and debugging the Azure Functions runtime locally, application sett
      ![Get SignalR Service key](media/signalr-get-key.png)
 
 1. Save the file.
+
+1. Open the VS Code command palette (`Ctrl-Shift-P`, macOS: `Cmd-Shift-P`) and select **Azure Functions: Initialize Project for Use with VSCode**.
+
+1. Open the terminal and run `func extensions install` to install all the dependencies.
+
+## Deploy and run function app on Azure
+
+### Deploy function app to Azure
+
+1. Open the VS Code command palette (`Ctrl-Shift-P`, macOS: `Cmd-Shift-P`) and select **Azure Functions: Deploy to Function App**.
+
+1. When prompted, provide the following information.
+
+    | Name | Value |
+    |---|---|
+    | Folder to deploy | Select the main project folder |
+    | Subscription | Select your subscription |
+    | Function app | Select **Create New Function App** |
+    | Function app name | Enter a unique name |
+    | Resource group | Select the same resource group as the SignalR Service instance |
+    | Storage account | Select the storage account you created earlier |
+
+    A new function app is created in Azure and the deployment begins. Wait for the deployment to complete.
+
+### Upload function app local settings
+
+1. Open the VS Code command palette (`Ctrl-Shift-P`, macOS: `Cmd-Shift-P`).
+
+1. Search for and select the **Azure Functions: Upload local settings** command.
+
+1. When prompted, provide the following information.
+
+    | Name | Value |
+    |---|---|
+    | Local settings file | local.settings.json |
+    | Subscription | Select your subscription |
+    | Function app | Select the previously deployed function app |
+
+    Local settings are uploaded to the function app in Azure. If prompted to overwrite existing settings, select **Yes to all**.
+
+### Configure static websites
+
+We use **Static website** to host the web page. Find the [document](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blob-static-website) for more details.
+
+1. Enable the static website feature
+
+    ```bash
+    az storage blob service-properties update --account-name <storage-account-name> --static-website --index-document index.html
+    ```
+
+1. Get the url of function app
+
+    ```bash
+    hostname=$(az functionapp show -n <function-app-name> -g <resource-group-name> -o tsv --query defaultHostName)
+    ```
+
+    Replace the `apiBaseUrl` in `index.html` with the url `https://$(hostname)`
+
+    Upload the `index.html` to Azure Storage
+
+    ```bash
+    az storage blob upload-batch -s content -d \$web --account-name <storage-account-name>
+    ```
+
+    Get the primary url of website and save it for future use.
+
+    ```bash
+    az storage account show -n <storage-account-name> -g <resource-group-name> --query "primaryEndpoints.web" --output tsv
+    ```
+
+### Subscribe Azure SignalR events
+
+Subscribe to Azure SignalR OnConnected and OnDisconnected events and let event grid trigger be enabled.
+
+1. Open the VS Code command palette (`Ctrl-Shift-P`, macOS: `Cmd-Shift-P`).
+
+1. Search for and select the **Azure Functions: Open in portal** command.
+
+1. Select the Function `OnConnection` in the left panel. After the function shown, click `Add Event Grid subscription` and choose the Azure SignalR Service.
+    ![Add subscription](media/add-subscription.png)
+
+1. Fill the page as shown below.
+    ![Subscribe Azure SignalR Service events](media/signalr-event-grid-subscribe.png)
+
+### Enable function app cross origin resource sharing (CORS)
+
+Although there is a CORS setting in **local.settings.json**, it is not propagated to the function app in Azure. You need to set it separately.
+
+1. Open the function app in the Azure portal.
+
+1. Under the **Platform features** tab, select **CORS**.
+
+1. In the *Allowed origins* section, add an entry with the static website *primary endpoint* as the value (remove the trailing */*).
+
+1. In order for the SignalR JavaScript SDK call your function app from a browser, support for credentials in CORS must be enabled. Select the "Enable Access-Control-Allow-Credentials" checkbox.
+
+1. Click **Save** to persist the CORS settings.
+
+### Try the application
+
+1. In a browser, navigate to the storage account's primary web endpoint.
+
+1. When you're connected, the online connection count is shown and you will get a welcome message.
+
+1. Send public messages by entering them into the main chat box.
+
+![Overview of the application](media/overview.png)
+
+## Enable authentication on Azure
+
+### Enable App Service Authentication
+
+App Service Authentication supports authentication with Azure Active Directory, Facebook, Twitter, Microsoft account, and Google.
+
+1. In the function app that was opened in the portal, locate the **Platform features** tab, select **Authentication/Authorization**.
+
+1. Turn **On** App Service Authentication.
+
+1. In **Action to take when request is not authenticated**, select "Allow Anonymous requests (no action)".
+
+1. In **Allowed External Redirect URLs**, enter the URL of your storage account primary web endpoint that you previously noted.
+
+1. Follow the documentation for the login provider of your choice to complete the configuration.
+
+    - [Azure Active Directory](https://docs.microsoft.com/azure/app-service/configure-authentication-provider-aad)
+    - [Facebook](https://docs.microsoft.com/azure/app-service/configure-authentication-provider-facebook)
+    - [Twitter](https://docs.microsoft.com/azure/app-service/configure-authentication-provider-twitter)
+    - [Microsoft account](https://docs.microsoft.com/azure/app-service/configure-authentication-provider-microsoft)
+    - [Google](https://docs.microsoft.com/azure/app-service/configure-authentication-provider-google)
+
+### Update the web app
+
+1. Open **index.html** and update the value of `isAuthNeeded` to `true`.
+
+1. The application can be configured with authentication using Azure Active Directory, Facebook, Twitter, Microsoft account, or Google. Select the authentication provider that you will use by setting the value of `authProvider`.
+
+1. Use **Azure Storage: Deploy to Static Website** command to upload the **index.html** to Azure Storage
+
+### Update negotiate function
+
+1. Update in `userId` in `negotiate/function.json` to `"{headers.x-ms-client-principal-name}"`
+
+1. Deploy the function to Azure again
+
+### Try the application with authentication
+
+1. In a browser, navigate to the storage account's primary web endpoint.
+
+1. Select **Login** to authenticate with your chosen authentication provider.
+
+1. When you're connected, the online connection count is shown and you will get a welcome message.
+
+1. Send public messages by entering them into the main chat box.
+
+1. Send private messages by clicking on a username in the chat history. Only the selected recipient will receive these messages.
 
 ## Build and run the sample locally
 
@@ -148,143 +297,3 @@ The chat application's UI is a simple single page application (SPA) created with
 1. With **index.html** open, start Live Server by opening the VS Code command palette (`Ctrl-Shift-P`, macOS: `Cmd-Shift-P`) and selecting **Live Server: Open with Live Server**. Live Server will open the application in a browser.
 
 1. The application opens. You will get a welcome message from `Function` and real-time connected connection counting. Also, you can broadcast message in the chat sample.
-
-## Deploy to Azure and enable authentication
-
-You have been running the function app and chat application locally. You will now deploy them to Azure and enable authentication and private messaging in the application.
-
-### Configure static websites
-
-1. After the Storage account is created, open it in the Azure portal.
-
-1. Select **Static website**.
-
-1. Select **Enabled** to enable the static website feature.
-
-1. In **Index document name**, enter *index.html*.
-
-1. Click **Save**.
-
-1. A **Primary endpoint** appears. Note this value. It will be required to configure the function app.
-
-### Deploy function app to Azure
-
-1. Open the VS Code command palette (`Ctrl-Shift-P`, macOS: `Cmd-Shift-P`) and select **Azure Functions: Deploy to Function App**.
-
-1. When prompted, provide the following information.
-
-    | Name | Value |
-    |---|---|
-    | Folder to deploy | Select the main project folder |
-    | Subscription | Select your subscription |
-    | Function app | Select **Create New Function App** |
-    | Function app name | Enter a unique name |
-    | Resource group | Select the same resource group as the SignalR Service instance |
-    | Storage account | Select the storage account you created earlier |
-
-    A new function app is created in Azure and the deployment begins. Wait for the deployment to complete.
-
-### Upload function app local settings
-
-1. Open the VS Code command palette (`Ctrl-Shift-P`, macOS: `Cmd-Shift-P`).
-
-1. Search for and select the **Azure Functions: Upload local settings** command.
-
-1. When prompted, provide the following information.
-
-    | Name | Value |
-    |---|---|
-    | Local settings file | local.settings.json |
-    | Subscription | Select your subscription |
-    | Function app | Select the previously deployed function app |
-
-Local settings are uploaded to the function app in Azure. If prompted to overwrite existing settings, select **Yes to all**.
-
-### Subscribe Azure SignalR events
-
-Different from running Event Grid trigger locally, it's much easier to subscribe and handle events in Azure.
-
-1. Open the VS Code command palette (`Ctrl-Shift-P`, macOS: `Cmd-Shift-P`).
-
-1. Search for and select the **Azure Functions: Open in portal** command.
-
-1. Select the Function `OnConnection` in the left panel. After the function shown, click `Add Event Grid subscription` and choose the Azure SignalR Service.
-    ![Subscribe Azure SignalR Service events](media/signalr-event-grid-subscribe.png)
-
-### Enable App Service Authentication
-
-App Service Authentication supports authentication with Azure Active Directory, Facebook, Twitter, Microsoft account, and Google.
-
-1. In the function app that was opened in the portal, locate the **Platform features** tab, select **Authentication/Authorization**.
-
-1. Turn **On** App Service Authentication.
-
-1. In **Action to take when request is not authenticated**, select "Allow Anonymous requests (no action)".
-
-1. In **Allowed External Redirect URLs**, enter the URL of your storage account primary web endpoint that you previously noted.
-
-1. Follow the documentation for the login provider of your choice to complete the configuration.
-
-    - [Azure Active Directory](https://docs.microsoft.com/azure/app-service/configure-authentication-provider-aad)
-    - [Facebook](https://docs.microsoft.com/azure/app-service/configure-authentication-provider-facebook)
-    - [Twitter](https://docs.microsoft.com/azure/app-service/configure-authentication-provider-twitter)
-    - [Microsoft account](https://docs.microsoft.com/azure/app-service/configure-authentication-provider-microsoft)
-    - [Google](https://docs.microsoft.com/azure/app-service/configure-authentication-provider-google)
-
-### Update the web app
-
-1. In the Azure portal, navigate to the function app's overview page.
-
-1. Copy the function app's URL.
-
-1. In VS Code, open **index.html** and replace the value of `apiBaseUrl` with the function app's URL.
-
-1. The application can be configured with authentication using Azure Active Directory, Facebook, Twitter, Microsoft account, or Google. Select the authentication provider that you will use by setting the value of `authProvider`.
-
-1. Save the file.
-
-### Deploy the web application to blob storage
-
-The web application will be hosted using Azure Blob Storage's static websites feature.
-
-1. Open the VS Code command palette (`Ctrl-Shift-P`, macOS: `Cmd-Shift-P`).
-
-1. Search for and select the **Azure Storage: Deploy to Static Website** command.
-
-1. Enter the following values:
-
-    | Name | Value |
-    |---|---|
-    | Subscription | Select your subscription |
-    | Storage account | Select the storage account you created earlier |
-    | Folder to deploy | Select **Browse** and select the *content* folder |
-
-The files in the *content* folder should now be deployed to the static website.
-
-### Enable function app cross origin resource sharing (CORS)
-
-Although there is a CORS setting in **local.settings.json**, it is not propagated to the function app in Azure. You need to set it separately.
-
-1. Open the function app in the Azure portal.
-
-1. Under the **Platform features** tab, select **CORS**.
-
-1. In the *Allowed origins* section, add an entry with the static website *primary endpoint* as the value (remove the trailing */*).
-
-1. In order for the SignalR JavaScript SDK call your function app from a browser, support for credentials in CORS must be enabled. Select the "Enable Access-Control-Allow-Credentials" checkbox.
-
-1. Click **Save** to persist the CORS settings.
-
-### Try the application
-
-1. In a browser, navigate to the storage account's primary web endpoint.
-
-1. Select **Login** to authenticate with your chosen authentication provider.
-
-1. When you're connected, the online connection count is shown and you will get a welcome message.
-
-1. Send public messages by entering them into the main chat box.
-
-1. Send private messages by clicking on a username in the chat history. Only the selected recipient will receive these messages.
-
-![Overview of the application](media/overview.png)

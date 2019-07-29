@@ -31,7 +31,7 @@
         </div>
     </div>    
     
-    <div v-if="!isLocalhost">
+    <div v-if="isAuthNeeded">
       <div v-if="authenticated">
         You are logged in [<a href="#" v-on:click.prevent="logout">Logout</a>]
       </div>
@@ -39,7 +39,7 @@
         <a href="#" v-on:click.prevent="login">Login</a>
       </div>
     </div>
-    <div class="row" v-if="(isLocalhost || authenticated) && ready">
+    <div class="row" v-if="(!isAuthNeeded || authenticated) && ready">
       <div class="signalr-demo col-sm">
         <hr />
         <form v-on:submit.prevent="sendNewMessage">
@@ -47,7 +47,7 @@
         </form>
       </div>
     </div>
-    <div class="row" v-if="(isLocalhost || authenticated) && !ready">
+    <div class="row" v-if="(!isAuthNeeded || authenticated) && !ready">
       <div class="col-sm">
         <div>Loading...</div>
       </div>
@@ -95,7 +95,7 @@
       data: function () {
         return {
           authenticated: false,
-          isLocalhost: /\/\/localhost/.test(apiBaseUrl),
+          isAuthNeeded: false,
           username: '',
           newMessage: '',
           messages: [],
@@ -107,7 +107,7 @@
       },
       mounted: function() {
         return this.getAuthInfo().then(function () {
-          if (this.isLocalhost || this.authenticated) {
+          if (!this.isAuthNeeded || this.authenticated) {
             const connection = new signalR.HubConnectionBuilder()
               .withUrl(`${apiBaseUrl}/api`)
               .build();
