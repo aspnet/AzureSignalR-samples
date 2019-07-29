@@ -2,9 +2,7 @@
 
 A step by step tutorial to build a chat room with real-time online counting using Azure Functions, Event Grid, App Service Authentication, and SignalR Service.
 
-## Introduction
-
-### Prerequisites
+## Prerequisites
 
 The following software is required to build this tutorial.
 
@@ -14,9 +12,10 @@ The following software is required to build this tutorial.
 * [Azure Functions Core Tools](https://github.com/Azure/azure-functions-core-tools) (Version 2)
 * [Visual Studio Code](https://code.visualstudio.com/) (VS Code) with the following extensions
 * [Azure Functions](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions) - work with Azure Functions in VS Code
-* [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) - serve web pages locally for testing
+* [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) - serve web pages locally for testing (Local running)
+* [ngrok](https://ngrok.com/) - Public URLs for exposing your local Event Grid trigger (Local running)
 
-## Create an Azure SignalR Service instance
+### Create an Azure SignalR Service instance
 
 Whatever you want to build and test the Azure Functions app on Azure or locally. The app will access a SignalR Service instance in Azure that needs to be created ahead of time.
 
@@ -29,9 +28,10 @@ Whatever you want to build and test the Azure Functions app on Azure or locally.
     For more details about creating Azure SignalR Service, see the [tutorial](https://docs.microsoft.com/en-us/azure/azure-signalr/signalr-quickstart-azure-functions-javascript#create-an-azure-signalr-service-instance).
 
 1. After the instance is deployed, open it in the portal and locate its `Settings` page. Change the Service Mode setting to **Serverless**.
+
     ![signalr-serverless](media/signalr-serverless.png)
 
-## Create a Storage account
+### Create a Storage account
 
 An Azure Storage account is required by a function app using Event Grid trigger. You will also host the web page for the chat UI using the static websites feature of Azure Storage if you try to deploy the application to Azure.
 
@@ -210,6 +210,8 @@ App Service Authentication supports authentication with Azure Active Directory, 
     - [Microsoft account](https://docs.microsoft.com/azure/app-service/configure-authentication-provider-microsoft)
     - [Google](https://docs.microsoft.com/azure/app-service/configure-authentication-provider-google)
 
+  ![Authentication](media/authentication.png)
+
 ### Update the web app
 
 1. Open **index.html** and update the value of `isAuthNeeded` to `true`.
@@ -236,11 +238,13 @@ App Service Authentication supports authentication with Azure Active Directory, 
 
 1. Send private messages by clicking on a username in the chat history. Only the selected recipient will receive these messages.
 
+    ![Overview with auth](media/overview-with-auth.png)
+
 ## Build and run the sample locally
 
 ### Create an ngrok endpoint
 
-When running Event Grid trigger locally, you need a tool to proxy events to your local endpoint like [ngrok](https://ngrok.com/).
+When running Event Grid trigger locally, you need a tool to proxy events to your local endpoint like [ngrok](https://ngrok.com/). For more details about running Event Grid trigger locally, go to the [document](https://docs.microsoft.com/en-us/azure/azure-functions/functions-debug-event-grid-trigger-local)
 
 Download *ngrok.exe* from [ngrok](https://ngrok.com/), and run with the following command:
 
