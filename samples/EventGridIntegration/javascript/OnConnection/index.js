@@ -32,7 +32,7 @@ module.exports = async function (context, eventGridEvent) {
             }
 
             if (operation === 'replace') {
-                newConnectionCount = parseInt(entity.Count._) + eventGridEvent.eventType == 'Microsoft.SignalRService.ClientConnectionConnected' ? 1 : -1;
+                newConnectionCount = parseInt(entity.Count._) + (eventGridEvent.eventType == 'Microsoft.SignalRService.ClientConnectionConnected' ? 1 : -1);
                 entity.Count._ = newConnectionCount;
                 await replaceEntity(entity);
                 token = false;
