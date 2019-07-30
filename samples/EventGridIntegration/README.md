@@ -16,10 +16,11 @@ The following softwares are required to build this tutorial.
 * [Node.js](https://nodejs.org/en/download/) (Version 10.x)
 * [.NET SDK](https://www.microsoft.com/net/download) (Version 2.x, required for Functions extensions)
 * [Azure Functions Core Tools](https://github.com/Azure/azure-functions-core-tools) (Version 2)
+* [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
 
 ### Create an Azure SignalR Service instance
 
-Whatever you want to build and test the Azure Functions app on Azure or locally. The app will access a SignalR Service instance in Azure that needs to be created ahead of time.
+No matter you want to build and test the Azure Functions app on Azure or locally. The app will access a SignalR Service instance in Azure that needs to be created ahead of time.
 
 1. Create Azure SignalR Service using `az cli`
 
@@ -194,7 +195,7 @@ Although there is a CORS setting in **local.settings.json**, it is not propagate
 
 1. Send public messages by entering them into the main chat box.
 
-![Overview of the application](media/overview.png)
+    ![Overview of the application](media/overview.png)
 
 <a name="enable-authentication"></a>
 ## Enable authentication on Azure
@@ -219,7 +220,7 @@ App Service Authentication supports authentication with Azure Active Directory, 
     - [Microsoft account](https://docs.microsoft.com/azure/app-service/configure-authentication-provider-microsoft)
     - [Google](https://docs.microsoft.com/azure/app-service/configure-authentication-provider-google)
 
-  ![Authentication](media/authentication.png)
+     ![Authentication](media/authentication.png)
 
 ### Update the web app
 
