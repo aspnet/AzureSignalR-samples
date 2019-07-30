@@ -6,12 +6,12 @@ A step by step tutorial to build a chat room with real-time online counting usin
 - [Initialize the function app](#initialize-function-app)
 - [Deploy and run function app on Azure](#deploy-to-azure)
 - [Enable authentication on Azure](#enable-authentication)
-- [Build and run the sample locally](#build-locally)
+- [Build the sample locally](#build-locally)
 
 <a name="prerequisites"></a>
 ## Prerequisites
 
-The following software is required to build this tutorial.
+The following softwares are required to build this tutorial.
 
 * [Node.js](https://nodejs.org/en/download/) (Version 10.x)
 * [.NET SDK](https://www.microsoft.com/net/download) (Version 2.x, required for Functions extensions)
@@ -78,15 +78,11 @@ When running and debugging the Azure Functions runtime locally, application sett
     }
     ```
 
-   * Enter the Azure SignalR Service connection string into a setting named `AzureSignalRConnectionString`. Obtain the value from the **Keys** page in the Azure SignalR Service resource in the Azure portal; either the primary or secondary connection string can be used.
-   * The `WEBSITE_NODE_DEFAULT_VERSION` setting is not used locally, but is required when deployed to Azure.
-   * The `AzureWebJobsStorage` is used by Event Grid trigger and the `AZURE_STORAGE_CONNECTION_STRING` is used by storage client in codes. Either using the same or using separate one is fine.
-   * The `Host` section configures the port and CORS settings for the local Functions host (this setting has no effect when running in Azure).
+   - Replace `AzureSignalRConnectionString` with Azure SignalR Service connection string. Obtain the value from the **Keys** page in the Azure SignalR Service resource in the Azure portal; either the primary or secondary connection string can be used.
 
-       > [!NOTE]
-       > Live Server is typically configured to serve content from `http://127.0.0.1:5500`. If you find that it is using a different URL or you are using a different HTTP server, change the `CORS` setting to reflect the correct origin.
+        ![Get SignalR Service key](media/signalr-get-key.png)
 
-     ![Get SignalR Service key](media/signalr-get-key.png)
+   - Replace `AzureWebJobsStorage` and `AZURE_STORAGE_CONNECTION_STRING` with connection string of storage created previously. `AzureWebJobsStorage` is used by Event Grid trigger and the `AZURE_STORAGE_CONNECTION_STRING` is used by storage client in codes.
 
 1. Save the file.
 
@@ -318,5 +314,9 @@ The chat application's UI is a simple single page application (SPA) created with
 1. Press **F5** to run the function app locally and attach a debugger.
 
 1. With **index.html** open, start Live Server by opening the VS Code command palette (`Ctrl-Shift-P`, macOS: `Cmd-Shift-P`) and selecting **Live Server: Open with Live Server**. Live Server will open the application in a browser.
+    - The `Host` section in **local.settings.json** configures the port and CORS settings for the local Functions host (this setting has no effect when running in Azure).
+
+       > [!NOTE]
+       > Live Server is typically configured to serve content from `http://127.0.0.1:5500`. If you find that it is using a different URL or you are using a different HTTP server, change the `CORS` setting to reflect the correct origin.
 
 1. The application opens. You will get a welcome message from `Function` and real-time connected connection counting. Also, you can broadcast message in the chat sample.
