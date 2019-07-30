@@ -1,0 +1,15 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureSignalRConnectionString": "<signalr-connection-string>",
+    "WEBSITE_NODE_DEFAULT_VERSION": "10.14.1",
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "AzureWebJobsStorage": "<Azure-storage-connection-string>",
+    "AZURE_STORAGE_CONNECTION_STRING": "<Azure-storage-connection-string>"
+  },
+  "Host": {
+    "LocalHttpPort": 7071,
+    "CORS": "http://127.0.0.1:5500",
+    "CORSCredentials": true
+  }
+}

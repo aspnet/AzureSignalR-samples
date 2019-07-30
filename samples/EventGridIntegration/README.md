@@ -2,18 +2,20 @@
 
 A step by step tutorial to build a chat room with real-time online counting using Azure Functions, Event Grid, App Service Authentication, and SignalR Service.
 
+- [Prerequisites](#prerequisites)
+- [Initialize the function app](#initialize-function-app)
+- [Deploy and run function app on Azure](#deploy-to-azure)
+- [Enable authentication on Azure](#enable-authentication)
+- [Build and run the sample locally](#build-locally)
+
+<a name="prerequisites"></a>
 ## Prerequisites
 
 The following software is required to build this tutorial.
 
-* [Git](https://git-scm.com/downloads)
 * [Node.js](https://nodejs.org/en/download/) (Version 10.x)
 * [.NET SDK](https://www.microsoft.com/net/download) (Version 2.x, required for Functions extensions)
 * [Azure Functions Core Tools](https://github.com/Azure/azure-functions-core-tools) (Version 2)
-* [Visual Studio Code](https://code.visualstudio.com/) (VS Code) with the following extensions
-* [Azure Functions](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions) - work with Azure Functions in VS Code
-* [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) - serve web pages locally for testing (Local running)
-* [ngrok](https://ngrok.com/) - Public URLs for exposing your local Event Grid trigger (Local running)
 
 ### Create an Azure SignalR Service instance
 
@@ -41,15 +43,22 @@ An Azure Storage account is required by a function app using Event Grid trigger.
      az storage account create -n <storage-account-name> -g <resource-group-name> -l <location> --sku Standard_LRS --kind StorageV2
     ```
 
+<a name="initialize-function-app"></a>
 ## Initialize the function app
+
+- Git clone the project and open the folder with VS Code
+
+    ```bash
+    git clone git@github.com:aspnet/AzureSignalR-samples.git
+
+    cd AzureSignalR-samples/samples/EventGridIntegration/javascript
+    ```
 
 ### Configure application settings
 
-When running and debugging the Azure Functions runtime locally, application settings are read from **local.settings.json**. Update this file with the connection string of the SignalR Service instance that you created earlier.
+When running and debugging the Azure Functions runtime locally, application settings are read from **local.settings.json**. Also, you can upload there settings to remote when you try to deploy Function App to Azure. Update this file with the connection string of the SignalR Service instance that you created earlier.
 
-1. In the root folder of project, create a file named **local.settings.json** and open it.
-
-1. Replace the file's contents with the following.
+1. Open the file **local.settings.json** and update the settings.
 
     ```json
     {
@@ -85,9 +94,12 @@ When running and debugging the Azure Functions runtime locally, application sett
 
 1. Open the terminal and run `func extensions install` to install all the dependencies.
 
+<a name="deploy-to-azure"></a>
 ## Deploy and run function app on Azure
 
 ### Deploy function app to Azure
+
+1. In the VS Code, install the [Azure Functions Extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions).
 
 1. Open the VS Code command palette (`Ctrl-Shift-P`, macOS: `Cmd-Shift-P`) and select **Azure Functions: Deploy to Function App**.
 
@@ -188,6 +200,7 @@ Although there is a CORS setting in **local.settings.json**, it is not propagate
 
 ![Overview of the application](media/overview.png)
 
+<a name="enable-authentication"></a>
 ## Enable authentication on Azure
 
 ### Enable App Service Authentication
@@ -240,7 +253,13 @@ App Service Authentication supports authentication with Azure Active Directory, 
 
     ![Overview with auth](media/overview-with-auth.png)
 
+<a name="build-locally"></a>
 ## Build and run the sample locally
+
+### Prerequisites
+
+* [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) - serve web pages locally for testing
+* [ngrok](https://ngrok.com/) - Public URLs for exposing your local Event Grid trigger
 
 ### Create an ngrok endpoint
 
