@@ -16,7 +16,7 @@ using Newtonsoft.Json.Linq;
 
 namespace SignalR.Sample
 {
-    public static class Program
+    public static class Functions
     {
         private const string TableName = "connection";
 
