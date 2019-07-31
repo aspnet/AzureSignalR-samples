@@ -1,0 +1,22 @@
+{
+  "name": "signalr-event-grid",
+  "version": "1.0.0",
+  "description": "Azure SignalR integrate with Event Grid",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aspnet/AzureSignalR-samples.git"
+  },
+  "author": "chenyl",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aspnet/AzureSignalR-samples/issues"
+  },
+  "homepage": "https://github.com/aspnet/AzureSignalR-samples#readme",
+  "dependencies": {
+    "azure-storage": "^2.10.3"
+  }
+}

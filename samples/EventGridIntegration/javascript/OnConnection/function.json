@@ -1,0 +1,23 @@
+{
+  "disabled": false,
+  "bindings": [
+    {
+      "authLevel": "anonymous",
+      "type": "eventGridTrigger",
+      "name": "eventGridEvent",
+      "direction": "in"
+    },
+    {
+      "type": "signalR",
+      "name": "sendToConnection",
+      "hubName": "EventGridIntegrationSampleChat",
+      "direction": "out"
+    },
+    {
+      "type": "signalR",
+      "name": "broadcast",
+      "hubName": "EventGridIntegrationSampleChat",
+      "direction": "out"
+    }
+  ]
+}
