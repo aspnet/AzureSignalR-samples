@@ -35,7 +35,6 @@ namespace SignalR.Sample
         {
             var message = new JsonSerializer().Deserialize<ChatMessage>(new JsonTextReader(new StreamReader(req.Body)));
             message.sender = req.Headers?["x-ms-client-principal-name"] ?? "";
-
             var recipientUserId = "";
             if (!string.IsNullOrEmpty(message.recipient))
             {
@@ -43,13 +42,12 @@ namespace SignalR.Sample
                 message.isPrivate = true;
             }
 
-            return signalRMessages.AddAsync(
-                new SignalRMessage
-                {
-                    UserId = message.recipient,
-                    Target = "newMessage",
-                    Arguments = new[] { message }
-                });
+            return signalRMessages.AddAsync(new SignalRMessage
+            {
+                UserId = message.recipient,
+                Target = "newMessage",
+                Arguments = new[] { message }
+            });
         }
 
         [FunctionName("OnConnection")]
@@ -64,6 +62,7 @@ namespace SignalR.Sample
             var token = true;
             var newConnectionCount = 0;
             ConnectionCountEntity entity;
+
             while (token)
             {
                 try
@@ -131,6 +130,8 @@ namespace SignalR.Sample
 
         public class ChatMessage
         {
+            // The name here is not keep the C# naming convension
+            // To keep the name consistant with JavaScript sample for simplification
             public string sender { get; set; }
             public string text { get; set; }
             public string recipient { get; set; }
