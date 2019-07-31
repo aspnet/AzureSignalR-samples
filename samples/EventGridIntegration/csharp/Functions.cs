@@ -62,7 +62,6 @@ namespace SignalR.Sample
             var token = true;
             var newConnectionCount = 0;
             ConnectionCountEntity entity;
-
             while (token)
             {
                 try
