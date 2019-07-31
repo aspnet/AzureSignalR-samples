@@ -38,7 +38,7 @@ No matter you want to build and test the Azure Functions app on Azure or locally
 
 An Azure Storage account is required by a function app using Event Grid trigger. You will also host the web page for the chat UI using the static websites feature of Azure Storage if you try to deploy the application to Azure.
 
-1. Create a storage with kind `StorageV2` using `az cli`
+- Create a storage with kind `StorageV2` using `az cli`
 
     ```bash
      az storage account create -n <storage-account-name> -g <resource-group-name> -l <location> --sku Standard_LRS --kind StorageV2
@@ -131,7 +131,7 @@ When running and debugging the Azure Functions runtime locally, application sett
 
 ### Configure static websites
 
-We use **Static website** to host the web page. Find the [document](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blob-static-website) for more details.
+We use **Static Website** to host the web page. Find the [document](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blob-static-website) for more details.
 
 1. Enable the static website feature
 
@@ -161,7 +161,7 @@ We use **Static website** to host the web page. Find the [document](https://docs
 
 ### Subscribe Azure SignalR events
 
-Subscribe to Azure SignalR OnConnected and OnDisconnected events and let event grid trigger be enabled.
+Subscribe to Azure SignalR OnConnected and OnDisconnected events and let Event Grid trigger be enabled.
 
 1. Open the VS Code command palette (`Ctrl-Shift-P`, macOS: `Cmd-Shift-P`).
 
@@ -260,7 +260,7 @@ App Service Authentication supports authentication with Azure Active Directory, 
 
 ### Create an ngrok endpoint
 
-When running Event Grid trigger locally, you need a tool to proxy events to your local endpoint like [ngrok](https://ngrok.com/). For more details about running Event Grid trigger locally, go to the [document](https://docs.microsoft.com/en-us/azure/azure-functions/functions-debug-event-grid-trigger-local)
+When running Event Grid trigger locally, you need a tool to proxy events to your local endpoint like [ngrok](https://ngrok.com/). For more details about running Event Grid trigger locally, go to the [document](https://docs.microsoft.com/en-us/azure/azure-functions/functions-debug-event-grid-trigger-local).
 
 Download *ngrok.exe* from [ngrok](https://ngrok.com/), and run with the following command:
 
