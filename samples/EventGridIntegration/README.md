@@ -53,13 +53,13 @@ An Azure Storage account is required by a function app using Event Grid trigger.
     git clone git@github.com:aspnet/AzureSignalR-samples.git
     ```
 
-- In the repository, there're two Event Grid integration samples using different languages. For the JavaScript sample, investigate to
+- In the repository, there're two Event Grid integration samples using different languages. For the JavaScript sample, navigate to
 
     ```bash
     AzureSignalR-samples/samples/EventGridIntegration/javascript
     ```
 
-- If you want to use C# sample, investigate to
+- If you want to use C# sample, navigate to
 
     ```bash
     AzureSignalR-samples/samples/EventGridIntegration/csharp
