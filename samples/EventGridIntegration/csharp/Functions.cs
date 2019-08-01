@@ -19,11 +19,13 @@ namespace SignalR.Sample
     public static class Functions
     {
         private const string TableName = "connection";
+        private const string EventGridConnectedEventName = "Microsoft.SignalRService.ClientConnectionConnected";
+        private const string HubName = "EventGridIntegrationSampleChat";
 
         [FunctionName("negotiate")]
         public static SignalRConnectionInfo Negotiate(
             [HttpTrigger(AuthorizationLevel.Anonymous)] HttpRequest req,
-            [SignalRConnectionInfo(HubName = "EventGridIntegrationSampleChat")] SignalRConnectionInfo connectionInfo)
+            [SignalRConnectionInfo(HubName = HubName)] SignalRConnectionInfo connectionInfo)
         {
             return connectionInfo;
         }
@@ -31,20 +33,20 @@ namespace SignalR.Sample
         [FunctionName("messages")]
         public static Task SendMessage(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post")]HttpRequest req,
-            [SignalR(HubName = "EventGridIntegrationSampleChat")]IAsyncCollector<SignalRMessage> signalRMessages)
+            [SignalR(HubName = HubName)]IAsyncCollector<SignalRMessage> signalRMessages)
         {
             var message = new JsonSerializer().Deserialize<ChatMessage>(new JsonTextReader(new StreamReader(req.Body)));
-            message.sender = req.Headers?["x-ms-client-principal-name"] ?? "";
+            message.Sender = req.Headers?["x-ms-client-principal-name"] ?? "";
             var recipientUserId = "";
-            if (!string.IsNullOrEmpty(message.recipient))
+            if (!string.IsNullOrEmpty(message.Recipient))
             {
-                recipientUserId = message.recipient;
-                message.isPrivate = true;
+                recipientUserId = message.Recipient;
+                message.IsPrivate = true;
             }
 
             return signalRMessages.AddAsync(new SignalRMessage
             {
-                UserId = message.recipient,
+                UserId = message.Recipient,
                 Target = "newMessage",
                 Arguments = new[] { message }
             });
@@ -52,20 +54,21 @@ namespace SignalR.Sample
 
         [FunctionName("OnConnection")]
         public static async Task EventGridTest([EventGridTrigger]EventGridEvent eventGridEvent,
-            [SignalR(HubName = "EventGridIntegrationSampleChat")]IAsyncCollector<SignalRMessage> signalRMessages,
+            [SignalR(HubName = HubName)]IAsyncCollector<SignalRMessage> signalRMessages,
             [Table(TableName)]CloudTable cloudTable,
             ILogger log)
         {
             var message = ((JObject) eventGridEvent.Data).ToObject<SignalREvent>();
             var partitionKey = GetLastPart(eventGridEvent.Topic);
             var rowKey = message.HubName;
-            var token = true;
+            var isSuccess = true;
             var newConnectionCount = 0;
-            ConnectionCountEntity entity;
-            while (token)
+            
+            while (isSuccess)
             {
                 try
                 {
+                    ConnectionCountEntity entity;
                     var operation = TableOperation.Retrieve<ConnectionCountEntity>(partitionKey, rowKey);
                     var result = await cloudTable.ExecuteAsync(operation);
 
@@ -73,19 +76,19 @@ namespace SignalR.Sample
                     {
                         entity = new ConnectionCountEntity(partitionKey, rowKey)
                         {
-                            Count = newConnectionCount = eventGridEvent.EventType == "Microsoft.SignalRService.ClientConnectionConnected" ? 1 : 0
+                            Count = newConnectionCount = IsConnectedEvent(eventGridEvent.EventType) ? 1 : 0
                         };
                         operation = TableOperation.Insert(entity);
                     }
                     else
                     {
                         entity = (ConnectionCountEntity)result.Result;
-                        entity.Count = newConnectionCount = entity.Count + (eventGridEvent.EventType == "Microsoft.SignalRService.ClientConnectionConnected" ? 1 : -1);
+                        entity.Count = newConnectionCount = entity.Count + (IsConnectedEvent(eventGridEvent.EventType) ? 1 : -1);
                         operation = TableOperation.Replace(entity);
                     }
 
                     await cloudTable.ExecuteAsync(operation);
-                    token = false;
+                    isSuccess = false;
                 }
                 catch (Exception ex)
                 {
@@ -93,7 +96,7 @@ namespace SignalR.Sample
                 }
             }
 
-            if (eventGridEvent.EventType == "Microsoft.SignalRService.ClientConnectionConnected")
+            if (IsConnectedEvent(eventGridEvent.EventType))
             {
                 await signalRMessages.AddAsync(new SignalRMessage
                 {
@@ -101,8 +104,8 @@ namespace SignalR.Sample
                     Target = "newMessage",
                     Arguments = new[] { new ChatMessage
                     {
-                        text = "Welcome to Serverless Chat",
-                        sender = "__SYSTEM__",
+                        Text = "Welcome to Serverless Chat",
+                        Sender = "__SYSTEM__",
                     }}
                 });
             }
@@ -127,14 +130,18 @@ namespace SignalR.Sample
             }
         }
 
+        private static bool IsConnectedEvent(string name) => name == EventGridConnectedEventName;
+
         public class ChatMessage
         {
-            // The name here is not keep the C# naming convension
-            // To keep the name consistant with JavaScript sample for simplification
-            public string sender { get; set; }
-            public string text { get; set; }
-            public string recipient { get; set; }
-            public bool isPrivate { get; set; }
+            [JsonProperty("sender")]
+            public string Sender { get; set; }
+            [JsonProperty("text")]
+            public string Text { get; set; }
+            [JsonProperty("recipient")]
+            public string Recipient { get; set; }
+            [JsonProperty("isPrivate")]
+            public bool IsPrivate { get; set; }
         }
 
         public class SignalREvent

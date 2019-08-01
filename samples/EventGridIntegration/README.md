@@ -51,15 +51,25 @@ An Azure Storage account is required by a function app using Event Grid trigger.
 
     ```bash
     git clone git@github.com:aspnet/AzureSignalR-samples.git
+    ```
 
-    cd AzureSignalR-samples/samples/EventGridIntegration/javascript
+- In the repository, there're two Event Grid integration samples using different languages. For the JavaScript sample, investigate to
+
+    ```bash
+    AzureSignalR-samples/samples/EventGridIntegration/javascript
+    ```
+
+- If you want to use C# sample, investigate to
+
+    ```bash
+    AzureSignalR-samples/samples/EventGridIntegration/csharp
     ```
 
 ### Configure application settings
 
 When running and debugging the Azure Functions runtime locally, application settings are read from **local.settings.json**. Also, you can upload there settings to remote when you try to deploy Function App to Azure. Update this file with the connection string of the SignalR Service instance that you created earlier.
 
-1. Open the file **local.settings.json** and update the settings.
+1. Open the file **local.settings.json** and update the settings. (The file shown below is used by JavaScript sample, and the C# sample is similar)
 
     ```json
     {
@@ -232,7 +242,25 @@ App Service Authentication supports authentication with Azure Active Directory, 
 
 ### Update negotiate function
 
-1. For the JavaScript sample, update in `userId` in `negotiate/function.json` to `"{headers.x-ms-client-principal-name}"`. And for the C# sample, add parameter `UserId = "{headers.x-ms-signalr-userid}"` to `Negotiate` function.
+1. Update the attribute parameter of negotiate function.
+
+    - If you're using JavaScript sample, update in `userId` in `negotiate/function.json` to `"{headers.x-ms-client-principal-name}"`.
+
+        ```json
+        {
+          "type": "signalRConnectionInfo",
+          "name": "connectionInfo",
+          "userId": "{headers.x-ms-client-principal-name}",
+          "hubName": "EventGridIntegrationSampleChat",
+          "direction": "in"
+        }
+        ```
+
+    - If you're using C# sample, add parameter `UserId = "{headers.x-ms-signalr-userid}"` to `Negotiate` function.
+
+        ```C#
+        [SignalRConnectionInfo(HubName = HubName, UserId = "{headers.x-ms-signalr-userid}")] SignalRConnectionInfo connectionInfo
+        ```
 
 1. Deploy the function to Azure again
 
