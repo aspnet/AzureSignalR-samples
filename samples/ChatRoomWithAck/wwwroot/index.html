@@ -150,11 +150,11 @@
 
                 var ackMessage = function (messageId, messageStatus, ackId) {
                     var now = new Date();
-                    var entry = document.getElementById(messageId);
-                    var toadd = document.createElement('div');
-                    toadd.innerHTML =
-                        `<div class="message-avatar pull-right">${messageStatus} at ${now.toLocaleTimeString()}</div>`;
-                    entry.appendChild(toadd);
+                    var entry = document.getElementById(messageId + "-Status");
+                    entry.innerText = messageStatus + " at " + now.toLocaleTimeString();
+
+                    console.log("messageId: " + messageId + "\nStatus: " + messageStatus +
+                        "\nLocal Time: " + now.toLocaleTimeString());
 
                     connection.invoke('ackMessage', ackId);
                 }
@@ -194,17 +194,18 @@
                 var entry = document.getElementById(guid);
                 var toadd = document.createElement('div');
                 toadd.innerHTML =
-                    `<div class="message-avatar pull-right"> Sent at ${now.toLocaleTimeString()}</div>`;
+                    `<div class="message-avatar pull-right" id="${guid}-Status"> Sent at ${now.toLocaleTimeString()}</div>`;
                 entry.appendChild(toadd);
+                console.log("messageId: " + guid + "\nStatus: Sent\nLocal Time: " + now
+                    .toLocaleTimeString());
 
                 // Call the sendUserMessage method on the hub.
                 var x = await connection.invoke('sendUserMessage', guid, username, targetName, messageText);
                 now = new Date();
-                var entry = document.getElementById(guid);
-                var toadd = document.createElement('div');
-                toadd.innerHTML =
-                    `<div class="message-avatar pull-right"> ${x} at ${now.toLocaleTimeString()}</div>`;
-                entry.appendChild(toadd);
+                var entry = document.getElementById(guid + "-Status");
+                entry.innerText = x + " at " + now.toLocaleTimeString();
+                console.log("messageId: " + guid + "\nStatus: " + x + "\nLocal Time: " + now
+                    .toLocaleTimeString());
 
             }
 
