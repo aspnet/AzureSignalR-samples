@@ -10,7 +10,7 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
         public MessageType Type { get; set; }
         public string SourceName { get; set; }
         public string TargetName { get; set; }
-        public DateTime sendTime { get; set; }
+        public DateTime SendTime { get; set; }
 
         public string ConvertMessageToJson(Message message)
         {
@@ -22,23 +22,23 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
             return JsonConvert.DeserializeObject<Message>(message);
         }
 
-        public Message(string Id, string SourceName, string TargetName, string Text, MessageType Type, DateTime sendTime)
+        public Message(string id, string sourceName, string targetName, string text, MessageType type, DateTime sendTime)
         {
-            this.Id = Id;
-            this.Type = Type;
-            this.SourceName = SourceName;
-            this.TargetName = TargetName;
-            this.Text = Text;
-            this.sendTime = sendTime;
+            this.Id = id;
+            this.Type = type;
+            this.SourceName = sourceName;
+            this.TargetName = targetName;
+            this.Text = text;
+            this.SendTime = sendTime;
         }
 
-        public Message(string SourceName, string TargetName, string Text, MessageType Type)
+        public Message(string sourceName, string targetName, string text, MessageType type)
         {
             this.Id = Guid.NewGuid().ToString();
-            this.Type = Type;
-            this.SourceName = SourceName;
-            this.TargetName = TargetName;
-            this.Text = Text;
+            this.Type = type;
+            this.SourceName = sourceName;
+            this.TargetName = targetName;
+            this.Text = text;
         }
     }
 }

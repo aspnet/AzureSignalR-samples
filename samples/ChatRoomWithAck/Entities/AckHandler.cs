@@ -7,10 +7,10 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
 {
     public class AckHandler
     {
-        private static ConcurrentDictionary<string, (TaskCompletionSource<string>, DateTime)> _handlers
+        private static readonly ConcurrentDictionary<string, (TaskCompletionSource<string>, DateTime)> Handlers
             = new ConcurrentDictionary<string, (TaskCompletionSource<string>, DateTime)>();
 
-        private TimeSpan _ackThreshold;
+        private readonly TimeSpan _ackThreshold;
 
         private Timer _timer;
         public AckHandler()
@@ -21,18 +21,18 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
         }
 
 
-        public (string, Task<String>) CreateAck()
+        public (string, Task<string>) CreateAck()
         {
             var id = Guid.NewGuid().ToString();
             var tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
-            _handlers.TryAdd(id, (tcs, DateTime.UtcNow));
+            Handlers.TryAdd(id, (tcs, DateTime.UtcNow));
             return (id, tcs.Task);
         }
 
-        public Task<String> CreateAckWithId(string id)
+        public Task<string> CreateAckWithId(string id)
         {
             var tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
-            _handlers.TryAdd(id, (tcs, DateTime.UtcNow));
+            Handlers.TryAdd(id, (tcs, DateTime.UtcNow));
             return tcs.Task;
         }
 
@@ -48,9 +48,9 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
 
         private void CheckAcks()
         {
-            foreach (var pair in _handlers)
+            foreach (var pair in Handlers)
             {
-                TimeSpan elapsed = DateTime.UtcNow - pair.Value.Item2;
+                var elapsed = DateTime.UtcNow - pair.Value.Item2;
                 if (elapsed > _ackThreshold)
                 {
                     pair.Value.Item1.TrySetResult(AckResult.TimeOut);
@@ -64,17 +64,16 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
             {
                 return AckResult.Success;
             }
-            if (_handlers.TryGetValue(id, out var res))
-            {
-                res.Item1.TrySetResult(AckResult.Success);
-                return AckResult.Success;
-            }
-            return AckResult.Fail;
+
+            if (!Handlers.TryGetValue(id, out var res)) return AckResult.Fail;
+
+            res.Item1.TrySetResult(AckResult.Success);
+            return AckResult.Success;
         }
 
         public void TimeOutCheck()
         {
-            foreach (var pair in _handlers)
+            foreach (var pair in Handlers)
             {
                 pair.Value.Item1.TrySetCanceled();
             }

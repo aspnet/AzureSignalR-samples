@@ -5,7 +5,7 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
 {
     public class StaticMessageStorage : IMessageHandler
     {
-        private ConcurrentDictionary<string, UserMessage> _messageBox = new ConcurrentDictionary<string, UserMessage>();
+        private readonly ConcurrentDictionary<string, UserMessage> _messageBox = new ConcurrentDictionary<string, UserMessage>();
 
         public void AddUser(string userId)
         {
@@ -50,38 +50,38 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
 
         private class UserMessage
         {
-            ConcurrentStack<Message> historyMessage = new ConcurrentStack<Message>();
-            ConcurrentQueue<Message> unreadMessage = new ConcurrentQueue<Message>();
+            private readonly ConcurrentStack<Message> _historyMessage = new ConcurrentStack<Message>();
+            private readonly ConcurrentQueue<Message> _unreadMessage = new ConcurrentQueue<Message>();
 
             public bool IsUnreadEmpty()
             {
-                return unreadMessage.IsEmpty;
+                return _unreadMessage.IsEmpty;
             }
 
             public void AddUnreadMessage(Message message)
             {
-                unreadMessage.Enqueue(message);
+                _unreadMessage.Enqueue(message);
             }
 
             public void PopUnreadMessage()
             {
-                if (unreadMessage.IsEmpty)
+                if (_unreadMessage.IsEmpty)
                 {
                     return;
                 }
-                unreadMessage.TryDequeue(out Message result);
-                historyMessage.Push(result);
+                _unreadMessage.TryDequeue(out Message result);
+                _historyMessage.Push(result);
             }
 
             public Message PeekUnreadMessage()
             {
-                unreadMessage.TryPeek(out Message result);
+                _unreadMessage.TryPeek(out Message result);
                 return result;
             }
 
             public void AddHistoryMessage(Message message)
             {
-                historyMessage.Push(message);
+                _historyMessage.Push(message);
             }
         }
     }
