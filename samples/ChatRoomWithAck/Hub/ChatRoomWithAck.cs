@@ -10,11 +10,11 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
 {
     public class ChatRoomWithAck : Hub
     {
-        private readonly static AckHandler _ackhandler = new AckHandler();
+        private static AckHandler _ackhandler = new AckHandler();
 
-        private readonly static IMessageHandler _userMessage = new Assembler().Create("StaticMessageStorage");
+        private static IMessageHandler _userMessage = new Assembler().Create("StaticMessageStorage");
 
-        private readonly static ConcurrentDictionary<string, string> _userList = new ConcurrentDictionary<string, string>();
+        private static ConcurrentDictionary<string, string> _userList = new ConcurrentDictionary<string, string>();
 
         public void Register(string name)
         {
