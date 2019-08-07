@@ -13,6 +13,7 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
         private readonly TimeSpan _ackThreshold;
 
         private Timer _timer;
+
         public AckHandler()
                     : this(completeAcksOnTimeout: true,
                            ackThreshold: TimeSpan.FromSeconds(10),

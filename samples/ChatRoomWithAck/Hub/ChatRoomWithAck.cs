@@ -12,9 +12,14 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
     {
         private static readonly AckHandler AckHandler = new AckHandler();
 
-        private static readonly IMessageHandler UserMessage = new Assembler().Create("StaticMessageStorage");
+        private readonly IMessageHandler _userMessage;
 
         private static readonly ConcurrentDictionary<string, string> UserList = new ConcurrentDictionary<string, string>();
+
+        public ChatRoomWithAck(IMessageHandler userMessage)
+        {
+            _userMessage = userMessage;
+        }
 
         public void Register(string name)
         {
@@ -26,7 +31,7 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
             }
 
             UserList.TryAdd(name, Context.ConnectionId);
-            UserMessage.AddUser(name);
+            _userMessage.AddUser(name);
         }
 
         public void BroadcastMessage(string name, string message)
@@ -55,11 +60,11 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
 
             if (taskSend.Result.Equals(AckResult.TimeOut))
             {
-                UserMessage.AddUnreadMessage(targetName, msg);
+                _userMessage.AddUnreadMessage(targetName, msg);
             }
             else if (taskSend.Result.Equals(AckResult.Success))
             {
-               UserMessage.AddHistoryMessage(targetName, msg);
+                _userMessage.AddHistoryMessage(targetName, msg);
             }
 
             return taskSend.Result;
@@ -81,16 +86,16 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
 
         public async Task<string> LoadTempMessage(string sourceName)
         {
-            if(UserMessage.IsUnreadEmpty(sourceName))
+            if (_userMessage.IsUnreadEmpty(sourceName))
             {
                 return LoadMessageResult.NoMessage;
             }
 
-            while (UserMessage.IsUnreadEmpty(sourceName))
+            while (!_userMessage.IsUnreadEmpty(sourceName))
             {
-                var msg = UserMessage.PeekUnreadMessage(sourceName);
+                var msg = _userMessage.PeekUnreadMessage(sourceName);
                 await Clients.Client(GetConnectionId(sourceName)).SendAsync("sendUserMessage", msg.Id, msg.SourceName, msg.Text, AckResult.NoAck);
-                UserMessage.PopUnreadMessage(sourceName);
+                _userMessage.PopUnreadMessage(sourceName);
 
                 var (ackId, taskAck) = AckHandler.CreateAck();
                 await Clients.Client(GetConnectionId(msg.SourceName)).SendAsync("ackMessage", msg.Id, MessageStatus.Arrived, ackId);
@@ -99,7 +104,7 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
 
             return LoadMessageResult.Success;
         }
-        
+
         private static string GetConnectionId(string name)
         {
             return UserList.TryGetValue(name, out var id) ? id : "";
