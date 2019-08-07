@@ -5,9 +5,15 @@ using Microsoft.AspNetCore.SignalR;
 using System.Threading.Tasks;
 using System;
 using System.Collections.Concurrent;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
 {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = "ClaimBasedAuth")]
+    [Authorize(Policy = "PolicyBasedAuth")]
     public class ChatRoomWithAck : Hub
     {
         private static readonly AckHandler AckHandler = new AckHandler();
@@ -23,14 +29,6 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
 
         public void Register(string name)
         {
-            if (UserList.ContainsKey(name))
-            {
-                UserList.TryRemove(name, out _);
-                UserList.TryAdd(name, Context.ConnectionId);
-                return;
-            }
-
-            UserList.TryAdd(name, Context.ConnectionId);
             _userMessage.AddUser(name);
         }
 
@@ -46,16 +44,11 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
 
         public async Task<string> SendUserMessage(string id, string sourceName, string targetName, string message)
         {
-            if (GetConnectionId(targetName).Length == 0)
-            {
-                throw new NullReferenceException();
-            }
-
             var msg = new Message(id, sourceName, targetName, message, MessageType.UserTouser, DateTime.UtcNow);
 
             // Send the message to the target wait for target's ack
             var taskSend = AckHandler.CreateAckWithId(id);
-            await Clients.Client(GetConnectionId(targetName)).SendAsync("sendUserMessage", id, sourceName, message, id);
+            await Clients.User(targetName).SendAsync("sendUserMessage", id, sourceName, message, id);
             await taskSend;
 
             if (taskSend.Result.Equals(AckResult.TimeOut))
@@ -73,7 +66,7 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
         public async Task<string> SendUserAck(string msgId, string sourceName)
         {
             var (ackId, taskAck) = AckHandler.CreateAck();
-            await Clients.Client(GetConnectionId(sourceName)).SendAsync("ackMessage", msgId, MessageStatus.Acknowledged, ackId);
+            await Clients.User(sourceName).SendAsync("ackMessage", msgId, MessageStatus.Acknowledged, ackId);
             await taskAck;
             return taskAck.Result;
         }
@@ -94,20 +87,15 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
             while (!_userMessage.IsUnreadEmpty(sourceName))
             {
                 var msg = _userMessage.PeekUnreadMessage(sourceName);
-                await Clients.Client(GetConnectionId(sourceName)).SendAsync("sendUserMessage", msg.Id, msg.SourceName, msg.Text, AckResult.NoAck);
+                await Clients.User(sourceName).SendAsync("sendUserMessage", msg.Id, msg.SourceName, msg.Text, AckResult.NoAck);
                 _userMessage.PopUnreadMessage(sourceName);
 
                 var (ackId, taskAck) = AckHandler.CreateAck();
-                await Clients.Client(GetConnectionId(msg.SourceName)).SendAsync("ackMessage", msg.Id, MessageStatus.Arrived, ackId);
+                await Clients.User(msg.SourceName).SendAsync("ackMessage", msg.Id, MessageStatus.Arrived, ackId);
                 await taskAck;
             }
 
             return LoadMessageResult.Success;
-        }
-
-        private static string GetConnectionId(string name)
-        {
-            return UserList.TryGetValue(name, out var id) ? id : "";
         }
     }
 }
