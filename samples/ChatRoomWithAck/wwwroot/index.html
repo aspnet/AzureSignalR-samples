@@ -48,31 +48,6 @@
 
     <!--Add script to update the page and send messages.-->
     <script type="text/javascript">
-        function get(url) {
-            return new Promise((resolve, reject) => {
-                var xhr = new XMLHttpRequest();
-                xhr.open('GET', url, true);
-                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-                xhr.send();
-                xhr.onload = () => {
-                    if (xhr.status >= 200 && xhr.status < 300) {
-                        resolve(xhr.response || xhr.responseText);
-                    } else {
-                        reject({
-                            message: xhr.statusText,
-                            statusCode: xhr.status
-                        });
-                    }
-                }
-                xhr.onerror = () => {
-                    reject({
-                        message: xhr.statusText,
-                        statusCode: xhr.status
-                    });
-                }
-            });
-        }
-
         function generateRandomName() {
             return Math.random().toString(36).substring(2, 10);
         }
@@ -285,26 +260,17 @@
                 modal.style = 'display: block;';
             }
 
-            var jwtToken = '';
-            var role = 'Admin';
             var connection = new signalR.HubConnectionBuilder()
-                .withUrl(`/chat?username=${username}`, {
-                    accessTokenFactory: () => jwtToken
-                })
+                .withUrl('/chat')
                 .build();
-
-            var url = `/jwt/login?username=${username}&role=${role}`;
-            get(url).then((token) => {
-                jwtToken = token;
-                bindConnectionMessage(connection);
-                connection.start()
-                    .then(function () {
-                        onConnected(connection);
-                    })
-                    .catch(function (error) {
-                        console.error(error.message);
-                    });
-            });
+            bindConnectionMessage(connection);
+            connection.start()
+                .then(function () {
+                    onConnected(connection);
+                })
+                .catch(function (error) {
+                    console.error(error.message);
+                });
         });
     </script>
 </body>
