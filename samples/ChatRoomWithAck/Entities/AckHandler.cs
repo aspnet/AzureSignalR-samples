@@ -5,10 +5,10 @@ using System.Threading;
 
 namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
 {
-    public class AckHandler
+    public class AckHandler : IAckHandler
     {
-        private static readonly ConcurrentDictionary<string, (TaskCompletionSource<string>, DateTime)> Handlers
-            = new ConcurrentDictionary<string, (TaskCompletionSource<string>, DateTime)>();
+        private readonly ConcurrentDictionary<string, (TaskCompletionSource<AckResult>, DateTime)> _handlers
+            = new ConcurrentDictionary<string, (TaskCompletionSource<AckResult>, DateTime)>();
 
         private readonly TimeSpan _ackThreshold;
 
@@ -21,22 +21,6 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
         {
         }
 
-
-        public (string, Task<string>) CreateAck()
-        {
-            var id = Guid.NewGuid().ToString();
-            var tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
-            Handlers.TryAdd(id, (tcs, DateTime.UtcNow));
-            return (id, tcs.Task);
-        }
-
-        public Task<string> CreateAckWithId(string id)
-        {
-            var tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
-            Handlers.TryAdd(id, (tcs, DateTime.UtcNow));
-            return tcs.Task;
-        }
-
         public AckHandler(bool completeAcksOnTimeout, TimeSpan ackThreshold, TimeSpan ackInterval)
         {
             if (completeAcksOnTimeout)
@@ -47,36 +31,47 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
             _ackThreshold = ackThreshold;
         }
 
+        public (string, Task<AckResult>) CreateAck()
+        {
+            var id = Guid.NewGuid().ToString();
+            var tcs = new TaskCompletionSource<AckResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+            _handlers.TryAdd(id, (tcs, DateTime.UtcNow));
+            return (id, tcs.Task);
+        }
+
+        public Task<AckResult> CreateAckWithId(string id)
+        {
+            var tcs = new TaskCompletionSource<AckResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+            _handlers.TryAdd(id, (tcs, DateTime.UtcNow));
+            return tcs.Task;
+        }
+
+        public void Ack(string id)
+        {
+            if (id.Equals(AckResult.NoAck.ToString()))
+            {
+                return;
+            }
+
+            if (_handlers.TryGetValue(id, out var res))
+            {
+                res.Item1.TrySetResult(AckResult.Success);
+            }
+            else
+            {
+                throw new NullReferenceException();
+            }
+        }
+
         private void CheckAcks()
         {
-            foreach (var pair in Handlers)
+            foreach (var pair in _handlers)
             {
                 var elapsed = DateTime.UtcNow - pair.Value.Item2;
                 if (elapsed > _ackThreshold)
                 {
                     pair.Value.Item1.TrySetResult(AckResult.TimeOut);
                 }
-            }
-        }
-
-        public string Ack(string id)
-        {
-            if (id.Equals(AckResult.NoAck))
-            {
-                return AckResult.Success;
-            }
-
-            if (!Handlers.TryGetValue(id, out var res)) return AckResult.Fail;
-
-            res.Item1.TrySetResult(AckResult.Success);
-            return AckResult.Success;
-        }
-
-        public void TimeOutCheck()
-        {
-            foreach (var pair in Handlers)
-            {
-                pair.Value.Item1.TrySetCanceled();
             }
         }
     }

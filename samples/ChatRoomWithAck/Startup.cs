@@ -22,6 +22,7 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
             services.AddSignalR()
                     .AddAzureSignalR();
             services.AddSingleton<IMessageHandler, StaticMessageStorage>();
+            services.AddSingleton<IAckHandler,AckHandler>();
         }
 
         public void Configure(IApplicationBuilder app)
