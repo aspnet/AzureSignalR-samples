@@ -4,42 +4,34 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
 {
     public enum MessageType
     {
-        UserTouser,
+        UserToUser,
         System,
         Broadcast
     }
 
-    public static class AckResult
+    public enum AckResult
     {
-        public static string Success = "Success";
-
-        public static string Fail = "Fail";
-
-        public static string TimeOut = "Timeout"; 
-
-        public static string NoAck = "NoAck";
+        Success,
+        Fail,
+        TimeOut,
+        NoAck
     }
 
-    public static class MessageStatus
+    public enum MessageStatus
     {
-        public static string Arrived = "Arrived"; 
-
-        public static string Acknowledged = "Acknoeledged";
+        Arrived,
+        Acknowledged
     }
 
-    public static class LoadMessageResult
+    public class LoadMessageResult
     {
-        public static string NoMessage = "You have no new messages!";
+        public const string NoMessage = "You have no new messages!";
 
-        public static string Success = "Success loading new messages!";
-
-        public static string Fail = "Please try again to load new messages!";
+        public const string Success = "Success loading new messages!";
     }
 
-    public static class HubString
+    public class HubString
     {
-        public static string UserNotFound = "User not found!";
-
-        public static string EchoNotification = " (echo form server)";
+        public const string EchoNotification = " (echo form server)";
     }
 }
