@@ -22,7 +22,6 @@
                 placeholder="Type message and press Enter to send..."></textarea>
         </div>
         <div style="overflow: auto; border-style: ridge; border-top-style: hidden;">
-            <button class="btn-warning pull-right" id="echo">Echo</button>
             <button class="btn-success pull-right" id="sendmessage">Send</button>
         </div>
         <div>
@@ -161,7 +160,6 @@
 
                 // Create a function that the hub can call to broadcast messages.
                 connection.on('broadcastMessage', messageCallback);
-                connection.on('echo', messageCallback);
                 connection.on('ackMessage', ackMessage);
                 connection.on('sendUserMessage', sendUserMessage);
                 connection.onclose(onConnectionError);
@@ -237,17 +235,8 @@
                         return false;
                     }
                 });
-                document.getElementById('echo').addEventListener('click', function (event) {
-                    // Call the echo method on the hub.
-                    connection.send('echo', username, messageInput.value);
 
-                    // Clear text box and reset focus for next comment.
-                    messageInput.value = '';
-                    messageInput.focus();
-                    event.preventDefault();
-                });
-
-                var x = await connection.invoke('loadTempMessage', username);
+                var x = await connection.invoke('loadUnreadMessage', username);
                 alert(x);
             }
 
