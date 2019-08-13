@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
 {
-    public class AckHandler : IAckHandler
+    public class AckHandler : IAckHandler, IDisposable
     {
         private readonly ConcurrentDictionary<string, (TaskCompletionSource<AckResult>, DateTime)> _handlers
             = new ConcurrentDictionary<string, (TaskCompletionSource<AckResult>, DateTime)>();
@@ -31,35 +31,36 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
             _ackThreshold = ackThreshold;
         }
 
-        public (string, Task<AckResult>) CreateAck()
+        public AckInfo CreateAck()
         {
             var id = Guid.NewGuid().ToString();
             var tcs = new TaskCompletionSource<AckResult>(TaskCreationOptions.RunContinuationsAsynchronously);
             _handlers.TryAdd(id, (tcs, DateTime.UtcNow));
-            return (id, tcs.Task);
-        }
-
-        public Task<AckResult> CreateAckWithId(string id)
-        {
-            var tcs = new TaskCompletionSource<AckResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-            _handlers.TryAdd(id, (tcs, DateTime.UtcNow));
-            return tcs.Task;
+            return new AckInfo(id, tcs.Task);
         }
 
         public void Ack(string id)
         {
-            if (id.Equals(AckResult.NoAck.ToString()))
-            {
-                return;
-            }
-
             if (_handlers.TryGetValue(id, out var res))
             {
                 res.Item1.TrySetResult(AckResult.Success);
             }
             else
             {
-                throw new NullReferenceException();
+                throw new Exception("AckId not found");
+            }
+        }
+
+        public void Dispose()
+        {
+            if (_timer != null)
+            {
+                _timer.Dispose();
+            }
+
+            foreach (var pair in _handlers)
+            {
+                pair.Value.Item1.TrySetCanceled();
             }
         }
 
