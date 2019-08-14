@@ -13,7 +13,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
         }
 
         //  Complete the task specified by the ackId.
-        public void AckMessage(string ackId)
+        public void AckResponse(string ackId)
         {
             _ackHandler.Ack(ackId);
         }
@@ -25,6 +25,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
             var ackInfo = _ackHandler.CreateAck();
             await Clients.User(receiver).SendAsync("displayUserMessage", id, sender, message, ackInfo.AckId);
 
+            //  Return the task result to the client.
             return (await ackInfo.AckTask).ToString();
         }
 

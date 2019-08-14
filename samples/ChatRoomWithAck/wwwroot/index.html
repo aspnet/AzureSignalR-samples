@@ -45,12 +45,10 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@aspnet/signalr@1.1.0/dist/browser/signalr.min.js">
     </script>
 
-
-    <script type="text/javascript">
-    </script>
-
     <!--Add script to update the page and send messages.-->
     <script type="text/javascript">
+        var username = generateRandomName();
+
         function generateRandomName() {
             return Math.random().toString(36).substring(2, 10);
         }
@@ -63,9 +61,51 @@
             });
         }
 
+        // Html encode message.
+        function encodedMessage(message) {
+            return message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        function createPublicMessage(encodedName, encodedMsg, encodeMsgId) {
+            var entry = document.createElement('div');
+            entry.classList.add("message-entry");
+            if (encodedName === "_SYSTEM_") {
+                entry.innerHTML = encodedMsg;
+                entry.classList.add("text-center");
+                entry.classList.add("system-message");
+            } else if (encodedName === "_BROADCAST_") {
+                entry.classList.add("text-center");
+                entry.innerHTML =
+                    `<div class="text-center broadcast-message" id="${encodeMsgId}">${encodedMsg}</div>`;
+            } else if (encodedName === username) {
+                entry.innerHTML =
+                    `<div class="message-avatar pull-right" id="${encodeMsgId}">${encodedName}</div>` +
+                    `<div class="message-content pull-right">${encodedMsg}<div>`;
+            } else {
+                entry.innerHTML =
+                    `<div class="message-avatar pull-left" id="${encodeMsgId}">${encodedName}</div>` +
+                    `<div class="message-content pull-left">${encodedMsg}<div>`;
+            }
+            return entry;
+        }
+
+        function createUserMessage(msgId, sourceName, msg) {
+            var entry = document.createElement('div');
+            entry.classList.add("message-entry");
+            if (sourceName === username) {
+                entry.innerHTML =
+                    `<div class="message-avatar pull-right" id="${msgId}">${sourceName}</div>` +
+                    `<div class="message-content pull-right">${msg}<div>`;
+            } else {
+                entry.innerHTML =
+                    `<div class="message-avatar pull-left" id="${msgId}">${sourceName}</div>` +
+                    `<div class="message-content pull-left">${msg}<div>`;
+            }
+            return entry;
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
             // Get the user name and store it to prepend to messages.
-            var username = generateRandomName();
             var promptMessage = 'Enter your name:';
             do {
                 username = prompt(promptMessage, username);
@@ -81,56 +121,11 @@
             var targetNameInput = document.getElementById('targetName');
             messageInput.focus();
 
-            function createMessageEntry(encodedName, encodedMsg, encodeMsgId) {
-                var entry = document.createElement('div');
-                entry.classList.add("message-entry");
-                if (encodedName === "_SYSTEM_") {
-                    entry.innerHTML = encodedMsg;
-                    entry.classList.add("text-center");
-                    entry.classList.add("system-message");
-                } else if (encodedName === "_BROADCAST_") {
-                    entry.classList.add("text-center");
-                    entry.innerHTML =
-                        `<div class="text-center broadcast-message" id="${encodeMsgId}">${encodedMsg}</div>`;
-                } else if (encodedName === username) {
-                    entry.innerHTML =
-                        `<div class="message-avatar pull-right" id="${encodeMsgId}">${encodedName}</div>` +
-                        `<div class="message-content pull-right">${encodedMsg}<div>`;
-                } else {
-                    entry.innerHTML =
-                        `<div class="message-avatar pull-left" id="${encodeMsgId}">${encodedName}</div>` +
-                        `<div class="message-content pull-left">${encodedMsg}<div>`;
-                }
-                return entry;
-            }
-
-            function createUserMessage(msgId, sourceName, msg) {
-                var entry = document.createElement('div');
-                entry.classList.add("message-entry");
-                if (sourceName === username) {
-                    entry.innerHTML =
-                        `<div class="message-avatar pull-right" id="${msgId}">${sourceName}</div>` +
-                        `<div class="message-content pull-right">${msg}<div>`;
-                } else {
-                    entry.innerHTML =
-                        `<div class="message-avatar pull-left" id="${msgId}">${sourceName}</div>` +
-                        `<div class="message-content pull-left">${msg}<div>`;
-                    entry.addEventListener('click', function (event) {
-                        connection.invoke('sendUserAck', msgId, sourceName);
-                    });
-                }
-                return entry;
-            }
-
             function bindConnectionMessage(connection) {
-                var messageCallback = function (name, message) {
-                    if (!message) return;
-
-                    // Html encode display name and message.
-                    var encodedName = name;
-                    var encodedMsg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g,
-                        "&gt;");
-                    var messageEntry = createMessageEntry(encodedName, encodedMsg, name + message, false);
+                //  Add the message to the screen
+                var displayPublicMessage = function (name, message) {
+                    var messageEntry = createPublicMessage(name, encodedMessage(message), name + message,
+                        false);
 
                     var messageBox = document.getElementById('messages');
                     messageBox.appendChild(messageEntry);
@@ -138,18 +133,19 @@
                 };
 
                 var displayUserMessage = function (id, name, message, ackId) {
-                    // Html encode display name and message.
-                    var encodedName = name;
-                    var encodedMsg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g,
-                        "&gt;");
-                    var messageEntry = createUserMessage(id, name, message);
+                    var messageEntry = createUserMessage(id, name, encodedMessage(message));
+                    messageEntry.addEventListener('click', function (event) {
+                        connection.invoke('sendUserAck', id, name, "Acknoeledged");
+                    });
 
                     var messageBox = document.getElementById('messages');
                     messageBox.appendChild(messageEntry);
                     messageBox.scrollTop = messageBox.scrollHeight;
-                    connection.invoke('ackMessage', ackId);
+
+                    connection.invoke('ackResponse', ackId);
                 };
 
+                //  Change the status text under the message 
                 var displayAckMessage = function (messageId, messageStatus, ackId) {
                     var now = new Date();
                     var entry = document.getElementById(messageId + "-Status");
@@ -158,15 +154,16 @@
                     console.log("messageId: " + messageId + "\nStatus: " + messageStatus +
                         "\nLocal Time: " + now.toLocaleTimeString());
 
-                    connection.invoke('ackMessage', ackId);
+                    connection.invoke('ackResponse', ackId);
                 }
 
                 // Create a function that the hub can call to broadcast messages.
-                connection.on('broadcastMessage', messageCallback);
+                connection.on('broadcastMessage', displayPublicMessage);
                 connection.on('displayAckMessage', displayAckMessage);
                 connection.on('displayUserMessage', displayUserMessage);
                 connection.onclose(onConnectionError);
             }
+
             async function sendUserMessage(event) {
                 if (!messageInput.value) {
                     return;
@@ -200,7 +197,8 @@
                     .toLocaleTimeString());
 
                 // Call the sendUserRoamingMessage(or sendUserMessage if you don't need to store message) method on the hub.
-                var x = await connection.invoke('sendUserRoamingMessage', guid, username, targetName, messageText);
+                var x = await connection.invoke('sendUserRoamingMessage', guid, username, targetName,
+                    messageText);
                 now = new Date();
                 var entry = document.getElementById(guid + "-Status");
                 entry.innerText = x + " at " + now.toLocaleTimeString();
@@ -226,8 +224,7 @@
                 });
 
                 document.getElementById('sendUserMessage').addEventListener('click', (event) =>
-                    sendUserMessage(
-                        event));
+                    sendUserMessage(event));
 
                 document.getElementById('message').addEventListener('keypress', function (event) {
                     if (event.keyCode === 13) {
@@ -236,7 +233,8 @@
                         return false;
                     }
                 });
-
+                
+                //  Pull the unread message in the server and alert the result
                 var x = await connection.invoke('loadUnreadMessage', username);
                 alert(x);
             }
