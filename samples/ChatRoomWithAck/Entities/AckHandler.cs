@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using System.Threading;
 
-namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
+namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 {
     public class AckHandler : IAckHandler, IDisposable
     {

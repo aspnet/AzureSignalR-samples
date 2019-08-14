@@ -1,6 +1,6 @@
 using System;
 
-namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
+namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 {
     public class Message
     {
