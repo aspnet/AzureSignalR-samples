@@ -1,9 +1,7 @@
-namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
+namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 {
     public interface IMessageHandler
     {
-        void AddUser(string userId);
-
         void AddHistoryMessage(string userId, Message message);
 
         void AddUnreadMessage(string userId, Message message);

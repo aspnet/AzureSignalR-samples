@@ -45,6 +45,10 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@aspnet/signalr@1.1.0/dist/browser/signalr.min.js">
     </script>
 
+
+    <script type="text/javascript">
+    </script>
+
     <!--Add script to update the page and send messages.-->
     <script type="text/javascript">
         function generateRandomName() {
@@ -133,8 +137,7 @@
                     messageBox.scrollTop = messageBox.scrollHeight;
                 };
 
-                var sendUserMessage = function (id, name, message, ackId) {
-
+                var displayUserMessage = function (id, name, message, ackId) {
                     // Html encode display name and message.
                     var encodedName = name;
                     var encodedMsg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g,
@@ -147,7 +150,7 @@
                     connection.invoke('ackMessage', ackId);
                 };
 
-                var ackMessage = function (messageId, messageStatus, ackId) {
+                var displayAckMessage = function (messageId, messageStatus, ackId) {
                     var now = new Date();
                     var entry = document.getElementById(messageId + "-Status");
                     entry.innerText = messageStatus + " at " + now.toLocaleTimeString();
@@ -160,11 +163,10 @@
 
                 // Create a function that the hub can call to broadcast messages.
                 connection.on('broadcastMessage', messageCallback);
-                connection.on('ackMessage', ackMessage);
-                connection.on('sendUserMessage', sendUserMessage);
+                connection.on('displayAckMessage', displayAckMessage);
+                connection.on('displayUserMessage', displayUserMessage);
                 connection.onclose(onConnectionError);
             }
-
             async function sendUserMessage(event) {
                 if (!messageInput.value) {
                     return;
@@ -197,8 +199,8 @@
                 console.log("messageId: " + guid + "\nStatus: Sent\nLocal Time: " + now
                     .toLocaleTimeString());
 
-                // Call the sendUserMessage method on the hub.
-                var x = await connection.invoke('sendUserMessage', guid, username, targetName, messageText);
+                // Call the sendUserRoamingMessage(or sendUserMessage if you don't need to store message) method on the hub.
+                var x = await connection.invoke('sendUserRoamingMessage', guid, username, targetName, messageText);
                 now = new Date();
                 var entry = document.getElementById(guid + "-Status");
                 entry.innerText = x + " at " + now.toLocaleTimeString();
@@ -210,7 +212,6 @@
             async function onConnected(connection) {
                 console.log('connection started');
                 await connection.send('broadcastMessage', '_SYSTEM_', username + ' JOINED');
-                await connection.invoke('register', username);
 
                 document.getElementById('sendmessage').addEventListener('click', function (event) {
                     // Call the broadcastMessage method on the hub.
@@ -250,7 +251,7 @@
             }
 
             var connection = new signalR.HubConnectionBuilder()
-                .withUrl('/chat')
+                .withUrl(`/chat?username=${username}`)
                 .build();
             bindConnectionMessage(connection);
             connection.start()

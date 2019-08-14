@@ -4,8 +4,9 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.Security.Claims;
 
-namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
+namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 {
     public class Startup
     {
@@ -20,9 +21,16 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
         {
             services.AddMvc();
             services.AddSignalR()
-                    .AddAzureSignalR();
+                    .AddAzureSignalR(options =>
+                    {
+                        options.ClaimsProvider = context => new[]
+                        {
+                            new Claim(ClaimTypes.NameIdentifier, context.Request.Query["username"])
+                        };
+                    });
+
             services.AddSingleton<IMessageHandler, StaticMessageStorage>();
-            services.AddSingleton<IAckHandler,AckHandler>();
+            services.AddSingleton<IAckHandler, AckHandler>();
         }
 
         public void Configure(IApplicationBuilder app)
@@ -31,8 +39,9 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
             app.UseFileServer();
             app.UseAzureSignalR(routes =>
             {
-                routes.MapHub<ChatRoomWithAck>("/chat");
-            });
+                routes.MapHub<ReliableRoamingChatRoom>("/chat");
+            }
+            );
         }
     }
 }

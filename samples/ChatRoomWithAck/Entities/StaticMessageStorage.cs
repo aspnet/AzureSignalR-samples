@@ -2,20 +2,15 @@ using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using System;
 
-namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
+namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 {
     public class StaticMessageStorage : IMessageHandler
     {
         private readonly ConcurrentDictionary<string, UserMessage> _messageBox = new ConcurrentDictionary<string, UserMessage>();
 
-        public void AddUser(string userId)
-        {
-            _messageBox.TryAdd(userId, new UserMessage());
-        }
-
         public void AddHistoryMessage(string userId, Message message)
         {
-            _messageBox.TryGetValue(userId, out UserMessage result);
+            UserMessage result = GetOrAddUserMessage(userId);
             UserMessage _result = result;
             _result.AddHistoryMessage(message);
             _messageBox.TryUpdate(userId, _result, result);
@@ -23,7 +18,7 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
 
         public void AddUnreadMessage(string userId, Message message)
         {
-            _messageBox.TryGetValue(userId, out UserMessage result);
+            UserMessage result = GetOrAddUserMessage(userId);
             UserMessage _result = result;
             _result.AddUnreadMessage(message);
             _messageBox.TryUpdate(userId, _result, result);
@@ -31,22 +26,36 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
 
         public bool IsUnreadEmpty(string userId)
         {
-            _messageBox.TryGetValue(userId, out UserMessage result);
+            UserMessage result = GetOrAddUserMessage(userId);
             return result.IsUnreadEmpty();
         }
 
         public Message PeekUnreadMessage(string userId)
         {
-            _messageBox.TryGetValue(userId, out UserMessage result);
+            UserMessage result = GetOrAddUserMessage(userId);
             return result.PeekUnreadMessage();
         }
 
         public void PopUnreadMessage(string userId)
         {
-            _messageBox.TryGetValue(userId, out UserMessage result);
+            UserMessage result = GetOrAddUserMessage(userId);
             UserMessage _result = result;
             _result.PopUnreadMessage();
             _messageBox.TryUpdate(userId, _result, result);
+        }
+
+        private UserMessage GetOrAddUserMessage(string userId)
+        {
+            if(!_messageBox.TryGetValue(userId, out UserMessage result))
+            {
+                UserMessage newUserMessage = new UserMessage();
+                _messageBox.TryAdd(userId, newUserMessage);
+                return newUserMessage;
+            }
+            else
+            {
+                return result;
+            }
         }
 
         private class UserMessage

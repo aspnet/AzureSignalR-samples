@@ -1,111 +1,40 @@
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
 using Microsoft.AspNetCore.SignalR;
 using System.Threading.Tasks;
-using System;
-using System.Collections.Concurrent;
 
-namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
+namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 {
-    public class ChatRoomWithAck : Hub
+    public class ReliableChatRoom : Hub
     {
         private readonly IAckHandler _ackHandler;
 
-        private readonly IMessageHandler _userMessage;
-
-        private static readonly ConcurrentDictionary<string, string> UserList = new ConcurrentDictionary<string, string>();
-
-        public ChatRoomWithAck(IMessageHandler userMessage, IAckHandler ackHandler)
+        public ReliableChatRoom(IAckHandler ackHandler)
         {
             _ackHandler = ackHandler;
-            _userMessage = userMessage;
         }
 
-        public void Register(string name)
-        {
-            if (UserList.ContainsKey(name))
-            {
-                UserList.TryRemove(name, out _);
-                UserList.TryAdd(name, Context.ConnectionId);
-                return;
-            }
-
-            UserList.TryAdd(name, Context.ConnectionId);
-            _userMessage.AddUser(name);
-        }
-
-        public void BroadcastMessage(string name, string message)
-        {
-            Clients.All.SendAsync("broadcastMessage", name, message);
-        }
-
-        public async Task<string> SendUserMessage(string id, string sourceName, string targetName, string message)
-        {
-            if (GetConnectionId(targetName).Length == 0)
-            {
-                throw new NullReferenceException();
-            }
-
-            var msg = new Message(id, sourceName, targetName, message, MessageType.UserToUser, DateTime.UtcNow);
-
-            // Send the message to the target wait for target's ack
-            var ackInfo = _ackHandler.CreateAck();
-            await Clients.Client(GetConnectionId(targetName)).SendAsync("sendUserMessage", id, sourceName, message);
-            var result = await ackInfo.AckTask;
-
-            if (result.Equals(AckResult.TimeOut))
-            {
-                _userMessage.AddUnreadMessage(targetName, msg);
-            }
-            else if (result.Equals(AckResult.Success))
-            {
-                _userMessage.AddHistoryMessage(targetName, msg);
-                return MessageStatus.Arrived.ToString();
-            }
-
-            return result.ToString();
-        }
-
-        public async Task<string> SendUserAck(string msgId, string sourceName)
-        {
-            var ackInfo = _ackHandler.CreateAck();
-            await Clients.Client(GetConnectionId(sourceName))
-                .SendAsync("ackMessage", msgId, MessageStatus.Acknowledged.ToString(), ackInfo.AckId);
-            return (await ackInfo.AckTask).ToString();
-        }
-
+        //  Complete the task specified by the ackId.
         public void AckMessage(string ackId)
         {
             _ackHandler.Ack(ackId);
         }
 
-        public async Task<string> LoadUnreadMessage(string sourceName)
+        //  Send the message to the receiver
+        public async Task<string> SendUserMessage(string id, string sender, string receiver, string message)
         {
-            if (_userMessage.IsUnreadEmpty(sourceName))
-            {
-                return LoadMessageResult.NoMessage;
-            }
+            //  Create a task and wait for the receiver client to complete it.
+            var ackInfo = _ackHandler.CreateAck();
+            await Clients.User(receiver).SendAsync("displayUserMessage", id, sender, message, ackInfo.AckId);
 
-            while (!_userMessage.IsUnreadEmpty(sourceName))
-            {
-                var msg = _userMessage.PeekUnreadMessage(sourceName);
-                await Clients.Client(GetConnectionId(sourceName))
-                    .SendAsync("sendUserMessage", msg.Id, msg.SourceName, msg.Text, AckResult.NoAck);
-                _userMessage.PopUnreadMessage(sourceName);
-
-                var ackInfo = _ackHandler.CreateAck();
-                await Clients.Client(GetConnectionId(msg.SourceName))
-                    .SendAsync("ackMessage", msg.Id, MessageStatus.Arrived.ToString(), ackInfo.AckId);
-                await ackInfo.AckTask;
-            }
-
-            return LoadMessageResult.Success;
+            return (await ackInfo.AckTask).ToString();
         }
 
-        private static string GetConnectionId(string name)
+        // Send a customized receipt to the message sender.
+        public async Task<string> SendUserAck(string msgId, string sourceName, string message)
         {
-            return UserList.TryGetValue(name, out var id) ? id : "";
+            var ackInfo = _ackHandler.CreateAck();
+            await Clients.User(sourceName).SendAsync("displayAckMessage", msgId, message, ackInfo.AckId);
+
+            return (await ackInfo.AckTask).ToString();
         }
     }
 }

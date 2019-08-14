@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace Microsoft.Azure.SignalR.Samples.ChatRoomWithAck
+namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 {
     public class AckInfo
     {
