@@ -22,6 +22,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
             Clients.All.SendAsync("broadcastMessage", name, message);
         }
 
+        //  Store the message in the history/unread list after sending the message.
         public async Task<string> SendUserRoamingMessage(string messageId, string sender, string receiver, string message)
         {
             var msg = new Message(messageId, sender, receiver, message, MessageType.UserToUser, DateTime.UtcNow);
@@ -41,6 +42,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
             return result;
         }
 
+        //  Pull the unread message when the client connects. 
         public async Task<string> LoadUnreadMessage(string sourceName)
         {
             if (_userMessage.IsUnreadEmpty(sourceName))
@@ -54,8 +56,6 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
                 await Clients.User(sourceName)
                     .SendAsync("displayUserMessage", msg.Id, msg.SourceName, msg.Text, AckResult.NoAck);
                 _userMessage.PopUnreadMessage(sourceName);
-
-                await SendUserAck(msg.Id, msg.SourceName, MessageStatus.Arrived.ToString());
             }
 
             return LoadMessageResult.Success;
