@@ -13,7 +13,7 @@
 
 <body>
     <h2 class="text-center" style="margin-top: 0; padding-top: 30px; padding-bottom: 30px;">
-        Azure SignalR Group Chat With Ack
+        Azure SignalR Single Chat
     </h2>
     <div class="container" style="height: calc(100% - 110px);">
         <div id="messages" style="background-color: whitesmoke; "></div>
@@ -22,12 +22,12 @@
                       placeholder="Type message and press Enter to send..."></textarea>
         </div>
         <div style="overflow: auto; border-style: ridge; border-top-style: hidden;">
-            <button class="btn-success pull-right" id="sendmessage">Send</button>
+            <button class="btn-success pull-right" id="sendmessage">Send All</button>
         </div>
         <div>
             <textarea id="targetName" style="width: 100%; padding: 5px 10px; border-style: hidden;"
                       placeholder="Type targetName"></textarea>
-            <button class="btn-success pull-right" id="sendUserMessage">sendUserMessage</button>
+            <button class="btn-success pull-right" id="sendUserMessage">Send To User</button>
         </div>
     </div>
     <div class="modal alert alert-danger fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
@@ -70,40 +70,25 @@
             return message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         }
 
-        function createPublicMessage(encodedName, encodedMsg, encodeMsgId) {
+        function createNewMessage(sender, message, messageId) {
             const entry = document.createElement('div');
             entry.classList.add("message-entry");
-            if (encodedName === "_SYSTEM_") {
-                entry.innerHTML = encodedMsg;
+            if (sender === "_SYSTEM_") {
+                entry.innerHTML = message;
                 entry.classList.add("text-center");
                 entry.classList.add("system-message");
-            } else if (encodedName === "_BROADCAST_") {
+            } else if (sender === "_BROADCAST_") {
                 entry.classList.add("text-center");
                 entry.innerHTML =
-                    `<div class="text-center broadcast-message" id="${encodeMsgId}">${encodedMsg}</div>`;
-            } else if (encodedName === username) {
+                    `<div class="text-center broadcast-message" id="${messageId}">${message}</div>`;
+            } else if (sender === username) {
                 entry.innerHTML =
-                    `<div class="message-avatar pull-right" id="${encodeMsgId}">${encodedName}</div>` +
-                    `<div class="message-content pull-right">${encodedMsg}<div>`;
+                    `<div class="message-avatar pull-right" id="${messageId}">${sender}</div>` +
+                    `<div class="message-content pull-right">${message}<div>`;
             } else {
                 entry.innerHTML =
-                    `<div class="message-avatar pull-left" id="${encodeMsgId}">${encodedName}</div>` +
-                    `<div class="message-content pull-left">${encodedMsg}<div>`;
-            }
-            return entry;
-        }
-
-        function createUserMessage(msgId, sourceName, msg) {
-            const  entry = document.createElement('div');
-            entry.classList.add("message-entry");
-            if (sourceName === username) {
-                entry.innerHTML =
-                    `<div class="message-avatar pull-right" id="${msgId}">${sourceName}</div>` +
-                    `<div class="message-content pull-right">${msg}<div>`;
-            } else {
-                entry.innerHTML =
-                    `<div class="message-avatar pull-left" id="${msgId}">${sourceName}</div>` +
-                    `<div class="message-content pull-left">${msg}<div>`;
+                    `<div class="message-avatar pull-left" id="${messageId}">${sender}</div>` +
+                    `<div class="message-content pull-left">${message}<div>`;
             }
             return entry;
         }
@@ -134,14 +119,13 @@
             function bindConnectionMessage(connection) {
                 //  Add the message to the screen
                 const displayPublicMessage = function (name, message) {
-                    const messageEntry = createPublicMessage(name, encodedMessage(message), name + message,
-                        false);
+                    const messageEntry = createNewMessage(name, encodedMessage(message), generateGuid());
 
                     addNewMessageToScreen(messageEntry);
                 };
 
                 const displayUserMessage = function (id, name, message, ackId) {
-                    const messageEntry = createUserMessage(id, name, encodedMessage(message));
+                    const messageEntry = createNewMessage(name, encodedMessage(message), id);
                     messageEntry.addEventListener('click', function (event) {
                         connection.invoke('sendUserAck', id, name, "Acknowledged");
                     });
@@ -188,7 +172,7 @@
                 event.preventDefault();
 
                 // Create the message in the room.
-                const messageEntry = createUserMessage(guid, username, messageText);
+                const messageEntry = createNewMessage(username, messageText, guid);
                 const messageBoxElement = document.getElementById('messages');
                 messageBoxElement.appendChild(messageEntry);
                 messageBoxElement.scrollTop = messageBoxElement.scrollHeight;

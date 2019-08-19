@@ -12,6 +12,7 @@ namespace Microsoft.Azure.SignalR.Samples.AckableChatRoom
         {
             _ackHandler = ackHandler;
         }
+
         public void BroadcastMessage(string name, string message)
         {
             Clients.All.SendAsync("broadcastMessage", name, message);
