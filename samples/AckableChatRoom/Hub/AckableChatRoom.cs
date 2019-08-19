@@ -1,15 +1,20 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.SignalR;
 using System.Threading.Tasks;
 
-namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
+namespace Microsoft.Azure.SignalR.Samples.AckableChatRoom
 {
-    public class ReliableChatRoom : Hub
+    public class AckableChatRoom : Hub
     {
         private readonly IAckHandler _ackHandler;
 
-        public ReliableChatRoom(IAckHandler ackHandler)
+        public AckableChatRoom(IAckHandler ackHandler)
         {
             _ackHandler = ackHandler;
+        }
+        public void BroadcastMessage(string name, string message)
+        {
+            Clients.All.SendAsync("broadcastMessage", name, message);
         }
 
         //  Complete the task specified by the ackId.
@@ -19,10 +24,11 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
         }
 
         //  Send the message to the receiver
-        public async Task<string> SendUserMessage(string id, string sender, string receiver, string message)
+        public async Task<string> SendUserMessage(string id, string receiver, string message)
         {
             //  Create a task and wait for the receiver client to complete it.
             var ackInfo = _ackHandler.CreateAck();
+            var sender = Context.User.FindFirst(ClaimTypes.NameIdentifier).Value;
             await Clients.User(receiver).SendAsync("displayUserMessage", id, sender, message, ackInfo.AckId);
 
             //  Return the task result to the client.

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Security.Claims;
 
-namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
+namespace Microsoft.Azure.SignalR.Samples.AckableChatRoom
 {
     public class Startup
     {
@@ -29,7 +29,6 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
                         };
                     });
 
-            services.AddSingleton<IMessageHandler, StaticMessageStorage>();
             services.AddSingleton<IAckHandler, AckHandler>();
         }
 
@@ -39,7 +38,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
             app.UseFileServer();
             app.UseAzureSignalR(routes =>
             {
-                routes.MapHub<ReliableRoamingChatRoom>("/chat");
+                routes.MapHub<AckableChatRoom>("/chat");
             }
             );
         }

@@ -19,14 +19,14 @@
         <div id="messages" style="background-color: whitesmoke; "></div>
         <div style="width: 100%; border-left-style: ridge; border-right-style: ridge;">
             <textarea id="message" style="width: 100%; padding: 5px 10px; border-style: hidden;"
-                placeholder="Type message and press Enter to send..."></textarea>
+                      placeholder="Type message and press Enter to send..."></textarea>
         </div>
         <div style="overflow: auto; border-style: ridge; border-top-style: hidden;">
             <button class="btn-success pull-right" id="sendmessage">Send</button>
         </div>
         <div>
             <textarea id="targetName" style="width: 100%; padding: 5px 10px; border-style: hidden;"
-                placeholder="Type targetName"></textarea>
+                      placeholder="Type targetName"></textarea>
             <button class="btn-success pull-right" id="sendUserMessage">sendUserMessage</button>
         </div>
     </div>
@@ -49,14 +49,18 @@
     <script type="text/javascript">
         var username = generateRandomName();
 
+        var connection = new signalR.HubConnectionBuilder()
+            .withUrl(`/chat?username=${username}`)
+            .build();
+
         function generateRandomName() {
             return Math.random().toString(36).substring(2, 10);
         }
 
         function generateGuid() {
             return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-                var r = Math.random() * 16 | 0,
-                    v = c == 'x' ? r : (r & 0x3 | 0x8);
+                const r = Math.random() * 16 | 0,
+                    v = c === 'x' ? r : (r & 0x3 | 0x8);
                 return v.toString(16);
             });
         }
@@ -67,7 +71,7 @@
         }
 
         function createPublicMessage(encodedName, encodedMsg, encodeMsgId) {
-            var entry = document.createElement('div');
+            const entry = document.createElement('div');
             entry.classList.add("message-entry");
             if (encodedName === "_SYSTEM_") {
                 entry.innerHTML = encodedMsg;
@@ -90,7 +94,7 @@
         }
 
         function createUserMessage(msgId, sourceName, msg) {
-            var entry = document.createElement('div');
+            const  entry = document.createElement('div');
             entry.classList.add("message-entry");
             if (sourceName === username) {
                 entry.innerHTML =
@@ -104,13 +108,19 @@
             return entry;
         }
 
+        function addNewMessageToScreen(messageEntry) {
+            const messageBoxElement = document.getElementById('messages');
+            messageBoxElement.appendChild(messageEntry);
+            messageBoxElement.scrollTop = messageBoxElement.scrollHeight;
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
             // Get the user name and store it to prepend to messages.
             var promptMessage = 'Enter your name:';
             do {
                 username = prompt(promptMessage, username);
                 if (!username || username.startsWith('_') || username.indexOf('<') > -1 || username.indexOf(
-                        '>') > -1) {
+                    '>') > -1) {
                     username = '';
                     promptMessage = 'Invalid input. Enter your name:';
                 }
@@ -123,32 +133,28 @@
 
             function bindConnectionMessage(connection) {
                 //  Add the message to the screen
-                var displayPublicMessage = function (name, message) {
-                    var messageEntry = createPublicMessage(name, encodedMessage(message), name + message,
+                const displayPublicMessage = function (name, message) {
+                    const messageEntry = createPublicMessage(name, encodedMessage(message), name + message,
                         false);
 
-                    var messageBox = document.getElementById('messages');
-                    messageBox.appendChild(messageEntry);
-                    messageBox.scrollTop = messageBox.scrollHeight;
+                    addNewMessageToScreen(messageEntry);
                 };
 
-                var displayUserMessage = function (id, name, message, ackId) {
-                    var messageEntry = createUserMessage(id, name, encodedMessage(message));
+                const displayUserMessage = function (id, name, message, ackId) {
+                    const messageEntry = createUserMessage(id, name, encodedMessage(message));
                     messageEntry.addEventListener('click', function (event) {
-                        connection.invoke('sendUserAck', id, name, "Acknoeledged");
+                        connection.invoke('sendUserAck', id, name, "Acknowledged");
                     });
 
-                    var messageBox = document.getElementById('messages');
-                    messageBox.appendChild(messageEntry);
-                    messageBox.scrollTop = messageBox.scrollHeight;
+                    addNewMessageToScreen(messageEntry);
 
                     connection.invoke('ackResponse', ackId);
                 };
 
-                //  Change the status text under the message 
-                var displayAckMessage = function (messageId, messageStatus, ackId) {
-                    var now = new Date();
-                    var entry = document.getElementById(messageId + "-Status");
+                //  Change the status text under the message
+                const displayAckMessage = function (messageId, messageStatus, ackId) {
+                    const now = new Date();
+                    const entry = document.getElementById(messageId + "-Status");
                     entry.innerText = messageStatus + " at " + now.toLocaleTimeString();
 
                     console.log("messageId: " + messageId + "\nStatus: " + messageStatus +
@@ -168,12 +174,12 @@
                 if (!messageInput.value) {
                     return;
                 }
-                let guid = generateGuid();
+                const guid = generateGuid();
 
                 // Create the message in the window.
                 var now = new Date();
-                var targetName = targetNameInput.value;
-                var messageText = messageInput.value;
+                const targetName = targetNameInput.value;
+                const messageText = messageInput.value;
 
                 // Clear text box and reset focus for next comment.
                 messageInput.value = '';
@@ -182,26 +188,26 @@
                 event.preventDefault();
 
                 // Create the message in the room.
-                var messageEntry = createUserMessage(guid, username, messageText);
-                var messageBox = document.getElementById('messages');
-                messageBox.appendChild(messageEntry);
-                messageBox.scrollTop = messageBox.scrollHeight;
+                const messageEntry = createUserMessage(guid, username, messageText);
+                const messageBoxElement = document.getElementById('messages');
+                messageBoxElement.appendChild(messageEntry);
+                messageBoxElement.scrollTop = messageBoxElement.scrollHeight;
 
                 // Create and add the message status to the message.
-                var entry = document.getElementById(guid);
-                var toadd = document.createElement('div');
-                toadd.innerHTML =
+                const messageElement = document.getElementById(guid);
+                const messageStatusEntry = document.createElement('div');
+                messageStatusEntry.innerHTML =
                     `<div class="message-avatar pull-right" id="${guid}-Status"> Sent at ${now.toLocaleTimeString()}</div>`;
-                entry.appendChild(toadd);
+                messageElement.appendChild(messageStatusEntry);
                 console.log("messageId: " + guid + "\nStatus: Sent\nLocal Time: " + now
                     .toLocaleTimeString());
 
-                // Call the sendUserRoamingMessage(or sendUserMessage if you don't need to store message) method on the hub.
-                var x = await connection.invoke('sendUserRoamingMessage', guid, username, targetName,
-                    messageText);
+                // Call the sendUserMessage method on the hub.
+                const x = await connection.invoke('sendUserMessage', guid, targetName, messageText);
                 now = new Date();
-                var entry = document.getElementById(guid + "-Status");
-                entry.innerText = x + " at " + now.toLocaleTimeString();
+
+                const statusElement = document.getElementById(guid + "-Status");
+                statusElement.innerText = x + " at " + now.toLocaleTimeString();
                 console.log("messageId: " + guid + "\nStatus: " + x + "\nLocal Time: " + now
                     .toLocaleTimeString());
 
@@ -209,12 +215,12 @@
 
             async function onConnected(connection) {
                 console.log('connection started');
-                await connection.send('broadcastMessage', '_SYSTEM_', username + ' JOINED');
+                await connection.invoke('broadcastMessage', '_SYSTEM_', username + ' JOINED');
 
                 document.getElementById('sendmessage').addEventListener('click', function (event) {
                     // Call the broadcastMessage method on the hub.
                     if (messageInput.value) {
-                        connection.send('broadcastMessage', username, messageInput.value);
+                        connection.invoke('broadcastMessage', username, messageInput.value);
                     }
 
                     // Clear text box and reset focus for next comment.
@@ -233,24 +239,17 @@
                         return false;
                     }
                 });
-                
-                //  Pull the unread message in the server and alert the result
-                var x = await connection.invoke('loadUnreadMessage', username);
-                alert(x);
             }
 
             function onConnectionError(error) {
                 if (error && error.message) {
                     console.error(error.message);
                 }
-                var modal = document.getElementById('myModal');
+                const modal = document.getElementById('myModal');
                 modal.classList.add('in');
                 modal.style = 'display: block;';
             }
 
-            var connection = new signalR.HubConnectionBuilder()
-                .withUrl(`/chat?username=${username}`)
-                .build();
             bindConnectionMessage(connection);
             connection.start()
                 .then(function () {

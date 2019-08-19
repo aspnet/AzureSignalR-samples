@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using System.Threading;
 
-namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
+namespace Microsoft.Azure.SignalR.Samples.AckableChatRoom
 {
     public class AckHandler : IAckHandler, IDisposable
     {
@@ -12,12 +12,12 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 
         private readonly TimeSpan _ackThreshold;
 
-        private Timer _timer;
+        private readonly Timer _timer;
 
-        public AckHandler()
-                    : this(completeAcksOnTimeout: true,
-                           ackThreshold: TimeSpan.FromSeconds(10),
-                           ackInterval: TimeSpan.FromSeconds(2))
+        public AckHandler() : this(
+            completeAcksOnTimeout: true,
+            ackThreshold: TimeSpan.FromSeconds(5),
+            ackInterval: TimeSpan.FromSeconds(1))
         {
         }
 
@@ -53,10 +53,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 
         public void Dispose()
         {
-            if (_timer != null)
-            {
-                _timer.Dispose();
-            }
+            _timer?.Dispose();
 
             foreach (var pair in _handlers)
             {
