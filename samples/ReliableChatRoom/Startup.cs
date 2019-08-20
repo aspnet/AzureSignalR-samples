@@ -28,6 +28,9 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
                             new Claim(ClaimTypes.NameIdentifier, context.Request.Query["username"])
                         };
                     });
+
+            services.AddSingleton<IMessageHandler, StaticMessageStorage>();
+            services.AddSingleton<IAckHandler, AckHandler>();
         }
 
         public void Configure(IApplicationBuilder app)
@@ -36,7 +39,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
             app.UseFileServer();
             app.UseAzureSignalR(routes =>
             {
-                routes.MapHub<ReliableChatRoom>("/chat");
+                routes.MapHub<ReliableRoamingChatRoom>("/chat");
             }
             );
         }
