@@ -1,41 +1,35 @@
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using Microsoft.AspNetCore.SignalR;
-using System.Threading.Tasks;
+using System.Security.Claims;
 
 namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 {
     public class ReliableChatRoom : Hub
     {
-        private readonly IAckHandler _ackHandler;
-
-        public ReliableChatRoom(IAckHandler ackHandler)
+        public void BroadcastMessage(string name, string message)
         {
-            _ackHandler = ackHandler;
+            Clients.All.SendAsync("broadcastMessage", name, message);
         }
 
-        //  Complete the task specified by the ackId.
-        public void AckResponse(string ackId)
+        public string SendUserMessage(string messageId, string receiver, string messageContent)
         {
-            _ackHandler.Ack(ackId);
+            var sender = Context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Clients.User(receiver).SendAsync("displayUserMessage", messageId, sender, messageContent);
+
+            //  TODO: Create and add the new message to the storage
+
+            return "Sent";
         }
 
-        //  Send the message to the receiver
-        public async Task<string> SendUserMessage(string id, string sender, string receiver, string message)
+        public string SendUserAck(string messageId, string sender, string messageStatus)
         {
-            //  Create a task and wait for the receiver client to complete it.
-            var ackInfo = _ackHandler.CreateAck();
-            await Clients.User(receiver).SendAsync("displayUserMessage", id, sender, message, ackInfo.AckId);
+            //  TODO: Update the messageStatus in the storage
 
-            //  Return the task result to the client.
-            return (await ackInfo.AckTask).ToString();
-        }
+            Clients.User(sender).SendAsync("displayAckMessage", messageId, messageStatus);
 
-        // Send a customized receipt to the message sender.
-        public async Task<string> SendUserAck(string msgId, string sourceName, string message)
-        {
-            var ackInfo = _ackHandler.CreateAck();
-            await Clients.User(sourceName).SendAsync("displayAckMessage", msgId, message, ackInfo.AckId);
-
-            return (await ackInfo.AckTask).ToString();
+            return "Sent";
         }
     }
 }

@@ -8,26 +8,28 @@
     <meta http-equiv="Expires" content="0" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="css/site.css" rel="stylesheet" />
-    <title>Azure SignalR Group Chat With Ack</title>
+    <title>Azure SignalR Reliable Chat</title>
 </head>
 
 <body>
     <h2 class="text-center" style="margin-top: 0; padding-top: 30px; padding-bottom: 30px;">
-        Azure SignalR Group Chat With Ack
+        Azure SignalR Reliable Chat
     </h2>
-    <div class="container" style="height: calc(100% - 110px);">
+    <div class="container" style="height: calc(100% - 200px);">
         <div id="messages" style="background-color: whitesmoke; "></div>
         <div style="width: 100%; border-left-style: ridge; border-right-style: ridge;">
             <textarea id="message" style="width: 100%; padding: 5px 10px; border-style: hidden;"
-                placeholder="Type message and press Enter to send..."></textarea>
+                      placeholder="Type message and press Enter to send..."></textarea>
         </div>
         <div style="overflow: auto; border-style: ridge; border-top-style: hidden;">
-            <button class="btn-success pull-right" id="sendmessage">Send</button>
+            <button class="btn-success pull-right" id="sendmessage">Send All</button>
         </div>
-        <div>
+        <div style="width: 100%; border-left-style: ridge; border-right-style: ridge;">
             <textarea id="targetName" style="width: 100%; padding: 5px 10px; border-style: hidden;"
-                placeholder="Type targetName"></textarea>
-            <button class="btn-success pull-right" id="sendUserMessage">sendUserMessage</button>
+                      placeholder="Type targetName"></textarea>
+        </div>
+        <div style="overflow: auto; border-style: ridge; border-top-style: hidden;">
+            <button class="btn-success pull-right" id="sendUserMessage">Send To User</button>
         </div>
     </div>
     <div class="modal alert alert-danger fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
@@ -49,14 +51,18 @@
     <script type="text/javascript">
         var username = generateRandomName();
 
+        var connection = new signalR.HubConnectionBuilder()
+            .withUrl(`/chat?username=${username}`)
+            .build();
+
         function generateRandomName() {
             return Math.random().toString(36).substring(2, 10);
         }
 
         function generateGuid() {
             return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-                var r = Math.random() * 16 | 0,
-                    v = c == 'x' ? r : (r & 0x3 | 0x8);
+                const r = Math.random() * 16 | 0,
+                    v = c === 'x' ? r : (r & 0x3 | 0x8);
                 return v.toString(16);
             });
         }
@@ -66,42 +72,33 @@
             return message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         }
 
-        function createPublicMessage(encodedName, encodedMsg, encodeMsgId) {
-            var entry = document.createElement('div');
+        function createNewMessage(sender, message, messageId) {
+            const entry = document.createElement('div');
             entry.classList.add("message-entry");
-            if (encodedName === "_SYSTEM_") {
-                entry.innerHTML = encodedMsg;
+            if (sender === "_SYSTEM_") {
+                entry.innerHTML = message;
                 entry.classList.add("text-center");
                 entry.classList.add("system-message");
-            } else if (encodedName === "_BROADCAST_") {
+            } else if (sender === "_BROADCAST_") {
                 entry.classList.add("text-center");
                 entry.innerHTML =
-                    `<div class="text-center broadcast-message" id="${encodeMsgId}">${encodedMsg}</div>`;
-            } else if (encodedName === username) {
+                    `<div class="text-center broadcast-message" id="${messageId}">${message}</div>`;
+            } else if (sender === username) {
                 entry.innerHTML =
-                    `<div class="message-avatar pull-right" id="${encodeMsgId}">${encodedName}</div>` +
-                    `<div class="message-content pull-right">${encodedMsg}<div>`;
+                    `<div class="message-avatar pull-right" id="${messageId}">${sender}</div>` +
+                    `<div class="message-content pull-right">${message}<div>`;
             } else {
                 entry.innerHTML =
-                    `<div class="message-avatar pull-left" id="${encodeMsgId}">${encodedName}</div>` +
-                    `<div class="message-content pull-left">${encodedMsg}<div>`;
+                    `<div class="message-avatar pull-left" id="${messageId}">${sender}</div>` +
+                    `<div class="message-content pull-left">${message}<div>`;
             }
             return entry;
         }
 
-        function createUserMessage(msgId, sourceName, msg) {
-            var entry = document.createElement('div');
-            entry.classList.add("message-entry");
-            if (sourceName === username) {
-                entry.innerHTML =
-                    `<div class="message-avatar pull-right" id="${msgId}">${sourceName}</div>` +
-                    `<div class="message-content pull-right">${msg}<div>`;
-            } else {
-                entry.innerHTML =
-                    `<div class="message-avatar pull-left" id="${msgId}">${sourceName}</div>` +
-                    `<div class="message-content pull-left">${msg}<div>`;
-            }
-            return entry;
+        function addNewMessageToScreen(messageEntry) {
+            const messageBoxElement = document.getElementById('messages');
+            messageBoxElement.appendChild(messageEntry);
+            messageBoxElement.scrollTop = messageBoxElement.scrollHeight;
         }
 
         document.addEventListener('DOMContentLoaded', function () {
@@ -110,11 +107,11 @@
             do {
                 username = prompt(promptMessage, username);
                 if (!username || username.startsWith('_') || username.indexOf('<') > -1 || username.indexOf(
-                        '>') > -1) {
+                    '>') > -1) {
                     username = '';
                     promptMessage = 'Invalid input. Enter your name:';
                 }
-            } while (!username)
+            } while (!username);
 
             // Set initial focus to message input box.
             var messageInput = document.getElementById('message');
@@ -123,38 +120,28 @@
 
             function bindConnectionMessage(connection) {
                 //  Add the message to the screen
-                var displayPublicMessage = function (name, message) {
-                    var messageEntry = createPublicMessage(name, encodedMessage(message), name + message,
-                        false);
-
-                    var messageBox = document.getElementById('messages');
-                    messageBox.appendChild(messageEntry);
-                    messageBox.scrollTop = messageBox.scrollHeight;
+                const displayPublicMessage = function (name, message) {
+                    const messageEntry = createNewMessage(name, encodedMessage(message), generateGuid());
+                    addNewMessageToScreen(messageEntry);
                 };
 
-                var displayUserMessage = function (id, name, message, ackId) {
-                    var messageEntry = createUserMessage(id, name, encodedMessage(message));
+                const displayUserMessage = function (id, name, message, ackId) {
+                    const messageEntry = createNewMessage(name, encodedMessage(message), id);
                     messageEntry.addEventListener('click', function (event) {
-                        connection.invoke('sendUserAck', id, name, "Acknoeledged");
+                        connection.invoke('sendUserAck', id, name, "Acknowledged");
                     });
+                    addNewMessageToScreen(messageEntry);
 
-                    var messageBox = document.getElementById('messages');
-                    messageBox.appendChild(messageEntry);
-                    messageBox.scrollTop = messageBox.scrollHeight;
-
-                    connection.invoke('ackResponse', ackId);
+                    connection.invoke('sendUserAck', id, name, "Received");
                 };
 
-                //  Change the status text under the message 
-                var displayAckMessage = function (messageId, messageStatus, ackId) {
-                    var now = new Date();
-                    var entry = document.getElementById(messageId + "-Status");
+                //  Change the status text under the message
+                const displayAckMessage = function (messageId, messageStatus, ackId) {
+                    const now = new Date();
+                    const entry = document.getElementById(messageId + "-Status");
                     entry.innerText = messageStatus + " at " + now.toLocaleTimeString();
-
                     console.log("messageId: " + messageId + "\nStatus: " + messageStatus +
                         "\nLocal Time: " + now.toLocaleTimeString());
-
-                    connection.invoke('ackResponse', ackId);
                 }
 
                 // Create a function that the hub can call to broadcast messages.
@@ -168,12 +155,13 @@
                 if (!messageInput.value) {
                     return;
                 }
-                let guid = generateGuid();
+
+                const messageId = generateGuid();
 
                 // Create the message in the window.
                 var now = new Date();
-                var targetName = targetNameInput.value;
-                var messageText = messageInput.value;
+                const targetName = targetNameInput.value;
+                const messageText = messageInput.value;
 
                 // Clear text box and reset focus for next comment.
                 messageInput.value = '';
@@ -182,39 +170,37 @@
                 event.preventDefault();
 
                 // Create the message in the room.
-                var messageEntry = createUserMessage(guid, username, messageText);
-                var messageBox = document.getElementById('messages');
-                messageBox.appendChild(messageEntry);
-                messageBox.scrollTop = messageBox.scrollHeight;
+                const messageEntry = createNewMessage(username, messageText, messageId);
+                const messageBoxElement = document.getElementById('messages');
+                messageBoxElement.appendChild(messageEntry);
+                messageBoxElement.scrollTop = messageBoxElement.scrollHeight;
 
                 // Create and add the message status to the message.
-                var entry = document.getElementById(guid);
-                var toadd = document.createElement('div');
-                toadd.innerHTML =
-                    `<div class="message-avatar pull-right" id="${guid}-Status"> Sent at ${now.toLocaleTimeString()}</div>`;
-                entry.appendChild(toadd);
-                console.log("messageId: " + guid + "\nStatus: Sent\nLocal Time: " + now
+                const messageElement = document.getElementById(messageId);
+                const messageStatusEntry = document.createElement('div');
+                messageStatusEntry.innerHTML =
+                    `<div class="message-avatar pull-right" id="${messageId}-Status"> Sent at ${now.toLocaleTimeString()}</div>`;
+                messageElement.appendChild(messageStatusEntry);
+                console.log("messageId: " + messageId + "\nStatus: Sending\nLocal Time: " + now
                     .toLocaleTimeString());
 
-                // Call the sendUserRoamingMessage(or sendUserMessage if you don't need to store message) method on the hub.
-                var x = await connection.invoke('sendUserRoamingMessage', guid, username, targetName,
-                    messageText);
+                // Call the sendUserMessage method on the hub.
+                const x = await connection.invoke('sendUserMessage', messageId, targetName, messageText);
                 now = new Date();
-                var entry = document.getElementById(guid + "-Status");
-                entry.innerText = x + " at " + now.toLocaleTimeString();
-                console.log("messageId: " + guid + "\nStatus: " + x + "\nLocal Time: " + now
+                const statusElement = document.getElementById(messageId + "-Status");
+                statusElement.innerText = x + " at " + now.toLocaleTimeString();
+                console.log("messageId: " + messageId + "\nStatus: " + x + "\nLocal Time: " + now
                     .toLocaleTimeString());
-
             }
 
-            async function onConnected(connection) {
+            function onConnected(connection) {
                 console.log('connection started');
-                await connection.send('broadcastMessage', '_SYSTEM_', username + ' JOINED');
+                connection.invoke('broadcastMessage', '_SYSTEM_', username + ' JOINED');
 
                 document.getElementById('sendmessage').addEventListener('click', function (event) {
                     // Call the broadcastMessage method on the hub.
                     if (messageInput.value) {
-                        connection.send('broadcastMessage', username, messageInput.value);
+                        connection.invoke('broadcastMessage', username, messageInput.value);
                     }
 
                     // Clear text box and reset focus for next comment.
@@ -225,7 +211,6 @@
 
                 document.getElementById('sendUserMessage').addEventListener('click', (event) =>
                     sendUserMessage(event));
-
                 document.getElementById('message').addEventListener('keypress', function (event) {
                     if (event.keyCode === 13) {
                         event.preventDefault();
@@ -233,24 +218,17 @@
                         return false;
                     }
                 });
-                
-                //  Pull the unread message in the server and alert the result
-                var x = await connection.invoke('loadUnreadMessage', username);
-                alert(x);
             }
 
             function onConnectionError(error) {
                 if (error && error.message) {
                     console.error(error.message);
                 }
-                var modal = document.getElementById('myModal');
+                const modal = document.getElementById('myModal');
                 modal.classList.add('in');
                 modal.style = 'display: block;';
             }
 
-            var connection = new signalR.HubConnectionBuilder()
-                .withUrl(`/chat?username=${username}`)
-                .build();
             bindConnectionMessage(connection);
             connection.start()
                 .then(function () {
@@ -262,5 +240,6 @@
         });
     </script>
 </body>
+
 
 </html>
