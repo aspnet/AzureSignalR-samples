@@ -47,59 +47,55 @@
 
     <!--Add script to update the page and send messages.-->
     <script type="text/javascript">
-        var username = generateRandomName();
-
-        var connection = new signalR.HubConnectionBuilder()
-            .withUrl(`/chat?username=${username}`)
-            .build();
-
-        function generateRandomName() {
-            return Math.random().toString(36).substring(2, 10);
-        }
-
-        function generateGuid() {
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-                const r = Math.random() * 16 | 0,
-                    v = c === 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
-            });
-        }
-
-        // Html encode message.
-        function encodedMessage(message) {
-            return message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        }
-
-        function createNewMessage(sender, message, messageId) {
-            const entry = document.createElement('div');
-            entry.classList.add("message-entry");
-            if (sender === "_SYSTEM_") {
-                entry.innerHTML = message;
-                entry.classList.add("text-center");
-                entry.classList.add("system-message");
-            } else if (sender === "_BROADCAST_") {
-                entry.classList.add("text-center");
-                entry.innerHTML =
-                    `<div class="text-center broadcast-message" id="${messageId}">${message}</div>`;
-            } else if (sender === username) {
-                entry.innerHTML =
-                    `<div class="message-avatar pull-right" id="${messageId}">${sender}</div>` +
-                    `<div class="message-content pull-right">${message}<div>`;
-            } else {
-                entry.innerHTML =
-                    `<div class="message-avatar pull-left" id="${messageId}">${sender}</div>` +
-                    `<div class="message-content pull-left">${message}<div>`;
-            }
-            return entry;
-        }
-
-        function addNewMessageToScreen(messageEntry) {
-            const messageBoxElement = document.getElementById('messages');
-            messageBoxElement.appendChild(messageEntry);
-            messageBoxElement.scrollTop = messageBoxElement.scrollHeight;
-        }
-
         document.addEventListener('DOMContentLoaded', function () {
+            var username = generateRandomName();
+
+            function generateRandomName() {
+                return Math.random().toString(36).substring(2, 10);
+            }
+
+            function generateGuid() {
+                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                    const r = Math.random() * 16 | 0,
+                        v = c === 'x' ? r : (r & 0x3 | 0x8);
+                    return v.toString(16);
+                });
+            }
+
+            // Html encode message.
+            function encodedMessage(message) {
+                return message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            }
+
+            function createNewMessage(sender, message, messageId) {
+                const entry = document.createElement('div');
+                entry.classList.add("message-entry");
+                if (sender === "_SYSTEM_") {
+                    entry.innerHTML = message;
+                    entry.classList.add("text-center");
+                    entry.classList.add("system-message");
+                } else if (sender === "_BROADCAST_") {
+                    entry.classList.add("text-center");
+                    entry.innerHTML =
+                        `<div class="text-center broadcast-message" id="${messageId}">${message}</div>`;
+                } else if (sender === username) {
+                    entry.innerHTML =
+                        `<div class="message-avatar pull-right" id="${messageId}">${sender}</div>` +
+                        `<div class="message-content pull-right">${message}<div>`;
+                } else {
+                    entry.innerHTML =
+                        `<div class="message-avatar pull-left" id="${messageId}">${sender}</div>` +
+                        `<div class="message-content pull-left">${message}<div>`;
+                }
+                return entry;
+            }
+
+            function addNewMessageToScreen(messageEntry) {
+                const messageBoxElement = document.getElementById('messages');
+                messageBoxElement.appendChild(messageEntry);
+                messageBoxElement.scrollTop = messageBoxElement.scrollHeight;
+            }
+
             // Get the user name and store it to prepend to messages.
             var promptMessage = 'Enter your name:';
             do {
@@ -111,30 +107,23 @@
                 }
             } while (!username)
 
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl(`/chat?username=${username}`)
+                .build();
+
             // Set initial focus to message input box.
-            var messageInput = document.getElementById('message');
-            var targetNameInput = document.getElementById('targetName');
+            const messageInput = document.getElementById('message');
+            const targetNameInput = document.getElementById('targetName');
             messageInput.focus();
 
-            function bindConnectionMessage(connection) {
+            const bindConnectionMessage = function (connection) {
                 //  Add the message to the screen
                 const displayPublicMessage = function (name, message) {
                     const messageEntry = createNewMessage(name, encodedMessage(message), generateGuid());
 
                     addNewMessageToScreen(messageEntry);
                 };
-
-                const displayUserMessage = function (id, name, message, ackId) {
-                    const messageEntry = createNewMessage(name, encodedMessage(message), id);
-                    messageEntry.addEventListener('click', function (event) {
-                        connection.invoke('sendUserAck', id, name, "Acknowledged");
-                    });
-
-                    addNewMessageToScreen(messageEntry);
-
-                    connection.invoke('ackResponse', ackId);
-                };
-
+                
                 //  Change the status text under the message
                 const displayAckMessage = function (messageId, messageStatus, ackId) {
                     const now = new Date();
@@ -144,15 +133,30 @@
                     console.log("messageId: " + messageId + "\nStatus: " + messageStatus +
                         "\nLocal Time: " + now.toLocaleTimeString());
 
-                    connection.invoke('ackResponse', ackId);
+                    connection.invoke('ack', ackId);
                 }
+
+                const displayUserMessage = function (id, name, message, ackId) {
+                    if (name === username) {
+                        displayAckMessage(id, message, ackId);
+                        return;
+                    }
+
+                    const messageEntry = createNewMessage(name, encodedMessage(message), id);
+                    messageEntry.addEventListener('click', function (event) {
+                        connection.invoke('sendUserMessage', id, name, "Acknowledged");
+                    });
+
+                    addNewMessageToScreen(messageEntry);
+
+                    connection.invoke('ack', ackId);
+                };
 
                 // Create a function that the hub can call to broadcast messages.
                 connection.on('broadcastMessage', displayPublicMessage);
-                connection.on('displayAckMessage', displayAckMessage);
                 connection.on('displayUserMessage', displayUserMessage);
                 connection.onclose(onConnectionError);
-            }
+            }   
 
             async function sendUserMessage(event) {
                 if (!messageInput.value) {
@@ -234,14 +238,13 @@
                 modal.style = 'display: block;';
             }
 
-            bindConnectionMessage(connection);
-            connection.start()
-                .then(function () {
-                    onConnected(connection);
-                })
-                .catch(function (error) {
-                    console.error(error.message);
-                });
+            bindConnectionMessage(connection);            connection.start()
+            .then(function () {
+                onConnected(connection);
+            })
+            .catch(function (error) {
+                console.error(error.message);
+            });
         });
     </script>
 </body>

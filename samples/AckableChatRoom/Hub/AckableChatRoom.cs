@@ -1,3 +1,4 @@
+using System;
 using System.Security.Claims;
 using Microsoft.AspNetCore.SignalR;
 using System.Threading.Tasks;
@@ -19,30 +20,22 @@ namespace Microsoft.Azure.SignalR.Samples.AckableChatRoom
         }
 
         //  Complete the task specified by the ackId.
-        public void AckResponse(string ackId)
+        public void Ack(string ackId)
         {
             _ackHandler.Ack(ackId);
         }
 
-        //  Send the message to the receiver
-        public async Task<string> SendUserMessage(string id, string receiver, string message)
+        //  Send the messageContent to the receiver
+        public async Task<string> SendUserMessage(string messageId, string receiver, string messageContent)
         {
             //  Create a task and wait for the receiver client to complete it.
             var ackInfo = _ackHandler.CreateAck();
-            var sender = Context.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            await Clients.User(receiver).SendAsync("displayUserMessage", id, sender, message, ackInfo.AckId);
+            var sender = Context.UserIdentifier;
+            await Clients.User(receiver)
+                .SendAsync("displayUserMessage", messageId, sender, messageContent, ackInfo.AckId);
 
             //  Return the task result to the client.
-            return (await ackInfo.AckTask).ToString();
-        }
-
-        // Send a customized receipt to the message sender.
-        public async Task<string> SendUserAck(string msgId, string sourceName, string message)
-        {
-            var ackInfo = _ackHandler.CreateAck();
-            await Clients.User(sourceName).SendAsync("displayAckMessage", msgId, message, ackInfo.AckId);
-
-            return (await ackInfo.AckTask).ToString();
+            return (await ackInfo.AckTask);
         }
     }
 }

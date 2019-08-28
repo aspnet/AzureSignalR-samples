@@ -6,12 +6,12 @@ namespace Microsoft.Azure.SignalR.Samples.AckableChatRoom
     {
         public string AckId { get; set; }
 
-        public Task<AckResult> AckTask { get; set; }
+        public Task<string> AckTask { get; set; }
 
-        public AckInfo(string ackId, Task<AckResult> ackTask)
+        public AckInfo(string ackId, Task<string> ackTask)
         {
-            this.AckId = ackId;
-            this.AckTask = ackTask;
+            AckId = ackId;
+            AckTask = ackTask;
         }
     }
 }

@@ -2,13 +2,14 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using System.Threading;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Microsoft.Azure.SignalR.Samples.AckableChatRoom
 {
     public class AckHandler : IAckHandler, IDisposable
     {
-        private readonly ConcurrentDictionary<string, (TaskCompletionSource<AckResult>, DateTime)> _handlers
-            = new ConcurrentDictionary<string, (TaskCompletionSource<AckResult>, DateTime)>();
+        private readonly ConcurrentDictionary<string, (TaskCompletionSource<string>, DateTime)> _handlers
+            = new ConcurrentDictionary<string, (TaskCompletionSource<string>, DateTime)>();
 
         private readonly TimeSpan _ackThreshold;
 
@@ -34,20 +35,16 @@ namespace Microsoft.Azure.SignalR.Samples.AckableChatRoom
         public AckInfo CreateAck()
         {
             var id = Guid.NewGuid().ToString();
-            var tcs = new TaskCompletionSource<AckResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
             _handlers.TryAdd(id, (tcs, DateTime.UtcNow));
             return new AckInfo(id, tcs.Task);
         }
 
         public void Ack(string id)
         {
-            if (_handlers.TryGetValue(id, out var res))
+            if (_handlers.TryRemove(id, out var res))
             {
-                res.Item1.TrySetResult(AckResult.Success);
-            }
-            else
-            {
-                throw new Exception("AckId not found");
+                res.Item1.TrySetResult("Arrived");
             }
         }
 
@@ -68,7 +65,7 @@ namespace Microsoft.Azure.SignalR.Samples.AckableChatRoom
                 var elapsed = DateTime.UtcNow - pair.Value.Item2;
                 if (elapsed > _ackThreshold)
                 {
-                    pair.Value.Item1.TrySetResult(AckResult.TimeOut);
+                    pair.Value.Item1.TrySetException(new Exception("Ack time out"));
                 }
             }
         }
