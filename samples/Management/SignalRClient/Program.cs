@@ -13,7 +13,7 @@ namespace SignalRClient
 {
     class Program
     {
-        private const string DefaultHubEndpoint = "http://localhost:5000/Management";
+        private const string DefaultHubEndpoint = "http://localhost:5000/ManagementSampleHub";
         private const string Target = "Target";
         private const string DefaultUser = "User";
 

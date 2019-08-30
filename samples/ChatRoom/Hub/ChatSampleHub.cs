@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace Microsoft.Azure.SignalR.Samples.ChatRoom
 {
-    public class Chat : Hub
+    public class ChatSampleHub : Hub
     {
         public void BroadcastMessage(string name, string message)
         {
