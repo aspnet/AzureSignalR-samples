@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.SignalR.Samples.AckableChatRoom
 {
-    public class AckableChatRoom : Hub
+    public class AckableChatSampleHub : Hub
     {
         private readonly IAckHandler _ackHandler;
 
-        public AckableChatRoom(IAckHandler ackHandler)
+        public AckableChatSampleHub(IAckHandler ackHandler)
         {
             _ackHandler = ackHandler;
         }
