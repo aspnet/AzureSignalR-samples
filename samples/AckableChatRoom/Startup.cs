@@ -38,7 +38,7 @@ namespace Microsoft.Azure.SignalR.Samples.AckableChatRoom
             app.UseFileServer();
             app.UseAzureSignalR(routes =>
             {
-                routes.MapHub<AckableChatRoom>("/chat");
+                routes.MapHub<AckableChatSampleHub>("/chat");
             }
             );
         }
