@@ -10,7 +10,7 @@ namespace Microsoft.Azure.SignalR.Samples.AdvancedChatRoom
     [Authorize(Roles = "Admin")]
     [Authorize(Policy = "ClaimBasedAuth")]
     [Authorize(Policy = "PolicyBasedAuth")]
-    public class ChatCookie : ChatBase
+    public class ChatCookieSampleHub : ChatBase
     {
     }
 }

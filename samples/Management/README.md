@@ -26,7 +26,7 @@ dotnet run
 
 >  Parameters:
 > 
-> - -h|--hubEndpoint: Set hub endpoint. Default value: "<http://localhost:5000/Management>".
+> - -h|--hubEndpoint: Set hub endpoint. Default value: "<http://localhost:5000/ManagementSampleHub>".
 > - -u|--user: Set user ID. Default value: "User". You can set multiple users like this: "-u user1 -u user2".
 
 ### Start message publisher

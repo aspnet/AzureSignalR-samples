@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.SignalR;
 namespace Microsoft.Azure.SignalR.Samples.ChatRoom
 {
     [Authorize]
-    public class Chat : Hub
+    public class GitHubChatSampleHub : Hub
     {
         public override Task OnConnectedAsync()
         {
