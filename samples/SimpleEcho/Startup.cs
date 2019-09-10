@@ -19,7 +19,7 @@ namespace Microsoft.Azure.SignalR.Samples.SimpleEcho
         {
             app.UseAzureSignalR(routes =>
             {
-                routes.MapHub<EchoHub>("/echo");
+                routes.MapHub<EchoSampleHub>("/echo");
             });
         }
     }

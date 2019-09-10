@@ -29,7 +29,7 @@ namespace Microsoft.Azure.SignalR.Samples.FlightMap
             app.UseFileServer();
             app.UseAzureSignalR(routes =>
             {
-                routes.MapHub<FlightMapHub>("/flightData");
+                routes.MapHub<FlightMapSampleHub>("/flightData");
             });
         }
     }

@@ -8,7 +8,7 @@ using Microsoft.AspNet.SignalR;
 namespace ChatSample.AspNet
 {
     [Authorize(Roles = "Admin")]
-    public class AdvancedChat : Hub
+    public class AdvancedChatSampleHub : Hub
     {
         public override Task OnConnected()
         {

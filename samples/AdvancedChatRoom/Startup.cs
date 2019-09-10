@@ -73,8 +73,8 @@ namespace Microsoft.Azure.SignalR.Samples.AdvancedChatRoom
             app.UseFileServer();
             app.UseAzureSignalR(routes =>
             {
-                routes.MapHub<ChatJwt>("/chatjwt");
-                routes.MapHub<ChatCookie>("/chatcookie");
+                routes.MapHub<ChatJwtSampleHub>("/chatjwt");
+                routes.MapHub<ChatCookieSampleHub>("/chatcookie");
             });
         }
     }

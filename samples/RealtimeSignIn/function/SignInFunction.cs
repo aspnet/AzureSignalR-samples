@@ -14,7 +14,7 @@ namespace RealtimeSignIn
 {
     public static class SignInFunction
     {
-        private const string HubName = "signin";
+        private const string HubName = "signinsamplehub";
 
         [FunctionName("signin")]
         public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")]HttpRequestMessage req, ILogger log)
@@ -30,7 +30,7 @@ namespace RealtimeSignIn
             var stats = table.GetStats();
 
             // broadcast through SignalR
-            await signalR.SendAsync("signin", "updateSignInStats", stats.TotalNumber, stats.ByOS, stats.ByBrowser);
+            await signalR.SendAsync("signinsamplehub", "updateSignInStats", stats.TotalNumber, stats.ByOS, stats.ByBrowser);
 
             return req.CreateResponse(HttpStatusCode.OK, new
             {

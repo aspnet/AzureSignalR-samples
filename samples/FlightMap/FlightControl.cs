@@ -37,9 +37,9 @@ namespace Microsoft.Azure.SignalR.Samples.FlightMap
 
         private FlightRecord[][] flightData;
 
-        private IHubContext<FlightMapHub> context;
+        private IHubContext<FlightMapSampleHub> context;
 
-        public FlightControl(IHubContext<FlightMapHub> context, IConfiguration configuration)
+        public FlightControl(IHubContext<FlightMapSampleHub> context, IConfiguration configuration)
         {
             this.context = context;
             var dataUrl = configuration["DataFileUrl"];
