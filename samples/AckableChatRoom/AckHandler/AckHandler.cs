@@ -65,7 +65,7 @@ namespace Microsoft.Azure.SignalR.Samples.AckableChatRoom
                 var elapsed = DateTime.UtcNow - pair.Value.Item2;
                 if (elapsed > _ackThreshold)
                 {
-                    pair.Value.Item1.TrySetException(new Exception("Ack time out"));
+                    pair.Value.Item1.TrySetException(new TimeoutException("Ack time out"));
                 }
             }
         }

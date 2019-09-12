@@ -20,7 +20,7 @@ html, body {
     float: none;
     margin: 0px auto;
     padding-left: 0px;
-    overflow-y: auto;
+    overflow-y: scroll;
 }
 
 textarea:focus {

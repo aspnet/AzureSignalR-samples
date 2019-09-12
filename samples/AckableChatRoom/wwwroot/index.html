@@ -19,14 +19,14 @@
         <div id="messages" style="background-color: whitesmoke; "></div>
         <div style="width: 100%; border-left-style: ridge; border-right-style: ridge;">
             <textarea id="message" style="width: 100%; padding: 5px 10px; border-style: hidden;"
-                      placeholder="Type message and press Enter to send..."></textarea>
+                placeholder="Type message and press Enter to send..."></textarea>
         </div>
         <div style="overflow: auto; border-style: ridge; border-top-style: hidden;">
             <button class="btn-success pull-right" id="sendmessage">Send All</button>
         </div>
         <div>
             <textarea id="targetName" style="width: 100%; padding: 5px 10px; border-style: hidden;"
-                      placeholder="Type targetName"></textarea>
+                placeholder="Type targetName"></textarea>
             <button class="btn-success pull-right" id="sendUserMessage">Send To User</button>
         </div>
     </div>
@@ -48,7 +48,8 @@
     <!--Add script to update the page and send messages.-->
     <script type="text/javascript">
         document.addEventListener('DOMContentLoaded', function () {
-            var username = generateRandomName();
+            let username = generateRandomName();
+            let unreadMessage = new Map();
 
             function generateRandomName() {
                 return Math.random().toString(36).substring(2, 10);
@@ -93,7 +94,6 @@
             function addNewMessageToScreen(messageEntry) {
                 const messageBoxElement = document.getElementById('messages');
                 messageBoxElement.appendChild(messageEntry);
-                messageBoxElement.scrollTop = messageBoxElement.scrollHeight;
             }
 
             // Get the user name and store it to prepend to messages.
@@ -101,7 +101,7 @@
             do {
                 username = prompt(promptMessage, username);
                 if (!username || username.startsWith('_') || username.indexOf('<') > -1 || username.indexOf(
-                    '>') > -1) {
+                        '>') > -1) {
                     username = '';
                     promptMessage = 'Invalid input. Enter your name:';
                 }
@@ -116,49 +116,20 @@
             const targetNameInput = document.getElementById('targetName');
             messageInput.focus();
 
-            const bindConnectionMessage = function (connection) {
-                //  Add the message to the screen
-                const displayPublicMessage = function (name, message) {
-                    const messageEntry = createNewMessage(name, encodedMessage(message), generateGuid());
-
-                    addNewMessageToScreen(messageEntry);
-                };
-                
-                //  Change the status text under the message
-                const displayAckMessage = function (messageId, messageStatus, ackId) {
-                    const now = new Date();
-                    const entry = document.getElementById(messageId + "-Status");
-                    entry.innerText = messageStatus + " at " + now.toLocaleTimeString();
-
-                    console.log("messageId: " + messageId + "\nStatus: " + messageStatus +
-                        "\nLocal Time: " + now.toLocaleTimeString());
-
-                    connection.invoke('ack', ackId);
-                }
-
-                const displayUserMessage = function (id, name, message, ackId) {
-                    if (name === username) {
-                        displayAckMessage(id, message, ackId);
-                        return;
+            async function sendUserResponse(connection) {
+                unreadMessage.forEach(async (name, id) => {
+                    const messageBoxElement = document.getElementById('messages');
+                    const messageElementHeight = document.getElementById(id).offsetTop -
+                        messageBoxElement.offsetTop;
+                    if (messageElementHeight >= messageBoxElement.scrollTop &&
+                        messageElementHeight <= messageBoxElement.scrollHeight) {
+                        await connection.invoke('sendUserResponse', id, name, "Read");
+                        unreadMessage.delete(id);
                     }
+                })
+            }
 
-                    const messageEntry = createNewMessage(name, encodedMessage(message), id);
-                    messageEntry.addEventListener('click', function (event) {
-                        connection.invoke('sendUserMessage', id, name, "Acknowledged");
-                    });
-
-                    addNewMessageToScreen(messageEntry);
-
-                    connection.invoke('ack', ackId);
-                };
-
-                // Create a function that the hub can call to broadcast messages.
-                connection.on('broadcastMessage', displayPublicMessage);
-                connection.on('displayUserMessage', displayUserMessage);
-                connection.onclose(onConnectionError);
-            }   
-
-            async function sendUserMessage(event) {
+            async function sendUserMessage(event, connection) {
                 if (!messageInput.value) {
                     return;
                 }
@@ -179,7 +150,6 @@
                 const messageEntry = createNewMessage(username, messageText, guid);
                 const messageBoxElement = document.getElementById('messages');
                 messageBoxElement.appendChild(messageEntry);
-                messageBoxElement.scrollTop = messageBoxElement.scrollHeight;
 
                 // Create and add the message status to the message.
                 const messageElement = document.getElementById(guid);
@@ -189,6 +159,7 @@
                 messageElement.appendChild(messageStatusEntry);
                 console.log("messageId: " + guid + "\nStatus: Sent\nLocal Time: " + now
                     .toLocaleTimeString());
+                messageBoxElement.scrollTop = messageBoxElement.scrollHeight;
 
                 // Call the sendUserMessage method on the hub.
                 const x = await connection.invoke('sendUserMessage', guid, targetName, messageText);
@@ -201,9 +172,57 @@
 
             }
 
-            async function onConnected(connection) {
+            const bindConnectionMessage = function (connection) {
+                //  Add the message to the screen
+                const displayPublicMessage = function (name, message) {
+                    const messageEntry = createNewMessage(name, encodedMessage(message),
+                        generateGuid());
+
+                    addNewMessageToScreen(messageEntry);
+                    if (name === username) {
+                        const messageBoxElement = document.getElementById('messages');
+                        messageBoxElement.scrollTop = messageBoxElement.scrollHeight;
+                    }
+                };
+
+                //  Change the status text under the message
+                const displayAckMessage = function (messageId, messageStatus, ackId) {
+                    const now = new Date();
+                    const entry = document.getElementById(messageId + "-Status");
+                    entry.innerText = messageStatus + " at " + now.toLocaleTimeString();
+
+                    console.log("messageId: " + messageId + "\nStatus: " + messageStatus +
+                        "\nLocal Time: " + now.toLocaleTimeString());
+
+                    connection.invoke('ack', ackId);
+                }
+
+                const displayUserMessage = function (id, name, message, ackId) {
+                    if (name === username) {
+                        displayAckMessage(id, message, ackId);
+                        return;
+                    }
+                    const messageEntry = createNewMessage(name, encodedMessage(message), id);
+
+                    addNewMessageToScreen(messageEntry);
+                    if (document.visibilityState == 'hidden') {
+                        unreadMessage.set(id, name);
+                    } else {
+                        sendUserResponse(connection);
+                    }
+
+                    connection.invoke('ack', ackId);
+                };
+
+                // Create a function that the hub can call to broadcast messages.
+                connection.on('broadcastMessage', displayPublicMessage);
+                connection.on('displayUserMessage', displayUserMessage);
+                connection.onclose(onConnectionError);
+            }
+
+            function onConnected(connection) {
                 console.log('connection started');
-                await connection.invoke('broadcastMessage', '_SYSTEM_', username + ' JOINED');
+                connection.invoke('broadcastMessage', '_SYSTEM_', username + ' JOINED');
 
                 document.getElementById('sendmessage').addEventListener('click', function (event) {
                     // Call the broadcastMessage method on the hub.
@@ -218,13 +237,23 @@
                 });
 
                 document.getElementById('sendUserMessage').addEventListener('click', (event) =>
-                    sendUserMessage(event));
+                    sendUserMessage(event, connection));
 
                 document.getElementById('message').addEventListener('keypress', function (event) {
                     if (event.keyCode === 13) {
                         event.preventDefault();
                         document.getElementById('sendmessage').click();
                         return false;
+                    }
+                });
+
+                document.getElementById('message').addEventListener('scroll', function (event) {
+                    sendUserResponse(connection);
+                });
+
+                document.addEventListener('visibilitychange', async function () {
+                    if (document.visibilityState === 'visible') {
+                        sendUserResponse(connection);
                     }
                 });
             }
@@ -238,13 +267,15 @@
                 modal.style = 'display: block;';
             }
 
-            bindConnectionMessage(connection);            connection.start()
-            .then(function () {
-                onConnected(connection);
-            })
-            .catch(function (error) {
-                console.error(error.message);
-            });
+            bindConnectionMessage(connection);
+
+            connection.start()
+                .then(function () {
+                    onConnected(connection);
+                })
+                .catch(function (error) {
+                    console.error(error.message);
+                });
         });
     </script>
 </body>

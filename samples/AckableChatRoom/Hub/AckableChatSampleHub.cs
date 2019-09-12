@@ -37,5 +37,14 @@ namespace Microsoft.Azure.SignalR.Samples.AckableChatRoom
             //  Return the task result to the client.
             return (await ackInfo.AckTask);
         }
+
+        // Send a customized response to the message sender.
+        public async Task<string> SendUserResponse(string messageId, string receiver, string responseMessage)
+        {
+            var ackInfo = _ackHandler.CreateAck();
+            await Clients.User(receiver).SendAsync("displayUserMessage", messageId, receiver, responseMessage, ackInfo.AckId);
+
+            return (await ackInfo.AckTask).ToString();
+        }
     }
 }
