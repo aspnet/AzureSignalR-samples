@@ -44,7 +44,7 @@ namespace Microsoft.Azure.SignalR.Samples.AckableChatRoom
         {
             if (_handlers.TryRemove(id, out var res))
             {
-                res.Item1.TrySetResult("Arrived");
+                res.Item1.TrySetResult("Sent");
             }
         }
 
