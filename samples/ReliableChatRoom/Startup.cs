@@ -19,6 +19,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 
         public void ConfigureServices(IServiceCollection services)
         {
+
             services.AddMvc();
             services.AddSignalR()
                     .AddAzureSignalR(options =>
@@ -28,6 +29,9 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
                             new Claim(ClaimTypes.NameIdentifier, context.Request.Query["username"])
                         };
                     });
+
+            services.AddSingleton<ISessionHandler, SessionStorageInAzureTable>();
+            services.AddSingleton<IMessageHandler, MessageStorageInAzureTable>();
         }
 
         public void Configure(IApplicationBuilder app)
