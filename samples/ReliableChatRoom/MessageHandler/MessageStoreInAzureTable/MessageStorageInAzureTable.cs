@@ -49,6 +49,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
             var retrievedResult = await _messageTable.ExecuteAsync(retrieveOperation);
             var updateEntity = retrievedResult.Result as MessageEntity;
 
+
             if (updateEntity != null)
             {
                 var message = updateEntity.ToMessage();
@@ -66,7 +67,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
             var query = new TableQuery<MessageEntity>().Where(
                 TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, sessionId)
             );
-            var result = await _messageTable.ExecuteQuerySegmentedAsync<MessageEntity>(query, null);
+            var result = await _messageTable.ExecuteQuerySegmentedAsync(query, null);
 
             var messages = new List<Message>();
             foreach(var entity in result)

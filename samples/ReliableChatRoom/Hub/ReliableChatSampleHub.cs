@@ -9,13 +9,13 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 {
-    public class ReliableChatRoom : Hub
+    public class ReliableChatSampleHub : Hub
     {
         private readonly IMessageHandler _messageHandler;
 
         private readonly ISessionHandler _sessionHandler;
 
-        public ReliableChatRoom(IMessageHandler messageHandler, ISessionHandler sessionHandler)
+        public ReliableChatSampleHub(IMessageHandler messageHandler, ISessionHandler sessionHandler)
         {
             _messageHandler = messageHandler;
             _sessionHandler = sessionHandler;

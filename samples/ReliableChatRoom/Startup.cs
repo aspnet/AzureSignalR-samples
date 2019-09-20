@@ -40,7 +40,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
             app.UseFileServer();
             app.UseAzureSignalR(routes =>
             {
-                routes.MapHub<ReliableChatRoom>("/chat");
+                routes.MapHub<ReliableChatSampleHub>("/chat");
             }
             );
         }
