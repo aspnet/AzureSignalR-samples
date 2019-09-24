@@ -1,6 +1,3 @@
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
 using System;
 
 namespace ServerSideBlazor.Data
@@ -11,7 +8,7 @@ namespace ServerSideBlazor.Data
 
         public int TemperatureC { get; set; }
 
-        public int TemperatureF { get; set; }
+        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 
         public string Summary { get; set; }
     }
