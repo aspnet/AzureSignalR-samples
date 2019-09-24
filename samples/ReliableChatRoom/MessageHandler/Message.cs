@@ -8,6 +8,8 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 
         public DateTime SendTime { get; }
 
+        public string SequenceId { get; set; }
+
         public string MessageContent { get; set; }
 
         public string MessageStatus { get; set; }

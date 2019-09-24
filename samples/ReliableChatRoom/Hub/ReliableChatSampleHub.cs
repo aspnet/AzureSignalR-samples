@@ -38,7 +38,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
         /// </summary>
         /// <param name="userName"></param>
         /// <param name="messageContent"></param>
-        public async Task<int> BroadcastMessage(string userName, string messageContent)
+        public async Task<string> BroadcastMessage(string userName, string messageContent)
         {
             var message = new Message(userName, DateTime.Now, messageContent, "Sent");
             var sequenceId = await _messageHandler.AddNewMessageAsync("Public", message);
@@ -74,7 +74,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
         /// <param name="receiver"></param>
         /// <param name="messageContent"></param>
         /// <returns>The sequenceId of the message.</returns>
-        public async Task<int> SendUserMessage(string sessionId, string receiver, string messageContent)
+        public async Task<string> SendUserMessage(string sessionId, string receiver, string messageContent)
         {
             var sender = Context.UserIdentifier;
 
@@ -99,7 +99,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
         /// <param name="receiver"></param>
         /// <param name="messageStatus"></param>
         /// <returns>The status of the message.</returns>
-        public async Task<string> SendUserResponse(string sessionId, int sequenceId, string receiver, string messageStatus)
+        public async Task<string> SendUserResponse(string sessionId, string sequenceId, string receiver, string messageStatus)
         {
             await _messageHandler.UpdateMessageAsync(sessionId, sequenceId, messageStatus);
 
@@ -115,7 +115,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
         /// <returns></returns>
         public async Task<List<Message>> LoadMessages(string sessionId)
         {
-            return await _messageHandler.LoadHistoryMessageAsync(sessionId, -1, -1);
+            return await _messageHandler.LoadHistoryMessageAsync(sessionId);
         }
     }
 }

@@ -11,7 +11,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
         /// <param name="sessionId"></param>
         /// <param name="message"></param>
         /// <returns>The sequenceId of the new messageStatus.</returns>
-        Task<int> AddNewMessageAsync(string sessionId, Message message);
+        Task<string> AddNewMessageAsync(string sessionId, Message message);
 
         /// <summary>
         /// Update an existed messageStatus in the storage.
@@ -19,7 +19,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
         /// <param name="sessionId"></param>
         /// <param name="sequenceId"></param>
         /// <param name="messageStatus"></param>
-        Task UpdateMessageAsync(string sessionId, int sequenceId, string messageStatus);
+        Task UpdateMessageAsync(string sessionId, string sequenceId, string messageStatus);
 
         /// <summary>
         /// Selects the messages from startSequenceId to endSequenceId (both are included).
@@ -28,6 +28,6 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
         /// <param name="startSequenceId"></param>
         /// <param name="endSequenceId"></param>
         /// <returns>A list of messages sorted by the sequenceId</returns>
-        Task<List<Message>> LoadHistoryMessageAsync(string sessionId, int startSequenceId, int endSequenceId);
+        Task<List<Message>> LoadHistoryMessageAsync(string sessionId);
     }
 }

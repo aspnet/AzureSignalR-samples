@@ -32,20 +32,20 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
             _messageTable.CreateIfNotExistsAsync();
         }
 
-        public async Task<int> AddNewMessageAsync(string sessionId, Message message)
+        public async Task<string> AddNewMessageAsync(string sessionId, Message message)
         {
-            var messageTime = DateTime.Now.Ticks;
-            var messageEntity = new MessageEntity(sessionId, messageTime.ToString(), message);
+            var messageTime = DateTime.Now.Ticks.ToString();
+            var messageEntity = new MessageEntity(sessionId, messageTime, message);
 
             TableOperation insertOperation = TableOperation.Insert(messageEntity);
             var task = await _messageTable.ExecuteAsync(insertOperation);
 
-            return (int)messageTime;
+            return messageTime;
         }
 
-        public async Task UpdateMessageAsync(string sessionId, int sequenceId, string messageStatus)
+        public async Task UpdateMessageAsync(string sessionId, string sequenceId, string messageStatus)
         {
-            var retrieveOperation = TableOperation.Retrieve<MessageEntity>(sessionId, sequenceId.ToString());
+            var retrieveOperation = TableOperation.Retrieve<MessageEntity>(sessionId, sequenceId);
             var retrievedResult = await _messageTable.ExecuteAsync(retrieveOperation);
             var updateEntity = retrievedResult.Result as MessageEntity;
 
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
             }
         }
 
-        public async Task<List<Message>> LoadHistoryMessageAsync(string sessionId, int startSequenceId, int endSequenceId)
+        public async Task<List<Message>> LoadHistoryMessageAsync(string sessionId)
         {
             // TODO: Select the messages by 2 sequenceId params
             var query = new TableQuery<MessageEntity>().Where(
@@ -72,7 +72,9 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
             var messages = new List<Message>();
             foreach(var entity in result)
             {
-                messages.Add(entity.ToMessage());
+                var message = entity.ToMessage();
+                message.SequenceId = entity.RowKey;
+                messages.Add(message);
             }
 
             return messages;

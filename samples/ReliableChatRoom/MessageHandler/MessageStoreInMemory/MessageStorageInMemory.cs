@@ -9,22 +9,22 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 {
     public class MessageStorageInMemory : IMessageHandler
     {
-        private readonly ConcurrentDictionary<string, ConcurrentDictionary<int, Message>> _messageDictionary;
+        private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, Message>> _messageDictionary;
 
         public MessageStorageInMemory()
         {
-            _messageDictionary = new ConcurrentDictionary<string, ConcurrentDictionary<int, Message>>(); 
+            _messageDictionary = new ConcurrentDictionary<string, ConcurrentDictionary<string, Message>>(); 
         }
 
-        public Task<int> AddNewMessageAsync(string sessionId, Message message)
+        public Task<string> AddNewMessageAsync(string sessionId, Message message)
         {
             if (!_messageDictionary.ContainsKey(sessionId))
             {
-                _messageDictionary.TryAdd(sessionId, new ConcurrentDictionary<int, Message>());
+                _messageDictionary.TryAdd(sessionId, new ConcurrentDictionary<string, Message>());
             }
             var sessionMessage = _messageDictionary[sessionId];
 
-            var sequenceId = sessionMessage.Count;
+            var sequenceId = sessionMessage.Count.ToString();
             sessionMessage.TryAdd(sequenceId, message);
 
             _messageDictionary.AddOrUpdate(sessionId, sessionMessage, (k, v) => v);
@@ -32,11 +32,11 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
             return Task.FromResult(sequenceId);
         }
 
-        public Task UpdateMessageAsync(string sessionId, int sequenceId, string messageStatus)
+        public Task UpdateMessageAsync(string sessionId, string sequenceId, string messageStatus)
         {
             if (!_messageDictionary.ContainsKey(sessionId))
             {
-                _messageDictionary.TryAdd(sessionId, new ConcurrentDictionary<int, Message>());
+                _messageDictionary.TryAdd(sessionId, new ConcurrentDictionary<string, Message>());
             }
             var sessionMessage = _messageDictionary[sessionId];
 
@@ -48,11 +48,11 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
             return Task.CompletedTask;
         }
 
-        public Task<List<Message>> LoadHistoryMessageAsync(string sessionId, int startSequenceId, int endSequenceId)
+        public Task<List<Message>> LoadHistoryMessageAsync(string sessionId)
         {
             if (!_messageDictionary.ContainsKey(sessionId))
             {
-                _messageDictionary.TryAdd(sessionId, new ConcurrentDictionary<int, Message>());
+                _messageDictionary.TryAdd(sessionId, new ConcurrentDictionary<string, Message>());
             }
             var sessionMessage = _messageDictionary[sessionId];
 

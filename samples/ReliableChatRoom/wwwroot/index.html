@@ -179,8 +179,9 @@
                 messageBoxElement.innerHTML = ``;
                 messageBoxElement.innerText = ``;
 
-                let cnt = 0;
+                let seqId = 0;
                 historyMessage.forEach(element => {
+                    let cnt = element.sequenceId || seqId;
                     let webTime = element.sendTime.substring(11,19);
 
                     let messageEntry = createNewMessage(element.senderName,
@@ -199,7 +200,7 @@
                         messageEntry.appendChild(messageStatusEntry);
                     }
                     addNewMessageToScreen(messageEntry);
-                    cnt = cnt + 1;
+                    seqId = seqId + 1;
                 });
             }
 
@@ -254,7 +255,6 @@
                 const messageText = messageInput.value;
                 messageInput.value = '';
 
-                //  TODO: Only pull the recent messageIds and then check missing
                 //  Currently we pull all messages from the server
                 await changeSession(currentUser, connection);
 
@@ -284,8 +284,8 @@
             }
 
             const bindConnectionMessage = function (connection) {
-                const displayUnreadMessage = function (sessionId, sequenceId, sender, messageContent) {
-                    if (sessionMap.has(sender)) {
+                const displayUnreadMessage = function (sessionId, sender, messageContent) {
+                    if (sessionMap.has(sender) || sessionId === 'Public') {
                         updateSessionCard(sessionId, sender + ': ' + messageContent);
                     } else {
                         sessionMap.set(sender, sessionId);
@@ -304,7 +304,7 @@
                 //  Add the message to the screen
                 const displayUserMessage = function (sessionId, sequenceId, sender, messageContent) {
                     if (currentSession != sessionId) {
-                        displayUnreadMessage(sessionId, sequenceId, sender, messageContent);
+                        displayUnreadMessage(sessionId, sender, messageContent);
                         return;
                     }
 
@@ -318,7 +318,7 @@
                 };
 
                 //  Change the status text under the message
-                const displayAckMessage = function (sessionId, sequenceId, messageStatus) {
+                const displayResponseMessage = function (sessionId, sequenceId, messageStatus) {
                     if (sessionId != currentSession) {
                         return;
                     }
@@ -341,7 +341,7 @@
                 }
 
                 //  Create a function that the hub can call to broadcast messages.
-                connection.on('displayAckMessage', displayAckMessage);
+                connection.on('displayResponseMessage', displayResponseMessage);
                 connection.on('displayUserMessage', displayUserMessage);
                 connection.on('updateSessions', updateSessions);
                 connection.onclose(onConnectionError);
