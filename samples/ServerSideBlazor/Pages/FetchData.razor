@@ -1,4 +1,5 @@
-@page "/fetchdata"
+﻿@page "/fetchdata"
+
 @using ServerSideBlazor.Data
 @inject WeatherForecastService ForecastService
 
@@ -35,10 +36,10 @@ else
     </table>
 }
 
-@functions {
+@code {
     WeatherForecast[] forecasts;
 
-    protected override async Task OnInitAsync()
+    protected override async Task OnInitializedAsync()
     {
         forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
     }
