@@ -108,13 +108,15 @@
                 document.getElementById("userlist").appendChild(entry);
             }
 
-            const swapSessionCard = function (currentSession, newSession) {
+            const swapSessionCard = function (currentSession, newSession, targetName) {
 
                 const preSession = document.getElementById(currentSession);
                 preSession.style.backgroundColor = "#e0e0e0";
 
                 const curSession = document.getElementById(newSession);
                 curSession.style.backgroundColor = "#d0d0d0";
+                                
+                document.getElementById('sessionLabel').innerText = targetName;
             }
 
             const updateSessionCard = function (sessionId, lastestMessage) {
@@ -148,21 +150,6 @@
                 return entry;
             }
 
-            //  Get the user name and store it to prepend to messages.
-            let promptMessage = 'Enter your name:';
-            do {
-                username = prompt(promptMessage, username);
-                if (!username || username.startsWith('_') || username.indexOf('<') > -1 || username.indexOf(
-                        '>') > -1) {
-                    username = '';
-                    promptMessage = 'Invalid input. Enter your name:';
-                }
-            } while (!username);
-
-            //  Set initial focus to message input box.
-            const messageInput = document.getElementById('message');
-            messageInput.focus();
-
             const addNewMessageToScreen = function (messageEntry) {
                 const messageBoxElement = document.getElementById('messages');
                 messageBoxElement.appendChild(messageEntry);
@@ -173,6 +160,37 @@
                 messageInput.focus();
                 event.preventDefault();
             }
+
+            const createNewMessageStatus = function (messageId, messageStatus) {
+                const messageStatusEntry = document.createElement('div');
+                messageStatusEntry.innerHTML =
+                    `<div class="message-avatar pull-right" id="${messageId}-Status">
+                        ${messageStatus}</div>`;
+                return messageStatusEntry;
+            }
+
+            const updateMessageStatus = function (messageId, messageStatus, sequenceId) {
+                const statusElement = document.getElementById(messageId + '-Status');
+                const messageElement = document.getElementById('messageId-' + messageId);
+                statusElement.innerText = messageStatus;
+                statusElement.id = sequenceId + '-Status';
+                messageElement.id = 'messageId-' + sequenceId;
+            } 
+
+            //  Get the user name and store it to prepend to messages.
+            let promptMessage = 'Enter your name:';
+            do {
+                username = prompt(promptMessage, username);
+                if (!username || username.startsWith('_') || username.indexOf('<') > -1 || username.indexOf(
+                    '>') > -1 || username === 'Public') {
+                    username = '';
+                    promptMessage = 'Invalid input. Enter your name:';
+                }
+            } while (!username);
+
+            //  Set initial focus to message input box.
+            const messageInput = document.getElementById('message');
+            messageInput.focus();
 
             const addHistoryMessage = function (historyMessage, connection) {
                 const messageBoxElement = document.getElementById('messages');
@@ -185,37 +203,26 @@
                     let webTime = element.sendTime.substring(11,19);
 
                     let messageEntry = createNewMessage(element.senderName,
-                        encodedMessage(element
-                            .messageContent), cnt, webTime);
+                        encodedMessage(element.messageContent), cnt, webTime);
 
                     if (currentSession != 'Public' && element.senderName != username) {
-                        connection.invoke('sendUserResponse', currentSession, cnt, element
-                                .senderName, "Read");
-
+                        if (element.messageStatus != 'Read') {
+                            connection.invoke('sendUserResponse', currentSession, cnt, element
+                                .senderName, 'Read');
+                        }
                     } else if (currentSession != 'Public' && element.senderName === username) {
-                        const messageStatusEntry = document.createElement('div');
-                        messageStatusEntry.innerHTML =
-                            `<div class="message-avatar pull-right" id="${cnt}-Status">
-                        ${element.messageStatus}</div>`;
+                        const messageStatusEntry = createNewMessageStatus(cnt, element.messageStatus);
                         messageEntry.appendChild(messageStatusEntry);
                     }
+
                     addNewMessageToScreen(messageEntry);
                     seqId = seqId + 1;
                 });
             }
 
-            //  Logics
-            const loadMessage = async function (sessionId, connection) {
-                const _sessionId = sessionId;
-                const x = await connection.invoke('loadMessages', _sessionId);
-
-                console.log(x);
-                return x;
-            }
-
             const changeSession = async function (targetName, connection) {
                 if (targetName === username) {
-                    alert("You could create a session with yourself!");
+                    alert('You cannot create a session with yourself!');
                     return;
                 }
 
@@ -232,12 +239,11 @@
                     addNewSessionCard(targetName, sessionId, '');
                 }
 
-                swapSessionCard(currentSession, sessionId);
-                document.getElementById('sessionLabel').innerText = targetName;
+                swapSessionCard(currentSession, sessionId, targetName);
 
                 currentSession = sessionId;
                 currentUser = targetName;
-                const historyMessage = await loadMessage(sessionId, connection);
+                const historyMessage = await connection.invoke('loadMessages', sessionId);;
 
                 //  Add the history message to the screen
                 addHistoryMessage(historyMessage, connection);
@@ -259,27 +265,18 @@
                 await changeSession(currentUser, connection);
 
                 //  Create the message in the room.
-                const messageEntry = createNewMessage(username, messageText, messageId,'');
-                addNewMessageToScreen(messageEntry);
-
-                //  Create and add the message status to the message.
-                const messageElement = document.getElementById("messageId-" + messageId);
-                const messageStatusEntry = document.createElement('div');
-                const messageBoxElement = document.getElementById('messages');
-                messageStatusEntry.innerHTML =
-                    `<div class="message-avatar pull-right" id="${messageId}-Status">
-                        Sending</div>`;
+                const messageEntry = createNewMessage(username, messageText, messageId, '');
+                const messageStatusEntry = createNewMessageStatus(messageId, 'Sending');
                 messageEntry.appendChild(messageStatusEntry);
+                addNewMessageToScreen(messageEntry);
+                const messageBoxElement = document.getElementById('messages');                
                 messageBoxElement.scrollTop = messageBoxElement.scrollHeight;
 
                 //  Call the sendUserMessage method on the hub.
-                const x = await connection.invoke('sendUserMessage', sessionId, targetName,
+                const sequenceId = await connection.invoke('sendUserMessage', sessionId, targetName,
                     messageText);
-                const statusElement = document.getElementById(messageId + "-Status");
-                statusElement.innerText = "Sent";
-                statusElement.id = x + "-Status";
-                messageElement.id = "messageId-" + x;
 
+                updateMessageStatus(messageId, 'Sent', sequenceId);
                 updateSessionCard(sessionId, messageText);
             }
 
@@ -292,7 +289,7 @@
                         addNewSessionCard(sender, sessionId, sender + ': ' + messageContent);
                     }
 
-                    if (window.Notification && Notification.permission !== "denied") {
+                    if (window.Notification && Notification.permission !== 'denied') {
                         Notification.requestPermission(function (status) {
                             let n = new Notification('You have a new nessage from' + sender, {
                                 body: messageContent
@@ -309,7 +306,7 @@
                     }
 
                     if (currentSession != 'Public') {
-                        connection.invoke('sendUserResponse', sessionId, sequenceId, sender, "Read");
+                        connection.invoke('sendUserResponse', sessionId, sequenceId, sender, 'Read');
                     }
 
                     const messageEntry = createNewMessage(sender, encodedMessage(messageContent),
@@ -322,11 +319,12 @@
                     if (sessionId != currentSession) {
                         return;
                     }
+
                     const now = new Date();
-                    const entry = document.getElementById(sequenceId + "-Status");
+                    const entry = document.getElementById(sequenceId + '-Status');
                     entry.innerText = messageStatus;
-                    console.log("messageId: " + sessionId + "\nStatus: " + messageStatus +
-                        "\nLocal Time: " + now.toLocaleTimeString());
+                    console.log('messageId: ' + sessionId + '\nStatus: ' + messageStatus +
+                        '\nLocal Time: ' + now.toLocaleTimeString());
                 }
 
                 //  Log all sessions
@@ -350,9 +348,9 @@
 
             function onConnected(connection) {
                 Notification.requestPermission(function (status) {
-                    if (status === "granted") {
-                        let n = new Notification("Dear " + username +
-                            ": \nYour new messages will be displayed here");
+                    if (status === 'granted') {
+                        let n = new Notification('Dear ' + username +
+                            ': \nYour new messages will be displayed here');
                     }
                 });
                 console.log('connection started');
@@ -386,6 +384,7 @@
                 if (error && error.message) {
                     console.error(error.message);
                 }
+
                 const modal = document.getElementById('myModal');
                 modal.classList.add('in');
                 modal.style = 'display: block;';
