@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 {
-    public class MessageStorageInMemory : IMessageHandler
+    public class InMemoryMessageStorage : IMessageHandler
     {
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, Message>> _messageDictionary;
 
-        public MessageStorageInMemory()
+        public InMemoryMessageStorage()
         {
             _messageDictionary = new ConcurrentDictionary<string, ConcurrentDictionary<string, Message>>(); 
         }

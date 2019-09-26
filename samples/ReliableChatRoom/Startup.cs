@@ -30,8 +30,8 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
                         };
                     });
 
-            services.AddSingleton<ISessionHandler, SessionStorageInAzureTable>();
-            services.AddSingleton<IMessageHandler, MessageStorageInAzureTable>();
+            services.AddSingleton<ISessionHandler, AzureTableSessionStorage>();
+            services.AddSingleton<IMessageHandler, AzureTableMessageStorage>();
         }
 
         public void Configure(IApplicationBuilder app)

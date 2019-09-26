@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 {
-    public class SessionStorageInAzureTable : ISessionHandler
+    public class AzureTableSessionStorage : ISessionHandler
     {
         private readonly CloudStorageAccount _storageAccount;
 
@@ -20,7 +20,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 
         private readonly IConfiguration _configuration;
 
-        public SessionStorageInAzureTable(IConfiguration configuration)
+        public AzureTableSessionStorage(IConfiguration configuration)
         {
             _configuration = configuration;
             _storageAccount = CloudStorageAccount.Parse(_configuration.GetConnectionString("AzureStorage"));
@@ -48,7 +48,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
             return session;
         }
 
-        public async Task<KeyValuePair<string, Session>[]> GetAllSessionsAsync(string userName)
+        public async Task<KeyValuePair<string, Session>[]> GetLatestSessionsAsync(string userName)
         {
             var query = new TableQuery<SessionEntity>().Where(
                 TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, userName)

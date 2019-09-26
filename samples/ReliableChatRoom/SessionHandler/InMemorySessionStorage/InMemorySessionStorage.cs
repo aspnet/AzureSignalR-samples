@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 {
-    public class SessionStorageInMemory : ISessionHandler
+    public class InMemorySessionStorage : ISessionHandler
     {
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, Session>> _sessionDictionary;
 
-        public SessionStorageInMemory()
+        public InMemorySessionStorage()
         {
             _sessionDictionary = new ConcurrentDictionary<string, ConcurrentDictionary<string, Session>>();
         }
@@ -43,7 +43,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
             return Task.FromResult(session);
         }
 
-        public Task<KeyValuePair<string, Session>[]> GetAllSessionsAsync(string userName)
+        public Task<KeyValuePair<string, Session>[]> GetLatestSessionsAsync(string userName)
         {
             if (!_sessionDictionary.ContainsKey(userName))
             {

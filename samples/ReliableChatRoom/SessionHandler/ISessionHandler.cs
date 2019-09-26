@@ -18,6 +18,6 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
         /// </summary>
         /// <param name="userName"></param>
         /// <returns>A list of sessions</returns>
-        Task<KeyValuePair<string, Session>[]> GetAllSessionsAsync(string userName);
+        Task<KeyValuePair<string, Session>[]> GetLatestSessionsAsync(string userName);
     }
 }

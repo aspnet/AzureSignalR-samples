@@ -27,7 +27,9 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 
             //  Push the latest session information to the user.
             //  Currently push the whole list. Better pushing the timestamp to make incremental updates. 
-            var userSessions = await _sessionHandler.GetAllSessionsAsync(sender);
+            var userSessions = await _sessionHandler.GetLatestSessionsAsync(sender);
+
+            //  Send to latest session list to user.
             await Clients.Caller.SendAsync("updateSessions", userSessions);
             
             await base.OnConnectedAsync();
@@ -59,7 +61,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
         /// </summary>
         /// <param name="receiver"></param>
         /// <returns>The sessionId.</returns>
-        public async Task<string> GetOrCreateNewSession(string receiver)
+        public async Task<string> GetOrCreateSession(string receiver)
         {
             var sender = Context.UserIdentifier;
             var session = await _sessionHandler.GetOrCreateSessionAsync(sender, receiver);

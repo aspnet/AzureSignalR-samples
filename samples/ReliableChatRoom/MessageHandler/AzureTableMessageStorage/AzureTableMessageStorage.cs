@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 {
-    public class MessageStorageInAzureTable : IMessageHandler
+    public class AzureTableMessageStorage : IMessageHandler
     {
         private readonly CloudStorageAccount _storageAccount;
 
@@ -21,7 +21,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 
         private readonly IConfiguration _configurationuration;
 
-        public MessageStorageInAzureTable(IConfiguration configuration)
+        public AzureTableMessageStorage(IConfiguration configuration)
         {
             _configurationuration = configuration;
             _storageAccount = CloudStorageAccount.Parse(_configurationuration.GetConnectionString("AzureStorage"));
@@ -45,19 +45,37 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 
         public async Task UpdateMessageAsync(string sessionId, string sequenceId, string messageStatus)
         {
-            var retrieveOperation = TableOperation.Retrieve<MessageEntity>(sessionId, sequenceId);
-            var retrievedResult = await _messageTable.ExecuteAsync(retrieveOperation);
-            var updateEntity = retrievedResult.Result as MessageEntity;
+            var retry = 0;
 
-
-            if (updateEntity != null)
+            while (retry < 10)
             {
-                var message = updateEntity.ToMessage();
-                message.MessageStatus = messageStatus;
-                updateEntity.Message = JsonConvert.SerializeObject(message);
+                try
+                {
+                    var retrieveOperation = TableOperation.Retrieve<MessageEntity>(sessionId, sequenceId);
+                    var retrievedResult = await _messageTable.ExecuteAsync(retrieveOperation);
+                    var updateEntity = retrievedResult.Result as MessageEntity;
 
-                var updateOperation = TableOperation.Replace(updateEntity);
-                await _messageTable.ExecuteAsync(updateOperation);
+                    if (updateEntity != null)
+                    {
+                        var message = updateEntity.ToMessage();
+                        message.MessageStatus = messageStatus;
+                        updateEntity.Message = JsonConvert.SerializeObject(message);
+
+                        var updateOperation = TableOperation.Replace(updateEntity);
+                        await _messageTable.ExecuteAsync(updateOperation);
+                    }
+
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    if (++retry == 10) 
+                    {
+                        throw ex;
+                    }
+
+                    await Task.Delay(new Random().Next(10, 100));
+                }
             }
         }
 
