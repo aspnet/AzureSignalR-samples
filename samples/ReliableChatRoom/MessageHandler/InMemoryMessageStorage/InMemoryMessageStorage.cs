@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,41 +10,35 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 {
     public class InMemoryMessageStorage : IMessageHandler
     {
-        private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, Message>> _messageDictionary;
+        private readonly ConcurrentDictionary<string, SessionMessage> _messageDictionary;
 
         public InMemoryMessageStorage()
         {
-            _messageDictionary = new ConcurrentDictionary<string, ConcurrentDictionary<string, Message>>(); 
+            _messageDictionary = new ConcurrentDictionary<string, SessionMessage>(); 
         }
 
         public Task<string> AddNewMessageAsync(string sessionId, Message message)
         {
             if (!_messageDictionary.ContainsKey(sessionId))
             {
-                _messageDictionary.TryAdd(sessionId, new ConcurrentDictionary<string, Message>());
+                _messageDictionary.TryAdd(sessionId, new SessionMessage());
             }
             var sessionMessage = _messageDictionary[sessionId];
 
-            var sequenceId = sessionMessage.Count.ToString();
-            sessionMessage.TryAdd(sequenceId, message);
+            var sequenceId = sessionMessage.TryAddMessage(message);
 
-            _messageDictionary.AddOrUpdate(sessionId, sessionMessage, (k, v) => v);
-
-            return Task.FromResult(sequenceId);
+            return Task.FromResult(sequenceId.ToString());
         }
 
         public Task UpdateMessageAsync(string sessionId, string sequenceId, string messageStatus)
         {
             if (!_messageDictionary.ContainsKey(sessionId))
             {
-                _messageDictionary.TryAdd(sessionId, new ConcurrentDictionary<string, Message>());
+                _messageDictionary.TryAdd(sessionId, new SessionMessage());
             }
             var sessionMessage = _messageDictionary[sessionId];
 
-            var message = sessionMessage[sequenceId];
-            message.MessageStatus = messageStatus;
-            sessionMessage.AddOrUpdate(sequenceId, message, (k,v)=>v);
-            _messageDictionary.AddOrUpdate(sessionId, sessionMessage, (k, v) => v);
+            sessionMessage.TryUpdateMessage(int.Parse(sequenceId), messageStatus);
 
             return Task.CompletedTask;
         }
@@ -52,15 +47,59 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
         {
             if (!_messageDictionary.ContainsKey(sessionId))
             {
-                _messageDictionary.TryAdd(sessionId, new ConcurrentDictionary<string, Message>());
+                _messageDictionary.TryAdd(sessionId, new SessionMessage());
             }
             var sessionMessage = _messageDictionary[sessionId];
 
-            // TODO: Select the messages by 2 sequenceId params
-
-            var result = new List<Message>(sessionMessage.Values);
+            var result = new List<Message>(sessionMessage.Messages.ToList());
+            result.Sort();
 
             return Task.FromResult(result);
+        }
+
+        internal class SessionMessage
+        {
+            public const int MAX_SIZE = 1000;
+
+            public int LastSequenceId { get; set; }
+
+            public List<Message> Messages { get; set; }
+
+            public SessionMessage()
+            {
+                LastSequenceId = -1;
+                Messages = new List<Message>(MAX_SIZE);
+            }
+
+            public int TryAddMessage(Message message)
+            {
+                LastSequenceId++;
+                Messages[LastSequenceId % MAX_SIZE] = message;
+
+                return LastSequenceId;
+            }
+
+            public Message TryGetMessage(int sequenceId)
+            {
+                if(sequenceId < LastSequenceId - MAX_SIZE || sequenceId > LastSequenceId || sequenceId >= 0)
+                {
+                    throw new Exception("Message not found");
+                }
+
+                return Messages[sequenceId % MAX_SIZE];
+            }
+
+            public void TryUpdateMessage(int sequenceId, string messageStatus)
+            {
+                if (sequenceId < LastSequenceId - MAX_SIZE || sequenceId > LastSequenceId || sequenceId >= 0) 
+                {
+                    throw new Exception("Message not found");
+                }
+
+                Messages[sequenceId % MAX_SIZE].MessageStatus = messageStatus;
+
+                return;
+            }
         }
     }
 }
