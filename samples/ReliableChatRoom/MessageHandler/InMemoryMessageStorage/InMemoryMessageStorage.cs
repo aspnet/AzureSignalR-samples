@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using Microsoft.AspNetCore.Routing.Tree;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -37,11 +38,10 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
         {
             lock (_messageDictionary)
             {
-                if (!_messageDictionary.ContainsKey(sessionId))
+                if (!_messageDictionary.TryGetValue(sessionId, out var sessionMessage))
                 {
-                    _messageDictionary.TryAdd(sessionId, new SessionMessage());
+                    throw new Exception("Session not found!");
                 }
-                var sessionMessage = _messageDictionary[sessionId];
 
                 sessionMessage.TryUpdateMessage(int.Parse(sequenceId), messageStatus);
 
@@ -53,11 +53,11 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
         {
             lock (_messageDictionary)
             {
-                if (!_messageDictionary.ContainsKey(sessionId))
+                if (!_messageDictionary.TryGetValue(sessionId, out var sessionMessage))
                 {
                     _messageDictionary.TryAdd(sessionId, new SessionMessage());
+                    return Task.FromResult(new List<Message>());
                 }
-                var sessionMessage = _messageDictionary[sessionId];
 
                 var result = new List<Message>(sessionMessage.Messages.ToList());
                 result.Sort();
@@ -84,7 +84,15 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
             {
                 LastSequenceId++;
                 message.SequenceId = LastSequenceId.ToString();
-                Messages[LastSequenceId % MAX_SIZE] = message;
+
+                if (LastSequenceId < MAX_SIZE)
+                {
+                    Messages.Add(message);
+                }
+                else
+                {
+                    Messages[LastSequenceId % MAX_SIZE] = message;
+                }
 
                 return LastSequenceId;
             }

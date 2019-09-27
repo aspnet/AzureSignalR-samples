@@ -232,7 +232,7 @@
                 if (sessionMap.has(targetName)) {
                     sessionId = sessionMap.get(targetName);
                 } else {
-                    sessionId = await connection.invoke('getOrCreateNewSession', targetName);
+                    sessionId = await connection.invoke('getOrCreateSession', targetName);
                     sessionMap.set(targetName, sessionId);
 
                     //  Add the sessionCard to the left side of the screen
