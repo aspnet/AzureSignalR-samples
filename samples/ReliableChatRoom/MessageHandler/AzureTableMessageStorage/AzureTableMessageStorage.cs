@@ -46,8 +46,9 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
         public async Task UpdateMessageAsync(string sessionId, string sequenceId, string messageStatus)
         {
             var retry = 0;
+            const int MAX_RETRY = 10;
 
-            while (retry < 10)
+            while (retry < MAX_RETRY)
             {
                 try
                 {
@@ -69,7 +70,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
                 }
                 catch (Exception ex)
                 {
-                    if (++retry == 10) 
+                    if (++retry == MAX_RETRY) 
                     {
                         throw ex;
                     }
@@ -81,7 +82,6 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 
         public async Task<List<Message>> LoadHistoryMessageAsync(string sessionId)
         {
-            // TODO: Select the messages by 2 sequenceId params
             var query = new TableQuery<MessageEntity>().Where(
                 TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, sessionId)
             );
