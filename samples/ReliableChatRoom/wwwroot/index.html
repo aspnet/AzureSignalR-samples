@@ -128,16 +128,14 @@
 
             const createNewMessage = function (sender, message, messageId, now) {
                 now = now || new Date().toLocaleTimeString('en-GB');
+                messageId = messageId || new Date().toLocaleTimeString('en-GB');
+
                 const entry = document.createElement('div');
                 entry.classList.add("message-entry");
-                if (sender === "Public" || sender === "_SYSTEM_") {
+                if (sender === "Public") {
                     entry.innerHTML = message;
                     entry.classList.add("text-center");
                     entry.classList.add("system-message");
-                } else if (sender === "_BROADCAST_") {
-                    entry.classList.add("text-center");
-                    entry.innerHTML =
-                        `<div class="text-center broadcast-message" id="messageId-${messageId}">${message}</div>`;
                 } else if (sender === username) {
                     entry.innerHTML =
                         `<div class="message-avatar pull-right" id="messageId-${messageId}">${sender}<br />${now}</div>` +
@@ -147,6 +145,7 @@
                         `<div class="message-avatar pull-left" id="messageId-${messageId}">${sender}<br />${now}</div>` +
                         `<div class="message-content pull-left">${message}<div>`;
                 }
+
                 return entry;
             }
 
@@ -273,8 +272,9 @@
                 messageBoxElement.scrollTop = messageBoxElement.scrollHeight;
 
                 //  Call the sendUserMessage method on the hub.
-                const sequenceId = await connection.invoke('sendUserMessage', sessionId, targetName,
-                    messageText);
+                const sequenceId = currentSession === 'Public'
+                    ? await connection.invoke('broadcastMessage', messageText)
+                    : await connection.invoke('sendUserMessage', sessionId, targetName, messageText);
 
                 updateMessageStatus(messageId, 'Sent', sequenceId);
                 updateSessionCard(sessionId, messageText);
@@ -356,7 +356,6 @@
                 console.log('connection started');
                 addNewSessionCard('Public', 'Public', '');
                 changeSession('Public', connection);
-                connection.invoke('broadcastMessage', 'Public', username + ' JOINED');
 
                 document.getElementById('userName').innerText = username;
 

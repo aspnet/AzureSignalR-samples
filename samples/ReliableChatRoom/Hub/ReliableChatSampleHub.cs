@@ -26,32 +26,42 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
             var sender = Context.UserIdentifier;
 
             //  Push the latest session information to the user.
-            //  Currently push the whole list. Better pushing the timestamp to make incremental updates. 
             var userSessions = await _sessionHandler.GetLatestSessionsAsync(sender);
 
             //  Send to latest session list to user.
             await Clients.Caller.SendAsync("updateSessions", userSessions);
+
+            var onConnectedMessage = sender + " joined the chat room";
+            var message = new Message("Public", DateTime.Now, onConnectedMessage, "Sent");
+            var sequenceId = await _messageHandler.AddNewMessageAsync("Public", message);
+            await Clients.All.SendAsync("displayUserMessage", "Public", sequenceId, "Public", onConnectedMessage);
             
             await base.OnConnectedAsync();
         }
 
-        /// <summary>
-        /// Broadcast a message to all clients. Won't store the message.
-        /// </summary>
-        /// <param name="userName"></param>
-        /// <param name="messageContent"></param>
-        public async Task<string> BroadcastMessage(string userName, string messageContent)
+        public override async Task OnDisconnectedAsync(Exception exception)
         {
-            var message = new Message(userName, DateTime.Now, messageContent, "Sent");
+            var sender = Context.UserIdentifier;
+
+            var onDisconnectedMessage = sender + " left the chat room";
+            var message = new Message("Public", DateTime.Now, onDisconnectedMessage, "Sent");
+            var sequenceId = await _messageHandler.AddNewMessageAsync("Public", message);
+            await Clients.All.SendAsync("displayUserMessage", "Public", sequenceId, "Public", onDisconnectedMessage);
+
+            await base.OnDisconnectedAsync(exception);
+        }
+
+        /// <summary>
+        /// Broadcast a message to all clients.
+        /// </summary>
+        /// <param name="messageContent"></param>
+        public async Task<string> BroadcastMessage(string messageContent)
+        {
+            var sender = Context.UserIdentifier;
+            var message = new Message(sender, DateTime.Now, messageContent, "Sent");
             var sequenceId = await _messageHandler.AddNewMessageAsync("Public", message);
 
-            if(userName=="Public" || userName == "_SYSTEM_")
-            {
-                await Clients.All.SendAsync("displayUserMessage", "Public", sequenceId, userName, messageContent);
-            } else
-            {
-                await Clients.Others.SendAsync("displayUserMessage", "Public", sequenceId, userName, messageContent);
-            }
+            await Clients.Others.SendAsync("displayUserMessage", "Public", sequenceId, sender, messageContent);
 
             return sequenceId;
         }
@@ -79,11 +89,6 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
         public async Task<string> SendUserMessage(string sessionId, string receiver, string messageContent)
         {
             var sender = Context.UserIdentifier;
-
-            if(sessionId == "Public")
-            {
-                return await BroadcastMessage(sender, messageContent);
-            }
 
             var message = new Message(sender, DateTime.Now, messageContent, "Sent");
             var sequenceId = await _messageHandler.AddNewMessageAsync(sessionId, message);
