@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
@@ -20,93 +21,85 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 
         public Task<string> AddNewMessageAsync(string sessionId, Message message)
         {
-            lock (_messageDictionary)
+            if (!_messageDictionary.TryGetValue(sessionId, out var sessionMessage))
             {
-                if (!_messageDictionary.ContainsKey(sessionId))
-                {
-                    _messageDictionary.TryAdd(sessionId, new SessionMessage());
-                }
-                var sessionMessage = _messageDictionary[sessionId];
-
-                var sequenceId = sessionMessage.TryAddMessage(message);
-
-                return Task.FromResult(sequenceId.ToString());
+                _messageDictionary.TryAdd(sessionId, new SessionMessage());
+                sessionMessage = _messageDictionary[sessionId];
             }
+
+            var sequenceId = sessionMessage.TryAddMessage(message);
+
+            return Task.FromResult(sequenceId.ToString());
         }
 
-        public Task UpdateMessageAsync(string sessionId, string sequenceId, string messageStatus)
+        public async Task UpdateMessageAsync(string sessionId, string sequenceId, string messageStatus)
         {
-            lock (_messageDictionary)
+            if (!_messageDictionary.TryGetValue(sessionId, out var sessionMessage))
             {
-                if (!_messageDictionary.TryGetValue(sessionId, out var sessionMessage))
-                {
-                    throw new Exception("Session not found!");
-                }
-
-                sessionMessage.TryUpdateMessage(int.Parse(sequenceId), messageStatus);
-
-                return Task.CompletedTask;
+                throw new Exception("Session not found!");
             }
+
+            await sessionMessage.TryUpdateMessage(int.Parse(sequenceId), messageStatus);
+
+            return;
         }
 
         public Task<List<Message>> LoadHistoryMessageAsync(string sessionId)
         {
-            lock (_messageDictionary)
+            if (!_messageDictionary.TryGetValue(sessionId, out var sessionMessage))
             {
-                if (!_messageDictionary.TryGetValue(sessionId, out var sessionMessage))
-                {
-                    _messageDictionary.TryAdd(sessionId, new SessionMessage());
-                    return Task.FromResult(new List<Message>());
-                }
-
-                var result = new List<Message>(sessionMessage.Messages.ToList());
-                result.Sort();
-
-                return Task.FromResult(result);
+                _messageDictionary.TryAdd(sessionId, new SessionMessage());
+                return Task.FromResult(new List<Message>());
             }
+
+            var result = new List<Message>(sessionMessage.Messages.Values.ToList());
+            result.Sort();
+
+            return Task.FromResult(result);
         }
 
         internal class SessionMessage
         {
-            public const int MAX_SIZE = 1000;
+            public int LastSequenceId;
 
-            public int LastSequenceId { get; set; }
-
-            public List<Message> Messages { get; set; }
+            public ConcurrentDictionary<int, Message> Messages { get; set; }
 
             public SessionMessage()
             {
                 LastSequenceId = -1;
-                Messages = new List<Message>(MAX_SIZE);
+                Messages = new ConcurrentDictionary<int, Message>();
             }
 
             public int TryAddMessage(Message message)
             {
-                LastSequenceId++;
-                message.SequenceId = LastSequenceId.ToString();
+                var sequenceId = Interlocked.Increment(ref LastSequenceId);
+                message.SequenceId = sequenceId.ToString();
+                Messages.TryAdd(sequenceId, message);
 
-                if (LastSequenceId < MAX_SIZE)
-                {
-                    Messages.Add(message);
-                }
-                else
-                {
-                    Messages[LastSequenceId % MAX_SIZE] = message;
-                }
-
-                return LastSequenceId;
+                return sequenceId;
             }
 
-            public void TryUpdateMessage(int sequenceId, string messageStatus)
+            public async Task TryUpdateMessage(int sequenceId, string messageStatus)
             {
-                if (sequenceId <= LastSequenceId - MAX_SIZE || sequenceId > LastSequenceId || sequenceId >= 0) 
+                var retry = 0;
+                const int MAX_RETRY = 10;
+
+                while (retry < MAX_RETRY)
                 {
-                    throw new Exception("Message not found");
+                    Messages.TryGetValue(sequenceId, out var message);
+                    var newMessage = message;
+                    newMessage.MessageStatus = messageStatus;
+
+                    if (Messages.TryUpdate(sequenceId, newMessage, message))
+                    {
+                        return;
+                    }
+
+                    ++retry;
+                    await Task.Delay(new Random().Next(10, 100));
                 }
 
-                Messages[sequenceId % MAX_SIZE].MessageStatus = messageStatus;
-
-                return;
+                throw new Exception("Fail to update messages");
             }
         }
     }
