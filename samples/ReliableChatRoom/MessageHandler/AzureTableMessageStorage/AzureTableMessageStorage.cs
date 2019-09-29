@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
@@ -58,9 +56,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 
                     if (updateEntity != null)
                     {
-                        var message = updateEntity.ToMessage();
-                        message.MessageStatus = messageStatus;
-                        updateEntity.Message = JsonConvert.SerializeObject(message);
+                        updateEntity.UpdateMessageStatus(messageStatus);
 
                         var updateOperation = TableOperation.Replace(updateEntity);
                         await _messageTable.ExecuteAsync(updateOperation);

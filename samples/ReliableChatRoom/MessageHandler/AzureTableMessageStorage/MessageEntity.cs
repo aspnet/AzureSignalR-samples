@@ -1,34 +1,41 @@
 ﻿using Microsoft.WindowsAzure.Storage.Table;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 {
     public class MessageEntity : TableEntity
     {
-        public string Message { get; set; }
+        public string SenderName { get; set; }
+
+        public DateTime SendTime { get; set; }
+
+        public string MessageContent { get; set; }
+
+        public string MessageStatus { get; set; }
 
         public MessageEntity() { }
-
-        public MessageEntity(string pkey, string rkey)
-        {
-            PartitionKey = pkey;
-            RowKey = rkey;
-        }
 
         public MessageEntity(string pkey, string rkey, Message message)
         {
             PartitionKey = pkey;
             RowKey = rkey;
-            Message = JsonConvert.SerializeObject(message);
+            SenderName = message.SenderName;
+            SendTime = message.SendTime;
+            MessageContent = message.MessageContent;
+            MessageStatus = message.MessageStatus;
+        }
+
+        public void UpdateMessageStatus(string messageStatus)
+        {
+            MessageStatus = messageStatus;
         }
 
         public Message ToMessage()
         {
-            return JsonConvert.DeserializeObject<Message>(Message);
+            return new Message(SenderName, SendTime, MessageContent, MessageStatus)
+            {
+                SequenceId = RowKey
+            };
         }
     }
 }
