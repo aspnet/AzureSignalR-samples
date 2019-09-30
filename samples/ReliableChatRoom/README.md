@@ -66,14 +66,14 @@ When you open http://localhost:5000, you can see the application using the confi
 
 2, In the Publish summary page of your project **(Solution Explorer > Connected Services > Publish)**, add an `Azure SignalR Service` to the dependency list.
 
-![AddAzureSignalRServiceDependency](./Images/AddAzureSignalRServiceDependency.png)
+![AddAzureSignalRServiceDependency](./Images/AddAzureSignalRServiceDependency.PNG)
 
 3, Go to your web app's Configuration page. 
 
-![AppConfiguration](./Images/AppConfiguration.png)
+![AppConfiguration](./Images/AppConfiguration.PNG)
 
 Add a connection string **`AzureStorage`** and restart your web app.
 
-![AddConnectionString](./Images/AddConnectionString.png)
+![AddConnectionString](./Images/AddConnectionString.PNG)
 
 **Congratulations!** Your chat room web app is running live in Azure App Service.
