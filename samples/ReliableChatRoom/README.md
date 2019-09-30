@@ -38,7 +38,6 @@ In `Startup.ConfigureServices` method, instead of registering `InMemorySessionSt
 ```cs
 public void ConfigureServices(IServiceCollection services)
 {
-
 	...
 	services.AddSingleton<ISessionHandler, AzureTableSessionStorage>();
 	services.AddSingleton<IMessageHandler, AzureTableMessageStorage>();
