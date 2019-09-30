@@ -64,7 +64,7 @@ When you open http://localhost:5000, you can see the application using the confi
 
 1, Create a web app service in Azure [Create an ASP.NET Core web app in Azure](https://docs.microsoft.com/en-us/azure/app-service/app-service-web-get-started-dotnet)
 
-2, In the Publish summary page of your project **Solution Explorer > Connected Services > Publish**, add an `Azure SignalR Service` to the dependency list.
+2, In the Publish summary page of your project **(Solution Explorer > Connected Services > Publish)**, add an `Azure SignalR Service` to the dependency list.
 
 3, Go to your web app's Configuration page. 
 
