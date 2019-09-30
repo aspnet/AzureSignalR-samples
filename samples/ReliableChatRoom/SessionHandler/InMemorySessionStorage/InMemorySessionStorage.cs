@@ -1,7 +1,9 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -45,12 +47,12 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 
         public Task<KeyValuePair<string, Session>[]> GetLatestSessionsAsync(string userName)
         {
-            if (!_sessionDictionary.ContainsKey(userName))
+            if (!_sessionDictionary.TryGetValue(userName, out var userSessions))
             {
                 _sessionDictionary.TryAdd(userName, new ConcurrentDictionary<string, Session>());
+                _sessionDictionary.TryGetValue(userName, out userSessions);
             }
 
-            _sessionDictionary.TryGetValue(userName, out var userSessions);
             Debug.Assert(userSessions != null, nameof(userSessions) + " != null");
 
             var sortedSessions = new SortedDictionary<string, Session>(userSessions);
