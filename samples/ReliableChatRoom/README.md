@@ -60,14 +60,20 @@ Then, register your services in `Startup.ConfigureServices` like above and run t
 
 When you open http://localhost:5000, you can see the application using the configured storage services.
 
-## Publish your application by Visual Studio
+## Publish your application
 
 1, Create a web app service in Azure [Create an ASP.NET Core web app in Azure](https://docs.microsoft.com/en-us/azure/app-service/app-service-web-get-started-dotnet)
 
 2, In the Publish summary page of your project **(Solution Explorer > Connected Services > Publish)**, add an `Azure SignalR Service` to the dependency list.
 
+![AddAzureSignalRServiceDependency](./Images/AddAzureSignalRServiceDependency.png)
+
 3, Go to your web app's Configuration page. 
 
+![AppConfiguration](./Images/AppConfiguration.png)
+
 Add a connection string **`AzureStorage`** and restart your web app.
+
+![AddConnectionString](./Images/AddConnectionString.png)
 
 **Congratulations!** Your chat room web app is running live in Azure App Service.
