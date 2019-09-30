@@ -23,7 +23,6 @@ You should register the service in the app's `Startup.ConfigureServices` method.
 ```cs
 public void ConfigureServices(IServiceCollection services)
 {
-
 	...
 	services.AddSingleton<ISessionHandler, InMemorySessionStorage>();
 	services.AddSingleton<IMessageHandler, InMemoryMessageStorage>();
