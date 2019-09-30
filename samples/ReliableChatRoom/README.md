@@ -23,7 +23,6 @@ You should register the service in the app's `Startup.ConfigureServices` method.
 ```cs
 public void ConfigureServices(IServiceCollection services)
 {
-
 	...
 	services.AddSingleton<ISessionHandler, InMemorySessionStorage>();
 	services.AddSingleton<IMessageHandler, InMemoryMessageStorage>();
@@ -39,7 +38,6 @@ In `Startup.ConfigureServices` method, instead of registering `InMemorySessionSt
 ```cs
 public void ConfigureServices(IServiceCollection services)
 {
-
 	...
 	services.AddSingleton<ISessionHandler, AzureTableSessionStorage>();
 	services.AddSingleton<IMessageHandler, AzureTableMessageStorage>();
@@ -62,4 +60,14 @@ Then, register your services in `Startup.ConfigureServices` like above and run t
 
 When you open http://localhost:5000, you can see the application using the configured storage services.
 
-## Publish your application
+## Publish your application by Visual Studio
+
+1, Create a web app service in Azure [Create an ASP.NET Core web app in Azure](https://docs.microsoft.com/en-us/azure/app-service/app-service-web-get-started-dotnet)
+
+2, In the Publish summary page of your project **(Solution Explorer > Connected Services > Publish)**, add an `Azure SignalR Service` to the dependency list.
+
+3, Go to your web app's Configuration page. 
+
+Add a connection string **`AzureStorage`** and restart your web app.
+
+**Congratulations!** Your chat room web app is running live in Azure App Service.
