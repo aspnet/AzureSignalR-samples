@@ -13,9 +13,7 @@ namespace SignalRClient
 {
     class Program
     {
-        private const string DefaultHubEndpoint = "http://localhost:5000/ManagementSampleHub";
         private const string Target = "Target";
-        private const string DefaultUser = "User";
 
         static void Main(string[] args)
         {
@@ -23,25 +21,39 @@ namespace SignalRClient
             app.FullName = "Azure SignalR Management Sample: SignalR Client Tool";
             app.HelpOption("--help");
 
-            var hubEndpointOption = app.Option("-h|--hubEndpoint", $"Set hub endpoint. Default value: {DefaultHubEndpoint}", CommandOptionType.SingleValue, true);
-            var userIdOption = app.Option("-u|--userIdList", "Set user ID list", CommandOptionType.MultipleValue, true);
+            var testTypeOption = app.Option("-t|--testType",
+                "Set test type: Allowed values: {Connection, Auth, Throttling}.",
+                CommandOptionType.SingleValue, true);
+            var unitOption = app.Option("-u|--unit", "Set Azure SignalR Service Unit", CommandOptionType.SingleValue, true);
 
             app.OnExecute(async () =>
             {
-                var hubEndpoint = hubEndpointOption.Value() ?? DefaultHubEndpoint;
-                var userIds = userIdOption.Values != null && userIdOption.Values.Count > 0 ? userIdOption.Values : new List<string>() { "User" };
+                if (!testTypeOption.HasValue())
+                {
+                    throw new ArgumentNullException(nameof(testTypeOption));
+                }
+
+                var unit = unitOption.HasValue() ? Convert.ToInt32(unitOption.Value()) : 1;
+                var testType = testTypeOption.Value();
+
+                var hubEndpoint = $"http://localhost:5678/{testType}";
+                var userIds = testType == "Throttling" ? (from i in Enumerable.Range(0, unit * 1000 + 100) select $"User_{i}").ToList(): new List<string> {"User"};
 
                 var connections = (from userId in userIds
                                    select CreateHubConnection(hubEndpoint, userId)).ToList();
 
-                await Task.WhenAll(from conn in connections
-                                   select conn.StartAsync());
+                foreach (var conn in connections)
+                {
+                    conn.StartAsync();
+                    await Task.Delay(50);
+                }
 
-                Console.WriteLine($"{connections.Count} Client(s) started...");
+                Console.WriteLine($"{connections.Count} Client(s) started... Press Enter to exit");
                 Console.ReadLine();
 
                 await Task.WhenAll(from conn in connections
                                    select conn.StopAsync());
+                Console.WriteLine($"{connections.Count} Client(s) stoped...");
                 return 0;
             });
 
