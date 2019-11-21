@@ -37,7 +37,7 @@ namespace SignalRClient
                 var testType = testTypeOption.Value();
 
                 var hubEndpoint = $"http://localhost:5678/{testType}";
-                var userIds = testType == "Throttling" ? (from i in Enumerable.Range(0, unit * 1000 + 100) select $"User_{i}").ToList(): new List<string> {"User"};
+                var userIds = testType == "Throttling" ? (from i in Enumerable.Range(0, unit * 1000 + 1000) select $"User_{i}").ToList(): new List<string> {"User"};
 
                 var connections = (from userId in userIds
                                    select CreateHubConnection(hubEndpoint, userId)).ToList();
