@@ -27,8 +27,8 @@ More advanced samples are listed as below:
 * [Realtime Sign-in Example using Azure SignalR Service](samples/RealtimeSignIn)
 * [Flight Map: Realtime Monitoring Dashboard using Azure SignalR Service](samples/FlightMap)
 
-***Archived*** Chat Room Example under AspNetCore 2.2 version:
-* [Chat Room Example under AspNetCore 2.2.0](samples/ChatRoom.NetCore22/ChatRoom/README.md)
+***Archived*** Chat Room Example under AspNetCore 2.1 version:
+* [Chat Room Example under AspNetCore 2.1.0](samples/ChatRoom.NetCore21/ChatRoom/README.md)
 
 ## ASP.NET SignalR samples
 
