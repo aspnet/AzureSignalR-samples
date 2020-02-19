@@ -24,7 +24,7 @@ Let's implement this feature step by step.
     dotnet new web
     ```
 
-    > Before you start, make sure you installed the latest [.NET Core 2.1 SDK](https://www.microsoft.com/net/download/dotnet-core/sdk-2.1.300).
+    > Before you start, make sure you installed the latest [.NET Core 3.1 SDK](https://dotnet.microsoft.com/download/dotnet-core/3.1).
 
 2.  Create a `Chat.cs` that defines a `Chat` hub class.
 
@@ -45,7 +45,7 @@ Let's implement this feature step by step.
     }
     ```
 
-    > SignalR SDK is already *included* in `Microsoft.AspNetCore.App` package reference in ChatRoomLocal.csproj file.
+    > SignalR feature is already *available* as part of the `Microsoft.AspNetCore.App` shared framework.
 
     Hub is the core concept in SignalR which exposes a set of methods that can be called from clients. Here we define two methods: `Broadcast()` which broadcasts the message to all clients and `Echo()` which sends the message back to the caller.
 
@@ -59,30 +59,35 @@ Let's implement this feature step by step.
         services.AddSignalR();
     }
 
-    public void Configure(IApplicationBuilder app)
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
         ...
-        app.UseSignalR(routes =>
+        app.UseRouting();
+        app.UseEndpoints(endpoints =>
         {
-            routes.MapHub<Chat>("/chat");
+            endpoints.MapHub<Chat>("/chat");
         });
+        ...
     }
     ```
 
-    > Make sure you remove `app.Run(...)` from `Configure()`, which will always give you a Hello World page.
+    > Make sure you remove `endpoints.MapGet("/", async context =>...` from inside `app.UseEndpoint` in method `Configure()`, which will always give you a Hello World page.
 
     The key changes here are `AddSignalR()` which initializes the SignalR runtime and `MapHub()` which maps the hub to the `/chat` endpoint so clients can access the hub using this url.
 
 4.  The last step is to create the UI of the chat room. In this sample, we will use HTML and Javascript to build a web application:
 
     Copy the HTML and script files from [wwwroot](wwwroot/) of the sample project to the `wwwroot` folder of your project.
-    Add the following code to `Startup.cs` to make the application serve the pages:
+    Add the following code to `Startup.cs` above `app.UseRouting()` to make the application serve the pages:
 
     ```cs
     public void Configure(IApplicationBuilder app, IHostingEnvironment env)
     {
         ...
-        app.UseFileServer();
+        app.UseDefaultFiles();
+        app.UseStaticFiles();
+        app.UseRouting();
+        ...
     }
     ```
 
