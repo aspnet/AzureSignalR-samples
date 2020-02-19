@@ -10,11 +10,11 @@ Our chat room is a web page application that anyone can login to and chat with o
 
 The first time you open the application you'll be asked for your name:
 
-![chat-room-1](../../docs/images/chat-room-1.png)
+![chat-room-1](../../../docs/images/chat-room-1.png)
 
 Then you can send a message and everyone in the room can see it:
 
-![chat-room-2](../../docs/images/chat-room-2.png)
+![chat-room-2](../../../docs/images/chat-room-2.png)
 
 Let's implement this feature step by step.
 

@@ -9,15 +9,15 @@ First let's provision a SignalR service on Azure.
 
 1. Open Azure portal, click "Create a resource" and search "SignalR Service".
 
-   ![signalr-4](../../docs/images/signalr-4.png)
+   ![signalr-4](../../../docs/images/signalr-4.png)
 
 2. Navigate to "SignalR Service" and click "Create".
    
-   ![signalr-5](../../docs/images/signalr-5.png)
+   ![signalr-5](../../../docs/images/signalr-5.png)
 
 3. Fill in basic information including resource name, resource group and location.
 
-   ![signalr-2](../../docs/images/signalr-2.png)
+   ![signalr-2](../../../docs/images/signalr-2.png)
 
    Resource name will also be used as the DNS name of your service endpoint. So you'll get a `<resource_name>.service.signalr.net` that your application can connect to.
 
@@ -28,7 +28,7 @@ First let's provision a SignalR service on Azure.
 
 4. Click "Create", your SignalR service will be created in a few minutes.
 
-   ![signalr-3](../../docs/images/signalr-3.png)
+   ![signalr-3](../../../docs/images/signalr-3.png)
 
 After your service is ready, go to the **Keys** page of your service instance and you'll get two connection strings that your application can use to connect to the service.
 
