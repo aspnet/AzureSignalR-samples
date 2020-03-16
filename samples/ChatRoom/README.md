@@ -38,7 +38,7 @@ Then, let's update the chat room sample to use the new service you just created.
 
 Let's look at the key changes:
 
-1.  In [Startup.cs](Startup.cs), instead of calling `AddSignalR()` and `UseSignalR()`, you need to call `AddAzureSignalR()` and `UseAzureSignalR()` and pass in connection string to make the application connect to the service instead of hosting SignalR by itself.
+1.  In [Startup.cs](Startup.cs), call `AddAzureSignalR()` after `AddSignalR()` and pass in connection string to make the application connect to the service instead of hosting SignalR by itself.
 
     ```cs
     public void ConfigureServices(IServiceCollection services)
@@ -47,21 +47,12 @@ Let's look at the key changes:
         services.AddSignalR()
                 .AddAzureSignalR();
     }
-
-    public void Configure(IApplicationBuilder app)
-    {
-        ...
-        app.UseAzureSignalR(routes => 
-        { 
-            routes.MapHub<Chat>("/chat"); 
-        });
-    }
     ```
 
     You also need to reference the service SDK before using these APIs. This is how that would look in your ChatRoom.csproj file:
 
     ```xml
-    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.0.*" />
+    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.*" />
     ```
 
 Other than these changes, everything else remains the same, you can still use the hub interface you're already familiar with to write business logic.
