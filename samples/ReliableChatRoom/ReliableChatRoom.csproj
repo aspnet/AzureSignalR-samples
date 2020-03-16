@@ -11,6 +11,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" Version="2.2.*" />
-    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.0.*" />
+    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.*" />
   </ItemGroup>
 </Project>
