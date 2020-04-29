@@ -19,10 +19,10 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
             services.AddSignalR()
                     .AddAzureSignalR(options =>
                     {
+                        options.ConnectionString = "TODO put your string here";
                         options.ClaimsProvider = context => new[]
                         {
                             new Claim(ClaimTypes.NameIdentifier, context.Request.Query["username"])
@@ -32,7 +32,6 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseMvc();
             app.UseFileServer();
             app.UseAzureSignalR(routes =>
             {

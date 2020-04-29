@@ -46,20 +46,29 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoom
                 options.AddPolicy("Microsoft_Only", policy => policy.RequireClaim("Company", "Microsoft"));
             });
 
-            services.AddMvc();
+            services.AddControllers();
 
             services.AddSignalR()
-                    .AddAzureSignalR();
+                    .AddAzureSignalR(options =>
+                    {
+                        options.ConnectionString = "TODO put your string here";
+                    });
         }
 
         public void Configure(IApplicationBuilder app)
         {
+            app.UseRouting();
             app.UseAuthentication();
-            app.UseMvc();
+       
             app.UseFileServer();
             app.UseAzureSignalR(routes =>
             {
                 routes.MapHub<GitHubChatSampleHub>("/chat");
+            });
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
             });
         }
 
@@ -73,9 +82,10 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoom
                 HttpCompletionOption.ResponseHeadersRead, context.HttpContext.RequestAborted);
 
             var user = JObject.Parse(await response.Content.ReadAsStringAsync());
-            if (user.ContainsKey("company"))
+            
+            if (user.TryGetValue("company",out JToken token))
             {
-                var company = user["company"].ToString();
+                var company = token.ToString();
                 var companyIdentity = new ClaimsIdentity(new[]
                 {
                     new Claim("Company", company)

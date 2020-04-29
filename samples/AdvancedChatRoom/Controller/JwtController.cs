@@ -11,8 +11,9 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Microsoft.Azure.SignalR.Samples.AdvancedChatRoom
 {
+    [ApiController]
     [Route("jwt")]
-    public class JwtController : Controller
+    public class JwtController : ControllerBase
     {
         private static readonly SecurityKey SigningKey = new SymmetricSecurityKey(Guid.NewGuid().ToByteArray());
 

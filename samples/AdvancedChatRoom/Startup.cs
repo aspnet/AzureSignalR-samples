@@ -1,20 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Microsoft.Azure.SignalR.Samples.AdvancedChatRoom
@@ -55,10 +48,12 @@ namespace Microsoft.Azure.SignalR.Samples.AdvancedChatRoom
                     };
                 });
 
-            services.AddMvc();
+            services.AddControllers();
+
             services.AddSignalR()
                 .AddAzureSignalR(options =>
             {
+                options.ConnectionString = "TODO put your string here";
                 options.ClaimsProvider = context => new[]
                 {
                     new Claim(ClaimTypes.NameIdentifier, context.Request.Query["username"])
@@ -68,13 +63,20 @@ namespace Microsoft.Azure.SignalR.Samples.AdvancedChatRoom
 
         public void Configure(IApplicationBuilder app)
         {
+            app.UseRouting();
+
             app.UseAuthentication();
-            app.UseMvc();
+
             app.UseFileServer();
             app.UseAzureSignalR(routes =>
             {
                 routes.MapHub<ChatJwtSampleHub>("/chatjwt");
                 routes.MapHub<ChatCookieSampleHub>("/chatcookie");
+            });
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
             });
         }
     }

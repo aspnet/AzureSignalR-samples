@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.CommandLineUtils;
@@ -15,12 +14,13 @@ namespace SignalRClient
     {
         private const string DefaultHubEndpoint = "http://localhost:5000/ManagementSampleHub";
         private const string Target = "Target";
-        private const string DefaultUser = "User";
 
         static void Main(string[] args)
         {
-            var app = new CommandLineApplication();
-            app.FullName = "Azure SignalR Management Sample: SignalR Client Tool";
+            var app = new CommandLineApplication
+            {
+                FullName = "Azure SignalR Management Sample: SignalR Client Tool"
+            };
             app.HelpOption("--help");
 
             var hubEndpointOption = app.Option("-h|--hubEndpoint", $"Set hub endpoint. Default value: {DefaultHubEndpoint}", CommandOptionType.SingleValue, true);

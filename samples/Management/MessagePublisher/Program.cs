@@ -14,8 +14,10 @@ namespace Microsoft.Azure.SignalR.Samples.Management
     {
         static void Main(string[] args)
         {
-            var app = new CommandLineApplication();
-            app.FullName = "Azure SignalR Management Sample: Message Publisher";
+            var app = new CommandLineApplication
+            {
+                FullName = "Azure SignalR Management Sample: Message Publisher"
+            };
             app.HelpOption("--help");
             app.Description = "Message publisher using Azure SignalR Service Management SDK.";
 

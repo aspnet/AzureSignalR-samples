@@ -10,8 +10,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Microsoft.Azure.SignalR.Samples.AdvancedChatRoom
 {
+    [ApiController]
     [Route("cookie")]
-    public class CookieController : Controller
+    public class CookieController : ControllerBase
     {
         [HttpGet("login")]
         public async Task<IActionResult> Login([FromQuery] string username, [FromQuery] string role)
