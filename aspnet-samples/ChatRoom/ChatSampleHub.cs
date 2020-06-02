@@ -11,10 +11,11 @@ namespace ChatRoom
 {
     public class ChatSampleHub : Hub
     {
-        public void Send(string name, string message)
+        public string Send(string name, string message)
         {
             // Call the broadcastMessage method to update clients.
             Clients.All.broadcastMessage(name, message);
+            return new string('a', 102400);
         }
     }
 }
