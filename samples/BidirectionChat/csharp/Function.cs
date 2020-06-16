@@ -24,7 +24,8 @@ namespace FunctionApp
         [FunctionName(nameof(OnConnected))]
         public async Task OnConnected([SignalRTrigger]InvocationContext invocationContext, ILogger logger)
         {
-            await Clients.All.SendAsync(NewConnectionTarget, new NewConnection(invocationContext.ConnectionId));
+            invocationContext.Headers.TryGetValue("Authorization", out var auth);
+            await Clients.All.SendAsync(NewConnectionTarget, new NewConnection(invocationContext.ConnectionId, auth));
             logger.LogInformation($"{invocationContext.ConnectionId} has connected");
         }
 
@@ -87,9 +88,12 @@ namespace FunctionApp
         {
             public string ConnectionId { get; }
 
-            public NewConnection(string connectionId)
+            public string Authentication { get; }
+
+            public NewConnection(string connectionId, string authentication)
             {
                 ConnectionId = connectionId;
+                Authentication = authentication;
             }
         }
 
