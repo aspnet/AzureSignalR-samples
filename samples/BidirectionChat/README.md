@@ -78,17 +78,24 @@ It's a quick try of this sample. You will create an Azure SignalR Service and an
     az functionapp config appsettings set --resource-group <resource_group_name> --name <function_name> --setting AzureSignalRConnectionString="<signalr_connection_string>"
     ```
 
-3. Update Azure SignalR Service Upstream settings
+3. Enable Managed Identity
+
+    Change Status to *On* in the *Identity* blade and then click *Save*. As shown below:
+    ![Identity](identity.png)
+    
+
+4. Update Azure SignalR Service Upstream settings
 
     Open the Azure Portal and nevigate to the Function App created before. Find `signalr_extension` key in the **App keys** blade.
 
     ![Overview with auth](getkeys.png)
 
-    Copy the `signalr_extensions` value and use `az resource` command to set the upstream setting.
-
-    ```bash
-    az resource update --ids <signalr-resource-id> --set properties.upstream.templates="[{'UrlTemplate': '<function-url>/runtime/webhooks/signalr?code=<signalr_extension-key>', 'EventPattern': '*', 'HubPattern': '*', 'CategoryPattern': '*'}]"
-    ```
+    Copy the `signalr_extensions` value and use Azure Portal to set the upstream setting.
+    - In the *Upstream URL Pattern*, fill in the `<function-url>/runtime/webhooks/signalr?code=<signalr_extension-key>`
+        ![Upstream](upstream-portal.png)
+    - Click the asterisk in *Hub Rules* and a new page pops out as shown below.
+        ![Upstream details](upstream-details-portal.png)
+    - Select *Use Managed Identity* under *Upstream Authentication* and *Use default value* under *Auth Resource ID*
 
 ### Use a chat sample website to test end to end
 
