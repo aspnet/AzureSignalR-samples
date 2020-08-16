@@ -53,7 +53,6 @@ namespace Microsoft.Azure.SignalR.Samples.AdvancedChatRoom
             services.AddSignalR()
                 .AddAzureSignalR(options =>
             {
-                options.ConnectionString = "TODO put your string here";
                 options.ClaimsProvider = context => new[]
                 {
                     new Claim(ClaimTypes.NameIdentifier, context.Request.Query["username"])
