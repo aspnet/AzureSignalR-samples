@@ -1,9 +1,9 @@
-Azure SignalR Service Management SDK Sample 
+Azure SignalR Service Connection Reloading Sample(Service Graceful Shutdown).
 =================================
 
-This sample shows the use of Azure SignalR Service Management SDK.
+This sample shows the use of Azure SignalR Service Management SDK to simulate service graceful shutdown and client connection reloading under serverless mode.
 
-* Message Publisher: shows how to publish messages to SignalR clients or graceful reloading to another service platform using Management SDK.
+* Message Publisher: shows how to publish messages to SignalR clients or to simulate service's graceful shutdown with REST api using Management SDK.
 * Negotiation Server: shows how to negotiate client from you app server to Azure SignalR Service using Management SDK.
 * SignalR Client: is a tool to start multiple SignalR clients(supporting reloading feature) and these clients listen messages for this sample.
 
@@ -42,7 +42,7 @@ dotnet run
 > -c|--connectionstring: Set connection string.
 > -t|--transport: Set service transport type. Options: <transient>|<persistent>. Default value: transient. Transient: calls REST API for each message. Persistent: Establish a WebSockets connection and send all messages in the connection.
 
-Once the message publisher get started, use the command to send message
+Once the message publisher get started, use the command to send message. If you want to switch all connections from one service instance to another, just enter 'reload'
 
 ```
 send user <User ID List (Seperated by ',')> <Message>
