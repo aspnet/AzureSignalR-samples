@@ -51,7 +51,6 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoom
             services.AddSignalR()
                     .AddAzureSignalR(options =>
                     {
-                        options.ConnectionString = "TODO put your string here";
                     });
         }
 
