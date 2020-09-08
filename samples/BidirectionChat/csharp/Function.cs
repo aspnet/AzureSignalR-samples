@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FunctionApp
 {
@@ -14,6 +15,18 @@ namespace FunctionApp
     {
         private const string NewMessageTarget = "newMessage";
         private const string NewConnectionTarget = "newConnection";
+
+        [FunctionName("index")]
+        public IActionResult GetHomePage([HttpTrigger(AuthorizationLevel.Anonymous)]HttpRequest req, ExecutionContext context)
+        {
+            var path = Path.Combine(context.FunctionAppDirectory, "content", "index.html");
+            Console.WriteLine(path);
+            return new ContentResult
+            {
+                Content = File.ReadAllText(path),
+                ContentType = "text/html",
+            };
+        }
 
         [FunctionName("negotiate")]
         public SignalRConnectionInfo Negotiate([HttpTrigger(AuthorizationLevel.Anonymous)]HttpRequest req)
