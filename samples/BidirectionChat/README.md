@@ -1,9 +1,11 @@
 # Azure function bidirectional chatroom sample
 
-This is a chatroom sample that demonstrates bidirectional message pushing between Azure SignalR Service and Azure Function in serverless scenario. It leverages the **upstream** provided by Azure SignalR Service that features proxying messages from client to upstream endpoints in serverless scenario. Azure Functions with SignalR trigger binding allows you to write code to receive and push messages in several languages, including JavaScript, Python, C#, etc.
+This is a chatroom sample that demonstrates bidirectional message pushing between Azure SignalR Service and Azure Function in serverless scenario. It leverages the [**upstream**](https://docs.microsoft.com/azure/azure-signalr/concept-upstream) provided by Azure SignalR Service that features proxying messages from client to upstream endpoints in serverless scenario. Azure Functions with SignalR trigger binding allows you to write code to receive and push messages in several languages, including JavaScript, Python, C#, etc.
 
 - [Prerequisites](#prerequisites)
 - [Run sample in Azure](#run-sample-in-azure)
+- [Use Key Vault secret reference](#use-key-vault-secret-reference)
+- [Enable AAD Token on upstream](#enable-aad-token-on-upstream)
 
 <a name="prerequisites"></a>
 
@@ -78,13 +80,7 @@ It's a quick try of this sample. You will create an Azure SignalR Service and an
     az functionapp config appsettings set --resource-group <resource_group_name> --name <function_name> --setting AzureSignalRConnectionString="<signalr_connection_string>"
     ```
 
-3. Enable Managed Identity
-
-    Change Status to *On* in the *Identity* blade and then click *Save*. As shown below:
-    ![Identity](identity.png)
-    
-
-4. Update Azure SignalR Service Upstream settings
+3. Update Azure SignalR Service Upstream settings
 
     Open the Azure Portal and nevigate to the Function App created before. Find `signalr_extension` key in the **App keys** blade.
 
@@ -92,32 +88,72 @@ It's a quick try of this sample. You will create an Azure SignalR Service and an
 
     Copy the `signalr_extensions` value and use Azure Portal to set the upstream setting.
     - In the *Upstream URL Pattern*, fill in the `<function-url>/runtime/webhooks/signalr?code=<signalr_extension-key>`
+        > [!NOTE]
+        > The `signalr_extensions` code is required by Azure Function but the trigger does not only use this code but also Azure SignalR Service connection string to validate requests. If you're very serious about the code, use KeyVault secret reference feature to save the code. See [Use Key Vault secret reference](#use-keyvault-secret-reference).
+
         ![Upstream](upstream-portal.png)
-    - Click the asterisk in *Hub Rules* and a new page pops out as shown below.
-        ![Upstream details](upstream-details-portal.png)
-    - Select *Use Managed Identity* under *Upstream Authentication* and *Use default value* under *Auth Resource ID*
 
 ### Use a chat sample website to test end to end
 
-1. Enable function app cross origin resource sharing (CORS)
+1. Use browser to visit `<function-app-url>/api/index` for the web page of the demo.
 
-    Although there is a CORS setting in local.settings.json, it is not propagated to the function app in Azure. You need to set it separately.
+2. Try send messages by entering them into the main chat box.
+    ![Chatroom](chatroom-noauth.png)
 
-    1. Open the function app in the Azure Portal.
-    2. In the left blade, select **CORS** blade.
-    3. In the **Allowed Origins** section, add `http://127.0.0.1:5500` (It is the local web server's url).
-    4. In order for the SignalR JavaScript SDK call your function app from a browser, support for credentials in CORS must be enabled. Select the **Enable Access-Control-Allow-Credentials** checkbox.
-    5. Click **Save** to persist the CORS settings.
-    ![CORS](cors.png)
+## Use Key Vault secret reference
 
-2. Install [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) for your VS Code, that can serve web pages locally
-3. Open `bidirectional-chat/content/index.html` and edit base url
+The url of upstream is not encryption at rest. If you have any sensitive information, you can use Key Vault to save these sensitive information. Basically, you can enable managed identity of Azure SignalR Service and then grant a read permission on a Key Vault instance and use Key Vault reference instead of plaintext in `Upstream URL Pattern`.
 
-    ```js
-    window.apiBaseUrl = '<function-app-url>';
+The following steps demonstrate how to use Key Vault secret reference to save `signalr_extensions`.
+
+1. Enable managed identity (Currently only **user assigned identity** supports RBAC).
+
+    1. Create user assigned identity.
+
+    ```bash
+    az identity create -g "myResourceGroup" -n "<USER ASSIGNED IDENTITY NAME>"
     ```
 
-4. With **index.html** open, start Live Server by opening the VS Code command palette (**F1**) and selecting **Live Server: Open with Live Server**. Live Server will open the application in a browser.
+    2. Enable managed identity with user assigned identity.
 
-5. Try send messages by entering them into the main chat box.
+        Open portal and navigate to **Identity**, and switch to **User assigned** page. Click **Add** and choose the identity created before.
+
+        ![UserAssignedIdentity](user-assigned-identity.png)
+
+2. Create a Key Vault instance.
+
+    ```bash
+    az keyvault create --name "<your-unique-keyvault-name>" --resource-group "myResourceGroup" --location "EastUS"
+    ```
+
+3. Save `signalr_extensions` to secret.
+
+    ```bash
+    az keyvault secret set --name "signalrkey" --vault-name "<your-unique-keyvault-name>" --value "<signalr_extension_code_copied_from_azure_function>"
+    ```
+
+4. Get the secret identity of the secret.
+
+    ```bash
+    az keyvault secret show --name "signalrkey" --vault-name "<your-unique-keyvault-name>" --query id -o tsv
+    ```
+
+4. Update **Upstream URL Pattern** with Key Vault reference. You need to follow the syntax `{@Microsoft.KeyVault(SecretUri=<secret-identity>)}`. As shown below:
+
+    ![KeyVaultReference](key-vault-reference.png)
+
+## Enable AAD Token on upstream
+
+You can set **ManagedIdentity** as the **Auth** setting in upstream. After that, SignalR Service will set an AAD Token into the `Authorization` for each upstream request.
+
+1. Make sure you have enabled managed identity.
+
+2. Click the asterisk in *Hub Rules* and a new page pops out as shown below.
+    ![Upstream details](upstream-details-portal.png)
+
+3. Select *Use Managed Identity* under *Upstream Authentication* and *Use default value* under *Auth Resource ID*.
+
+4. Use browser to visit `<function-app-url>/api/index` for the web page of the demo
+
+5. Try send messages by entering them into the main chat box. You can verify the `Authorization` has set from the `with Authorization: true`
     ![Chatroom](chatroom.png)
