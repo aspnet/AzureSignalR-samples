@@ -65,8 +65,7 @@ It's a quick try of this sample. You will create an Azure SignalR Service and an
         --functions-version 3
         ```
 
-    3. Renaming `local.settings.sample.json` to `local.settings.json`
-    4. Publish the sample to the Azure Function you created before.
+    3. Publish the sample to the Azure Function you created before.
 
         ```bash
         cd <root>/bidirectional-chat/csharp
