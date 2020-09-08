@@ -259,6 +259,7 @@ From Visual Studio 2019 version 16.2.0, Azure SignalR Service is build-in web ap
       ```
 
 6. Update `NavMenu.razor` to insert a entry menu for the chat room under `NavMenuCssClass` like rest.
+
    ```razor
    <li class="nav-item px-3">
        <NavLink class="nav-link" href="chatroom">
@@ -267,7 +268,7 @@ From Visual Studio 2019 version 16.2.0, Azure SignalR Service is build-in web ap
    </li>
    ```
    
-7. Update `site.css` to optimize for chart area bubble views.
+7. Update `site.css` to optimize for chart area bubble views. Append below code in the end.
 
    ```css
    /* improved for chat text box */
@@ -335,11 +336,11 @@ From Visual Studio 2019 version 16.2.0, Azure SignalR Service is build-in web ap
    }
    ```
 
-1. Click `F5` to run the app. You'll be able to chat like below.
+8. Click `F5` to run the app. You'll be able to chat like below.
 
    ![blazorchat](../../docs/images/blazorchat.gif)
 
-## Publish to Azure App Service and migration to Azure SignalR Service
+## Publish to Azure App Service and migrate to Azure SignalR Service
 
    So far, the Blazor App is working on local SignalR and when deploy to Azure App Service, it's suggested to use [Azure SignalR Service](https://docs.microsoft.com/en-us/aspnet/core/signalr/scale?view=aspnetcore-3.1#azure-signalr-service) which allows for scaling up a Blazor Server app to a large number of concurrent SignalR connections. In addition, the SignalR service's global reach and high-performance data centers significantly aid in reducing latency due to geography.
 
@@ -412,6 +413,7 @@ From Visual Studio 2019 version 16.2.0, Azure SignalR Service is build-in web ap
 >      "Azure": {
 >        "SignalR": {
 >          "Enabled": true,
+>          "ServerStickyMode": "Required",
 >          "ConnectionString": <your-connection-string>
 >        }
 >      }
