@@ -41,7 +41,7 @@ From Visual Studio 2019 version 16.2.0, Azure SignalR Service is build-in web ap
    
    namespace BlazorChat
    {
-       public class ChatHub : Hub
+       public class BlazorChatSampleHub : Hub
        {
            public const string HubUrl = "/chat";
    
@@ -72,7 +72,7 @@ From Visual Studio 2019 version 16.2.0, Azure SignalR Service is build-in web ap
    {
        endpoints.MapBlazorHub();
        endpoints.MapFallbackToPage("/_Host");
-       endpoints.MapHub<ChatHub>(ChatHub.HubUrl);
+       endpoints.MapHub<BlazorChatSampleHub>(BlazorChatSampleHub.HubUrl);
    });
    ```
    
@@ -131,7 +131,7 @@ From Visual Studio 2019 version 16.2.0, Azure SignalR Service is build-in web ap
                   // Create the chat client
                   string baseUrl = navigationManager.BaseUri;
       
-                  _hubUrl = baseUrl.TrimEnd('/') + ChatHub.HubUrl;
+                  _hubUrl = baseUrl.TrimEnd('/') + BlazorChatSampleHub.HubUrl;
       
                   _hubConnection = new HubConnectionBuilder()
                       .WithUrl(_hubUrl)
