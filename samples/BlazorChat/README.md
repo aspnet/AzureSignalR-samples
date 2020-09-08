@@ -1,8 +1,8 @@
 # Build Blazor Server chat app
 
-This tutorial shows you how to build and modify a Blazor server app. You'll learn how to:
+This tutorial shows you how to build and modify a Blazor Server app. You'll learn how to:
 
-> **&#x2713;** Build a simple chat room with Blazor Server App.
+> **&#x2713;** Build a simple chat room with Blazor Server app.
 >
 > **&#x2713;** Modify Razor components.
 > 
@@ -15,9 +15,9 @@ This tutorial shows you how to build and modify a Blazor server app. You'll lear
 ## Prerequisites
 * Install [.NET Core 3.0 SDK](https://dotnet.microsoft.com/download/dotnet-core/3.0) (Version >= 3.0.100)
 * Install [Visual Studio 2019](https://visualstudio.microsoft.com/vs/) (Version >= 16.3)
-> Visual Studio 2019 Preview version also works which is releasing with latest Blazor Server App template targeting newer .Net Core version.
+> Visual Studio 2019 Preview version also works which is releasing with latest Blazor Server app template targeting newer .Net Core version.
 
-## Build a local chat room in Blazor Server App
+## Build a local chat room in Blazor Server app
 
 From Visual Studio 2019 version 16.2.0, Azure SignalR Service is build-in web app publish process, and manage dependencies between web app and SignalR service would be much more convenient. You can experience working on local SignalR in dev local environment and working on Azure SignalR Service for Azure App Service at the same time without any code changes.
 
@@ -335,16 +335,17 @@ From Visual Studio 2019 version 16.2.0, Azure SignalR Service is build-in web ap
    }
    ```
 
-   1. Click `F5` to run the app. You'll be able to chat like below.
+1. Click `F5` to run the app. You'll be able to chat like below.
 
-    ![blazorchat](../../docs/images/blazorchat.gif)
+   ![blazorchat](../../docs/images/blazorchat.gif)
 
 ## Publish to Azure App Service and migration to Azure SignalR Service
 
    So far, the Blazor App is working on local SignalR and when deploy to Azure App Service, it's suggested to use [Azure SignalR Service](https://docs.microsoft.com/en-us/aspnet/core/signalr/scale?view=aspnetcore-3.1#azure-signalr-service) which allows for scaling up a Blazor Server app to a large number of concurrent SignalR connections. In addition, the SignalR service's global reach and high-performance data centers significantly aid in reducing latency due to geography.
 
 > Note
-> In Blazor server app, UI states are maintained at server side which means server sticky is required in this case. If there's single app server, server sticky is ensured by design. However, if there're multiple app servers, there's a chance that client negotiation and connection may go to different servers and leads to UI errors in Blazor app. So you need to enable server sticky like below in `appsettings.json`:
+> 
+> In Blazor Server app, UI states are maintained at server side which means server sticky is required in this case. If there's single app server, server sticky is ensured by design. However, if there're multiple app servers, there's a chance that client negotiation and connection may go to different servers and leads to UI errors in Blazor app. So you need to enable server sticky like below in `appsettings.json`:
 > ```json
 > "Azure:SignalR:ServerStickyMode": "Required"
 > ```
@@ -352,21 +353,26 @@ From Visual Studio 2019 version 16.2.0, Azure SignalR Service is build-in web ap
 1. Right click the project and navigate to `Publish`.
 
    * Target: Azure
-   * Specific target: All Azure App Service are supported.
+   * Specific target: All types of **Azure App Service** are supported.
    * App Service: create a new one or select existing app service.
 
-   ![serversideblazor-createprofile](../../docs/images/serversideblazor-createprofile.png)
+   ![blazorchat-profile](../../docs/images/blazorchat-profile.gif)
 
 2. Add Azure SignalR Service dependency
 
-   After publish profile created, you can see a recommended message under Service Dependencies. Click **Configure** to create new or select existing Azure SignalR Service in the panel.
+   After publish profile created, you can see a recommended message under **Service Dependencies**. Click **Configure** to create new or select existing Azure SignalR Service in the panel.
 
    ![serversideblazor-dependency](../../docs/images/serversideblazor-dependency.png)
 
    The service dependency will do things below to enable your app automatically switch to Azure SignalR Service when on Azure:
 
+   * Update [`HostingStartupAssembly`](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/platform-specific-configuration?view=aspnetcore-3.1) to use Azure SignalR Service.
    * Add Azure SignalR Service Nuget package reference.
-   * Add configuration to make your app target selected Azure SignalR Service.
+   * Update profile properties to save the dependency settings.
+   * Configure secrets store depends on your choice.
+   * Add `appsettings` configuration to make your app target selected Azure SignalR Service.
+
+    ![serversideblazor-dependencysummary](../../docs/images/serversideblazor-dependencysummary.png)
 
 3. Publish the app
 
@@ -374,7 +380,7 @@ From Visual Studio 2019 version 16.2.0, Azure SignalR Service is build-in web ap
    > It may not immediately work in the first time visiting page due to Azure Web App deployment start up latency and try refresh the page to give some delay.
    > Besides, you can use browser debugger mode with `F12` to validate the traffic has already redirect to Azure SignalR Service.
 
-   ![serversideblazor-publish](../../docs/images/serversideblazor-publish.png)
+   ![blazorchat-azure](../../docs/images/blazorchat-azure.png)
 
 ## Further topic: Enable Azure SignalR Service in local development
 
@@ -397,22 +403,24 @@ From Visual Studio 2019 version 16.2.0, Azure SignalR Service is build-in web ap
 
 3. Configure Azure SignalR Service `ConnectionString` either in [appsetting.json](appsettings.json) or with [Secret Manager](https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-2.1&tabs=visual-studio#secret-manager) tool
 
-> Notes: Step 3 can be replaced by using hosting startup assemblies to SignalR SDK.
+> Note
+> 
+> Step 3 can be replaced by using hosting startup assemblies to SignalR SDK.
 > 
 > 1. Add configuration to turn on Azure SignalR Service in [appsetting.json](appsettings.json)
-> ```js
->   "Azure": {
->     "SignalR": {
->       "Enabled": true,
->       "ConnectionString": <your-connection-string>
->     }
->   }
-> ```
+>    ```js
+>      "Azure": {
+>        "SignalR": {
+>          "Enabled": true,
+>          "ConnectionString": <your-connection-string>
+>        }
+>      }
+>    ```
 > 
 > 2. Assign hosting startup assembly to use Azure SignalR SDK. Edit [launchSettings.json](Properties/launchSettings.json) and add a configuration like below inside `environmentVariables`.
-> ```js
-> "environmentVariables": {
->     ...,
->     "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.Azure.SignalR"
->   }
-> ```
+>    ```js
+>    "environmentVariables": {
+>        ...,
+>        "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.Azure.SignalR"
+>      }
+>    ```
