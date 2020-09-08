@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace BlazorChat
 {
-    public class ChatHub : Hub
+    public class BlazorChatSampleHub : Hub
     {
         public const string HubUrl = "/chat";
 

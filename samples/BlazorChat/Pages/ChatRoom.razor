@@ -87,7 +87,7 @@ else
             // Create the chat client
             string baseUrl = navigationManager.BaseUri;
 
-            _hubUrl = baseUrl.TrimEnd('/') + ChatHub.HubUrl;
+            _hubUrl = baseUrl.TrimEnd('/') + BlazorChatSampleHub.HubUrl;
 
             _hubConnection = new HubConnectionBuilder()
                 .WithUrl(_hubUrl)
