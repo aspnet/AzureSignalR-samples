@@ -81,6 +81,10 @@ else
 
         try
         {
+            // Start chatting and force refresh UI, ref: https://github.com/dotnet/aspnetcore/issues/22159
+            _isChatting = true;
+            await Task.Delay(1);
+
             // remove old messages if any
             _messages.Clear();
 
@@ -97,13 +101,12 @@ else
 
             await _hubConnection.StartAsync();
 
-            _isChatting = true;
-
             await SendAsync($"[Notice] {_username} joined chat room.");
         }
         catch (Exception e)
         {
             _message = $"ERROR: Failed to start chat client: {e.Message}";
+            _isChatting = false;
         }
     }
 
