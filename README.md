@@ -27,22 +27,10 @@ More advanced samples are listed as below:
 * [Realtime Sign-in Example using Azure SignalR Service](samples/RealtimeSignIn)
 * [Flight Map: Realtime Monitoring Dashboard using Azure SignalR Service](samples/FlightMap)
 
+***Archived*** Chat Room Example under AspNetCore 2.1 version:
+* [Chat Room Example under AspNetCore 2.1.0](samples/ChatRoom.NetCore21/ChatRoom/README.md)
+
 ## ASP.NET SignalR samples
 
 * [Get Started with ASP.NET SignalR: a Chat Room Example](aspnet-samples/ChatRoomLocal)
 * [Build Your First Azure SignalR Service Application for ASP.NET SignalR](aspnet-samples/ChatRoom)
-
-## Updates of Azure SignalR Service Runtime and SDK
-
-We have made some changes to Azure SignalR Service Runtime, as well as Service SDK. You have to upgrade to the latest Service SDK to connect to the latest Service Runtime.
-
-### SDK for ASP.NET Core SignalR
-In the latest Service SDK for **ASP.NET Core SignalR**, we have made the following changes:
-
-- Dependency injection is built on top of ASP.NET Core SignalR.
-- Expose a built-in authentication endpoint to issue access token. User authentication endpoint is not required any more.
-- Re-design interfaces for REST API.
-- Remove .NET Framework support. We plan to support .NET Framework in later releases.
-
-### SDK for ASP.NET SignalR
-The first preview version of Service SDK for **ASP.NET SignalR** is released.
