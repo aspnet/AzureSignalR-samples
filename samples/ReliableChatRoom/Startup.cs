@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers;
+using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Security.Claims;
@@ -19,29 +21,21 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
             services.AddSignalR()
-                    .AddAzureSignalR(options =>
-                    {
-                        options.ClaimsProvider = context => new[]
-                        {
-                            new Claim(ClaimTypes.NameIdentifier, context.Request.Query["username"])
-                        };
-                    });
-
+                    .AddAzureSignalR();
             services.AddSingleton<IMessageHandler, StaticMessageStorage>();
             services.AddSingleton<IAckHandler, AckHandler>();
+            services.AddSingleton<ILoginHandler, LoginHandler>();
         }
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseMvc();
-            app.UseFileServer();
-            app.UseAzureSignalR(routes =>
+            app.UseStaticFiles();
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapHub<ReliableRoamingChatRoom>("/chat");
-            }
-            );
+                endpoints.MapHub<ReliableRoamingChatroomHub>("/chat");
+            });
         }
     }
 }

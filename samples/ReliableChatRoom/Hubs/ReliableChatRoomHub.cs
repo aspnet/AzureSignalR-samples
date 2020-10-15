@@ -1,15 +1,34 @@
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers;
 using System.Threading.Tasks;
 
-namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
+namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
 {
-    public class ReliableChatRoom : Hub
+    public class ReliableChatRoomHub : Hub
     {
         private readonly IAckHandler _ackHandler;
+        private readonly ILoginHandler _loginHandler;
 
-        public ReliableChatRoom(IAckHandler ackHandler)
+        public ReliableChatRoomHub(IAckHandler ackHandler, ILoginHandler loginHandler)
         {
             _ackHandler = ackHandler;
+            _loginHandler = loginHandler;
+        }
+
+        public void EnterChatRoom(string deviceToken, string username)
+        {
+            (string storedConnectionId, string storedDeviceToken) = _loginHandler.Login(username, Context.ConnectionId, deviceToken);
+            if (storedConnectionId.Equals(Context.ConnectionId) &&
+                storedDeviceToken.Equals(deviceToken))
+            {
+                Clients.All.SendAsync("broadcastEnterMessage", username);
+            }
+        }
+
+        public void LeaveChatRoom(string deviceToken, string username)
+        {
+            _loginHandler.Logout(username);
+            Clients.All.SendAsync("broadcastLeaveMessage", username);
         }
 
         //  Complete the task specified by the ackId.

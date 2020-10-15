@@ -2,11 +2,12 @@ using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using System;
 
-namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
+namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
 {
     public class StaticMessageStorage : IMessageHandler
     {
-        private readonly ConcurrentDictionary<string, UserMessage> _messageBox = new ConcurrentDictionary<string, UserMessage>();
+        private readonly ConcurrentDictionary<string, UserMessage> _messageBox =
+            new ConcurrentDictionary<string, UserMessage>();
 
         public void AddHistoryMessage(string userId, Message message)
         {
