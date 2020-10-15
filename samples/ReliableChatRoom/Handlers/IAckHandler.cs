@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
+namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
 {
     public interface IAckHandler
     {

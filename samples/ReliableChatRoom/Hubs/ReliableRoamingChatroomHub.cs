@@ -5,14 +5,15 @@ using Microsoft.AspNetCore.SignalR;
 using System.Threading.Tasks;
 using System;
 using System.Collections.Concurrent;
+using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers;
 
-namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
+namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
 {
-    public class ReliableRoamingChatRoom : ReliableChatRoom
+    public class ReliableRoamingChatroomHub : ReliableChatRoomHub
     {
         private readonly IMessageHandler _userMessage;
 
-        public ReliableRoamingChatRoom(IAckHandler ackHandler, IMessageHandler userMessage) : base(ackHandler)
+        public ReliableRoamingChatroomHub(IAckHandler ackHandler, ILoginHandler loginHandler, IMessageHandler userMessage) : base(ackHandler, loginHandler)
         {
             _userMessage = userMessage;
         }

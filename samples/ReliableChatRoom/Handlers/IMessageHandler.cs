@@ -1,4 +1,4 @@
-namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
+namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
 {
     public interface IMessageHandler
     {
