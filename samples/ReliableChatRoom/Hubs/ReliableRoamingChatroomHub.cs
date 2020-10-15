@@ -18,17 +18,12 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
             _userMessage = userMessage;
         }
 
-        public void BroadcastMessage(string name, string message)
-        {
-            Clients.All.SendAsync("broadcastMessage", name, message);
-        }
-
         //  Store the message in the history/unread list after sending the message.
-        public async Task<string> SendUserRoamingMessage(string messageId, string sender, string receiver, string message)
+        public async Task<string> SendUserRoamingMessage(string messageId, string sender, string receiver, string time, string message)
         {
             var msg = new Message(messageId, sender, receiver, message, MessageType.UserToUser, DateTime.UtcNow);
 
-            var result = await SendUserMessage(messageId, sender, receiver, message);
+            var result = await SendUserMessage(messageId, sender, receiver, time, message);
 
             if (result.Equals(AckResult.TimeOut.ToString()))
             {
