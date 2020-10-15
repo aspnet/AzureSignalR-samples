@@ -4,8 +4,9 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingLeft="30dp"
-    android:paddingStart="30dp"
+    android:gravity="end"
+    android:paddingRight="30dp"
+    android:paddingEnd="30dp"
     tools:ignore="RtlSymmetry">
 
     <TextView
@@ -14,22 +15,22 @@
         android:layout_height="wrap_content"
         android:text="@string/name"
         android:textSize="8pt"
-        android:textColor="@android:color/holo_red_dark"/>
+        android:textColor="@android:color/holo_blue_dark"/>
 
     <TextView
         android:id="@+id/textview_message_content"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/incoming_message_bubble"
+        android:background="@drawable/self_message_bubble"
         android:paddingLeft="20dp"
         android:paddingStart="20dp"
         android:paddingRight="20dp"
         android:paddingEnd="20dp"
         android:paddingTop="10dp"
         android:paddingBottom="10dp"
-        android:text="@string/chatbox_hint"
+        android:text="@string/chatbox_message_hint"
         android:textSize="14pt"
-        android:textColor="@android:color/black"/>
+        android:textColor="@android:color/white"/>
 
     <TextView
         android:id="@+id/textview_message_time"

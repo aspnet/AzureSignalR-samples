@@ -21,40 +21,23 @@
         android:id="@+id/textview_message_content"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/self_message_bubble"
+        android:background="@drawable/sent_private_message_bubble"
         android:paddingLeft="20dp"
         android:paddingStart="20dp"
         android:paddingRight="20dp"
         android:paddingEnd="20dp"
         android:paddingTop="10dp"
         android:paddingBottom="10dp"
-        android:text="@string/chatbox_hint"
+        android:text="@string/chatbox_message_hint"
         android:textSize="14pt"
         android:textColor="@android:color/white"/>
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/textview_message_time"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="end">
-        <TextView
-            android:id="@+id/textview_message_status"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/message_sending"
-            android:textColor="@android:color/holo_red_dark"
-            android:textSize="6pt" />
-
-        <TextView
-            android:id="@+id/textview_message_time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/message_time"
-            android:textSize="6pt"
-            android:textColor="@android:color/darker_gray"
-            android:paddingLeft="50dp"
-            android:paddingStart="50dp" />
-    </LinearLayout>
-
-
+        android:text="@string/message_time"
+        android:textSize="6pt"
+        android:textColor="@android:color/darker_gray"/>
 
 </LinearLayout>

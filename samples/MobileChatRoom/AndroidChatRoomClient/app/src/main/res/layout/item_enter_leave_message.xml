@@ -23,7 +23,7 @@
         android:paddingEnd="5dp"
         android:paddingTop="5dp"
         android:paddingBottom="5dp"
-        android:text="@string/chatbox_hint"
+        android:text="@string/chatbox_message_hint"
         android:textSize="5pt"
         android:textColor="@android:color/white"/>
 

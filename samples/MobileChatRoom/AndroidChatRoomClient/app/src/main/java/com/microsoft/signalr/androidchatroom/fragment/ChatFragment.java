@@ -111,12 +111,15 @@ public class ChatFragment extends Fragment {
 
     public void onHubConnectionStart() {
         // Register the method handlers
-        hubConnection.on("broadcastChatMessage", this::broadcastChatMessage,
-                String.class, String.class, String.class, String.class, String.class);
         hubConnection.on("broadcastEnterMessage", this::broadcastEnterMessage,
                 String.class);
         hubConnection.on("broadcastLeaveMessage", this::broadcastLeaveMessage,
                 String.class);
+        hubConnection.on("broadcastChatMessage", this::displayBroadcastMessage,
+                String.class, String.class, String.class, String.class, String.class);
+        hubConnection.on("privateChatMessage", this::displayUserMessage,
+                String.class, String.class, String.class, String.class, String.class);
+        hubConnection.on("ack", this::ack, String.class);
 
         // Broadcast user has entered chat room
         Log.d("EnterChatRoom", "called");
@@ -137,8 +140,15 @@ public class ChatFragment extends Fragment {
     public void chatBoxSendButtonClickListener(View view) {
         if (chatBoxMessageEditText.getText().length() > 0) { // Empty message not allowed
             // Create and add message into list
+            boolean isBroadcastMessage = chatBoxReceiverEditText.getText().length() == 0;
             String messageContent = chatBoxMessageEditText.getText().toString();
-            ChatMessage chatMessage = new ChatMessage(username, sdf.format(new Date()), messageContent, Message.SELF_SENDING_MESSAGE);
+            ChatMessage chatMessage;
+            if (isBroadcastMessage) {
+                chatMessage = new ChatMessage(username, "", sdf.format(new Date()), messageContent, Message.SENDING_BROADCAST_MESSAGE);
+            } else {
+                String receiver = chatBoxReceiverEditText.getText().toString();
+                chatMessage = new ChatMessage(username, receiver, sdf.format(new Date()), messageContent, Message.SENDING_PRIVATE_MESSAGE);
+            }
             messages.add(chatMessage);
             sendingMessageCount.incrementAndGet();
             chatBoxMessageEditText.getText().clear();
@@ -151,18 +161,28 @@ public class ChatFragment extends Fragment {
 
             if (hubConnection.getConnectionState() == HubConnectionState.CONNECTED) {
                 synchronized (chatMessage) {
-                    hubConnection.send("BroadcastChatMessage",
-                            deviceToken,
-                            chatMessage.getSender(),
-                            chatMessage.getTime(),
-                            chatMessage.getContent(),
-                            chatMessage.getUuid());
+                    if (isBroadcastMessage) {
+                        hubConnection.send("SendBroadcastMessage",
+                                chatMessage.getUuid(),
+                                chatMessage.getSender(),
+                                chatMessage.getTime(),
+                                chatMessage.getContent());
+                    } else {
+                        hubConnection.send("SendUserMessage",
+                                chatMessage.getUuid(),
+                                chatMessage.getSender(),
+                                chatMessage.getReceiver(),
+                                chatMessage.getTime(),
+                                chatMessage.getContent());
+                    }
                 }
             }
         }
     }
 
-    public void messageSendingHandler() {
+
+
+    private void messageSendingHandler() {
         if (sendingMessageCount.get() > 0) {
             try {
                 Disposable toDispose = hubConnection.start().subscribe(
@@ -175,46 +195,77 @@ public class ChatFragment extends Fragment {
         }
     }
 
-    public void sendMessageQueue() {
+    private void sendMessageQueue() {
         for (Message message : messages) {
             synchronized (message) {
-                if (message.getMessageEnum() == Message.SELF_SENDING_MESSAGE && hubConnection.getConnectionState() == HubConnectionState.CONNECTED) {
-                    ChatMessage chatMessage = (ChatMessage) message;
-
-                    hubConnection.send("BroadcastChatMessage",
-                            deviceToken,
-                            chatMessage.getSender(),
-                            chatMessage.getTime(),
-                            chatMessage.getContent(),
-                            chatMessage.getUuid());
+                if (hubConnection.getConnectionState() == HubConnectionState.CONNECTED) {
+                    if (message.getMessageEnum() == Message.SENDING_BROADCAST_MESSAGE) {
+                        ChatMessage chatMessage = (ChatMessage) message;
+                        hubConnection.send("SendBroadcastMessage",
+                                chatMessage.getUuid(),
+                                chatMessage.getSender(),
+                                chatMessage.getTime(),
+                                chatMessage.getContent());
+                    } else if (message.getMessageEnum() == Message.SENDING_PRIVATE_MESSAGE) {
+                        ChatMessage chatMessage = (ChatMessage) message;
+                        hubConnection.send("SendUserMessage",
+                                chatMessage.getUuid(),
+                                chatMessage.getSender(),
+                                chatMessage.getReceiver(),
+                                chatMessage.getTime(),
+                                chatMessage.getContent());
+                    }
                 }
             }
         }
     }
 
-    public void broadcastChatMessage(String senderDeviceToken, String sender, String time, String content, String uuid) {
-        if (senderDeviceToken.equals(deviceToken)) { // A senderDeviceToken equals to current deviceToken serves as an ACK
-            for (Message message : messages) {
-                synchronized (message) {
-                    if (message.getUuid().equals(uuid) && message.getMessageEnum() == Message.SELF_SENDING_MESSAGE) {
-                        // Change message status
-                        message.setMessageEnum(Message.SELF_SENT_MESSAGE);
-                        sendingMessageCount.decrementAndGet();
-                        break;
-                    }
-                }
+    public void displayBroadcastMessage(String uuid, String sender, String time, String content, String ackId) {
+        // Create ChatMessage according to parameters
+        boolean isDuplicateMessage = false;
+        for (Message message : messages) {
+            if (message.getUuid().equals(uuid)) {
+                isDuplicateMessage = true;
+                break;
             }
-        } else { // Create ChatMessage according to parameters
-            boolean isDuplicateMessage = false;
-            for (Message message : messages) {
+        }
+        if (!isDuplicateMessage) {
+            ChatMessage chatMessage = new ChatMessage(sender, time, content, uuid, Message.RECEIVED_BROADCAST_MESSAGE);
+            messages.add(chatMessage);
+        }
+        requireActivity().runOnUiThread(() -> {
+            chatContentAdapter.notifyDataSetChanged();
+            chatContentRecyclerView.scrollToPosition(messages.size() - 1);
+        });
+    }
+
+    public void displayUserMessage(String uuid, String sender, String time, String content, String ackId) {
+        // Create ChatMessage according to parameters
+        boolean isDuplicateMessage = false;
+        for (Message message : messages) {
+            if (message.getUuid().equals(uuid)) {
+                isDuplicateMessage = true;
+                break;
+            }
+        }
+        if (!isDuplicateMessage) {
+            ChatMessage chatMessage = new ChatMessage(uuid, sender, username, time, content, Message.RECEIVED_PRIVATE_MESSAGE);
+            messages.add(chatMessage);
+        }
+        requireActivity().runOnUiThread(() -> {
+            chatContentAdapter.notifyDataSetChanged();
+            chatContentRecyclerView.scrollToPosition(messages.size() - 1);
+        });
+    }
+
+    public void ack(String uuid) {
+        for (Message message : messages) {
+            synchronized (message) {
                 if (message.getUuid().equals(uuid)) {
-                    isDuplicateMessage = true;
+                    message.ack();
+                    Log.d("ACK", uuid);
                     break;
                 }
-            }
-            if (!isDuplicateMessage) {
-                ChatMessage chatMessage = new ChatMessage(sender, time, content, uuid, Message.INCOMING_MESSAGE);
-                messages.add(chatMessage);
             }
         }
         requireActivity().runOnUiThread(() -> {
@@ -274,19 +325,28 @@ public class ChatFragment extends Fragment {
             View view;
 
             switch (viewType) {
-                case Message.SELF_SENDING_MESSAGE:
-                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sending_self_message, parent, false);
+                case Message.SENDING_BROADCAST_MESSAGE:
+                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sending_broadcast_message, parent, false);
                     break;
-                case Message.SELF_SENT_MESSAGE:
-                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sent_self_message, parent, false);
+                case Message.SENDING_PRIVATE_MESSAGE:
+                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sending_private_message, parent, false);
+                    break;
+                case Message.SENT_BROADCAST_MESSAGE:
+                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sent_broadcast_message, parent, false);
+                    break;
+                case Message.SENT_PRIVATE_MESSAGE:
+                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sent_private_message, parent, false);
+                    break;
+                case Message.RECEIVED_BROADCAST_MESSAGE:
+                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_received_broadcast_message, parent, false);
+                    break;
+                case Message.RECEIVED_PRIVATE_MESSAGE:
+                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_received_private_message, parent, false);
                     break;
                 case Message.ENTER_MESSAGE:
                 case Message.LEAVE_MESSAGE:
-                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_enter_leave_message, parent, false);
-                    break;
-                case Message.INCOMING_MESSAGE:
                 default:
-                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_incoming_message, parent, false);
+                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_enter_leave_message, parent, false);
                     break;
             }
 
