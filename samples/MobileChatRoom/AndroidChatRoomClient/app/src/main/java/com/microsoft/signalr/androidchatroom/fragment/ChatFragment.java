@@ -50,7 +50,8 @@ public class ChatFragment extends Fragment {
     private String deviceToken;
 
     // View elements and adapters
-    private EditText chatBoxEditText;
+    private EditText chatBoxReceiverEditText;
+    private EditText chatBoxMessageEditText;
     private Button chatBoxSendButton;
     private RecyclerView chatContentRecyclerView;
     private ChatContentAdapter chatContentAdapter;
@@ -74,7 +75,8 @@ public class ChatFragment extends Fragment {
         }
 
         // Get view element references
-        this.chatBoxEditText = view.findViewById(R.id.edit_chat);
+        this.chatBoxReceiverEditText = view.findViewById(R.id.edit_chat_receiver);
+        this.chatBoxMessageEditText = view.findViewById(R.id.edit_chat_message);
         this.chatBoxSendButton = view.findViewById(R.id.button_chatbox_send);
         this.chatContentRecyclerView = view.findViewById(R.id.recyclerview_chatcontent);
 
@@ -133,13 +135,13 @@ public class ChatFragment extends Fragment {
     }
 
     public void chatBoxSendButtonClickListener(View view) {
-        if (chatBoxEditText.getText().length() > 0) { // Empty message not allowed
+        if (chatBoxMessageEditText.getText().length() > 0) { // Empty message not allowed
             // Create and add message into list
-            String messageContent = chatBoxEditText.getText().toString();
+            String messageContent = chatBoxMessageEditText.getText().toString();
             ChatMessage chatMessage = new ChatMessage(username, sdf.format(new Date()), messageContent, Message.SELF_SENDING_MESSAGE);
             messages.add(chatMessage);
             sendingMessageCount.incrementAndGet();
-            chatBoxEditText.getText().clear();
+            chatBoxMessageEditText.getText().clear();
 
             // Update RecyclerView
             requireActivity().runOnUiThread(() -> {

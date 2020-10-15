@@ -9,7 +9,8 @@
     <string name="login">Let\'s Chat!</string>
     <string name="name">User</string>
 
-    <string name="chatbox_hint">Enter message here.</string>
+    <string name="chatbox_receiver_hint">Receiver. Blank for broadcast.</string>
+    <string name="chatbox_message_hint">Enter message here.</string>
     <string name="chatbox_sendbutton">Send</string>
     <string name="message_time">Oct.1st 2020</string>
     <string name="message_sending">Sending……</string>
