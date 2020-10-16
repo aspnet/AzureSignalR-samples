@@ -71,10 +71,13 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
             {
                 string clientAckId = pair.Key;
                 ClientAck clientAck = pair.Value;
-                var elapsed = DateTime.UtcNow - clientAck.ClientAckStartDateTime;
-                if (elapsed > _ackThreshold)
+                if (clientAck.ClientAckResult == ClientAckResultEnum.Waiting)
                 {
-                    clientAck.ClientAckResult = ClientAckResultEnum.TimeOut;
+                    var elapsed = DateTime.UtcNow - clientAck.ClientAckStartDateTime;
+                    if (elapsed > _ackThreshold)
+                    {
+                        clientAck.ClientAckResult = ClientAckResultEnum.TimeOut;
+                    }
                 }
             }
         }

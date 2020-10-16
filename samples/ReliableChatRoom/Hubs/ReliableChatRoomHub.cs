@@ -20,13 +20,15 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         private readonly CultureInfo _cultureInfo = new CultureInfo("en-US");
         private readonly int _maxRetryTimes = 3;
         private readonly Timer _resendTimer;
+        IHubContext<ReliableChatRoomHub> _hubContext = null;
 
-        public ReliableChatRoomHub(IClientAckHandler clientAckHandler, IUserHandler userHandler, IMessageStorage messageStorage)
+        public ReliableChatRoomHub(IHubContext<ReliableChatRoomHub> hubContext, IClientAckHandler clientAckHandler, IUserHandler userHandler, IMessageStorage messageStorage)
         {
+            _hubContext = hubContext;
             _clientAckHandler = clientAckHandler;
             _userHandler = userHandler;
             _messageStorage = messageStorage;
-            _resendTimer = new Timer(_ => ResendTimeOutMessages(), state: null, dueTime: TimeSpan.FromMilliseconds(500), period: TimeSpan.FromSeconds(1000));
+            _resendTimer = new Timer(_ => ResendTimeOutMessages(), state: null, dueTime: TimeSpan.FromMilliseconds(500), period: TimeSpan.FromMilliseconds(2000));
         }
 
         public void EnterChatRoom(string deviceToken, string username)
@@ -135,7 +137,10 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         private void ResendTimeOutMessages()
         {
             var timeOutClientAcks =_clientAckHandler.GetTimeOutClientAcks();
-            Console.WriteLine(string.Format("{0} ack(s) messages resending", timeOutClientAcks.Count));
+            if (timeOutClientAcks.Count > 0)
+            {
+                Console.WriteLine(string.Format("{0} ack(s) messages resending", timeOutClientAcks.Count));
+            }
             foreach (ClientAck clientAck in timeOutClientAcks)
             {
                 if (clientAck.RetryCount < _maxRetryTimes)
@@ -148,13 +153,13 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
                     {
                         string sender = clientMessage.Sender;
                         string senderConnectionId = _userHandler.GetUserConnectionId(sender);
-                        clientProxy = Clients.AllExcept(senderConnectionId);
+                        clientProxy = _hubContext.Clients.AllExcept(senderConnectionId);
                         retryMethod = "displayBroadcastMessage";
                     } else if (clientAck.ClientMessage.Type == MessageType.Private)
                     {
                         string receiver = clientMessage.Receiver;
                         string receiverConnectionId = _userHandler.GetUserConnectionId(receiver);
-                        clientProxy = Clients.Client(receiverConnectionId);
+                        clientProxy = _hubContext.Clients.Client(receiverConnectionId);
                         retryMethod = "displayPrivateMessage";
                     } else
                     {
