@@ -1,8 +1,8 @@
-﻿namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
+﻿namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities
 {
     public enum MessageType
     {
-        UserToUser,
+        Private,
         System,
         Broadcast
     }
@@ -10,7 +10,8 @@
     public enum MessageStatus
     {
         Arrived,
-        Acknowledged
+        Acknowledged,
+        Read
     }
 
     public class LoadMessageResult

@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers;
 using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs;
+using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Security.Claims;
@@ -23,9 +24,9 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
         {
             services.AddSignalR()
                     .AddAzureSignalR();
-            services.AddSingleton<IMessageHandler, StaticMessageStorage>();
-            services.AddSingleton<IAckHandler, AckHandler>();
-            services.AddSingleton<ILoginHandler, LoginHandler>();
+            services.AddSingleton<IMessageStorage, MessageStorage>();
+            services.AddSingleton<IClientAckHandler, ClientAckHandler>();
+            services.AddSingleton<IUserHandler, LoginHandler>();
         }
 
         public void Configure(IApplicationBuilder app)
@@ -34,7 +35,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapHub<ReliableRoamingChatroomHub>("/chat");
+                endpoints.MapHub<ReliableChatRoomHub>("/chat");
             });
         }
     }

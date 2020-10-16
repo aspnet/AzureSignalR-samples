@@ -1,3 +1,5 @@
+using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities;
+
 namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
 {
     public interface IMessageHandler
