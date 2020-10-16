@@ -1,8 +1,10 @@
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using System;
+using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers;
+using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities;
 
-namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
+namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
 {
     public class StaticMessageStorage : IMessageHandler
     {

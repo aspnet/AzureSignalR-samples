@@ -1,22 +1,25 @@
 using System;
 
-namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
+namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities
 {
     public class Message
     {
-        public string Id { get; set; }
+        public static readonly string BROADCAST_RECEIVER = "BCAST";
+        public static readonly string SYSTEM_SENDER = "SYS";
+        
+        public string MessageId { get; set; }
         public string Text { get; set; }
         public MessageType Type { get; set; }
-        public string SourceName { get; set; }
-        public string TargetName { get; set; }
+        public string Sender { get; set; }
+        public string Receiver { get; set; }
         public DateTime SendTime { get; set; }
 
-        public Message(string id, string sourceName, string targetName, string text, MessageType type, DateTime sendTime)
+        public Message(string messageId, string sender, string receiver, string text, MessageType type, DateTime sendTime)
         {
-            this.Id = id;
+            this.MessageId = messageId;
             this.Type = type;
-            this.SourceName = sourceName;
-            this.TargetName = targetName;
+            this.Sender = sender;
+            this.Receiver = receiver;
             this.Text = text;
             this.SendTime = sendTime;
         }
