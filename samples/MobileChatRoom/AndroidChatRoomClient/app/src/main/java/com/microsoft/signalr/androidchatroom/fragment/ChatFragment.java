@@ -21,7 +21,7 @@ import com.microsoft.signalr.HubConnectionBuilder;
 import com.microsoft.signalr.HubConnectionState;
 import com.microsoft.signalr.androidchatroom.R;
 import com.microsoft.signalr.androidchatroom.message.ChatMessage;
-import com.microsoft.signalr.androidchatroom.message.EnterLeaveMessage;
+import com.microsoft.signalr.androidchatroom.message.SystemMessage;
 import com.microsoft.signalr.androidchatroom.message.Message;
 
 import java.text.SimpleDateFormat;
@@ -29,8 +29,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.reactivex.disposables.Disposable;
@@ -57,7 +55,7 @@ public class ChatFragment extends Fragment {
     private ChatContentAdapter chatContentAdapter;
 
     // Used for datetime formatting
-    private SimpleDateFormat sdf = new SimpleDateFormat("MM/dd hh:mm:ss", Locale.UK);
+    private SimpleDateFormat sdf = new SimpleDateFormat("MM/dd hh:mm:ss", Locale.US);
 
     @Override
     public View onCreateView(
@@ -111,15 +109,13 @@ public class ChatFragment extends Fragment {
 
     public void onHubConnectionStart() {
         // Register the method handlers
-        hubConnection.on("broadcastEnterMessage", this::broadcastEnterMessage,
-                String.class);
-        hubConnection.on("broadcastLeaveMessage", this::broadcastLeaveMessage,
-                String.class);
-        hubConnection.on("broadcastChatMessage", this::displayBroadcastMessage,
-                String.class, String.class, String.class, String.class, String.class);
-        hubConnection.on("privateChatMessage", this::displayUserMessage,
-                String.class, String.class, String.class, String.class, String.class);
-        hubConnection.on("ack", this::ack, String.class);
+        hubConnection.on("broadcastSystemMessage", this::broadcastSystemMessage,
+                String.class, String.class);
+        hubConnection.on("displayBroadcastMessage", this::displayBroadcastMessage,
+                String.class, String.class, String.class, String.class, String.class, String.class);
+        hubConnection.on("displayPrivateMessage", this::displayPrivateMessage,
+                String.class, String.class, String.class, String.class, String.class, String.class);
+        hubConnection.on("serverAck", this::serverAck, String.class);
 
         // Broadcast user has entered chat room
         Log.d("EnterChatRoom", "called");
@@ -129,12 +125,12 @@ public class ChatFragment extends Fragment {
         chatBoxSendButton.setOnClickListener(this::chatBoxSendButtonClickListener);
 
         // Set periodic chat message sender method
-        new Timer().scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                messageSendingHandler();
-            }
-        }, 500, 500);
+//        new Timer().scheduleAtFixedRate(new TimerTask() {
+//            @Override
+//            public void run() {
+//                messageSendingHandler();
+//            }
+//        }, 500, 500);
     }
 
     public void chatBoxSendButtonClickListener(View view) {
@@ -144,10 +140,10 @@ public class ChatFragment extends Fragment {
             String messageContent = chatBoxMessageEditText.getText().toString();
             ChatMessage chatMessage;
             if (isBroadcastMessage) {
-                chatMessage = new ChatMessage(username, "", sdf.format(new Date()), messageContent, Message.SENDING_BROADCAST_MESSAGE);
+                chatMessage = new ChatMessage(username, "", messageContent, sdf.format(new Date()), Message.SENDING_BROADCAST_MESSAGE);
             } else {
                 String receiver = chatBoxReceiverEditText.getText().toString();
-                chatMessage = new ChatMessage(username, receiver, sdf.format(new Date()), messageContent, Message.SENDING_PRIVATE_MESSAGE);
+                chatMessage = new ChatMessage(username, receiver, messageContent, sdf.format(new Date()), Message.SENDING_PRIVATE_MESSAGE);
             }
             messages.add(chatMessage);
             sendingMessageCount.incrementAndGet();
@@ -162,18 +158,18 @@ public class ChatFragment extends Fragment {
             if (hubConnection.getConnectionState() == HubConnectionState.CONNECTED) {
                 synchronized (chatMessage) {
                     if (isBroadcastMessage) {
+                        Log.d("SEND BCAST MESSAGE", chatMessage.toString());
                         hubConnection.send("SendBroadcastMessage",
-                                chatMessage.getUuid(),
+                                chatMessage.getMessageId(),
                                 chatMessage.getSender(),
-                                chatMessage.getTime(),
-                                chatMessage.getContent());
+                                chatMessage.getText());
                     } else {
-                        hubConnection.send("SendUserMessage",
-                                chatMessage.getUuid(),
+                        Log.d("SEND PRIVATE MESSAGE", chatMessage.toString());
+                        hubConnection.send("SendPrivateMessage",
+                                chatMessage.getMessageId(),
                                 chatMessage.getSender(),
                                 chatMessage.getReceiver(),
-                                chatMessage.getTime(),
-                                chatMessage.getContent());
+                                chatMessage.getText());
                     }
                 }
             }
@@ -202,35 +198,56 @@ public class ChatFragment extends Fragment {
                     if (message.getMessageEnum() == Message.SENDING_BROADCAST_MESSAGE) {
                         ChatMessage chatMessage = (ChatMessage) message;
                         hubConnection.send("SendBroadcastMessage",
-                                chatMessage.getUuid(),
+                                chatMessage.getMessageId(),
                                 chatMessage.getSender(),
                                 chatMessage.getTime(),
-                                chatMessage.getContent());
+                                chatMessage.getText());
                     } else if (message.getMessageEnum() == Message.SENDING_PRIVATE_MESSAGE) {
                         ChatMessage chatMessage = (ChatMessage) message;
-                        hubConnection.send("SendUserMessage",
-                                chatMessage.getUuid(),
+                        hubConnection.send("SendPrivateMessage",
+                                chatMessage.getMessageId(),
                                 chatMessage.getSender(),
                                 chatMessage.getReceiver(),
                                 chatMessage.getTime(),
-                                chatMessage.getContent());
+                                chatMessage.getText());
                     }
                 }
             }
         }
     }
 
-    public void displayBroadcastMessage(String uuid, String sender, String time, String content, String ackId) {
-        // Create ChatMessage according to parameters
+    public void broadcastSystemMessage(String messageId, String text) {
         boolean isDuplicateMessage = false;
         for (Message message : messages) {
-            if (message.getUuid().equals(uuid)) {
+            if (message.getMessageId().equals(messageId)) {
                 isDuplicateMessage = true;
                 break;
             }
         }
         if (!isDuplicateMessage) {
-            ChatMessage chatMessage = new ChatMessage(sender, time, content, uuid, Message.RECEIVED_BROADCAST_MESSAGE);
+            SystemMessage systemMessage = new SystemMessage(messageId, text);
+            messages.add(systemMessage);
+        }
+        requireActivity().runOnUiThread(() -> {
+            chatContentAdapter.notifyDataSetChanged();
+            chatContentRecyclerView.scrollToPosition(messages.size() - 1);
+        });
+    }
+
+    public void displayBroadcastMessage(String messageId, String sender, String receiver, String text, String sendTime, String ackId) {
+        // Send back ack
+        hubConnection.send("ClientAckResponse", ackId);
+
+        // Create ChatMessage according to parameters
+        boolean isDuplicateMessage = false;
+        for (Message message : messages) {
+            if (message.getMessageId().equals(messageId)) {
+                isDuplicateMessage = true;
+                break;
+            }
+        }
+        if (!isDuplicateMessage) {
+            ChatMessage chatMessage = new ChatMessage(messageId, sender, receiver, text, sendTime, Message.RECEIVED_BROADCAST_MESSAGE);
             messages.add(chatMessage);
         }
         requireActivity().runOnUiThread(() -> {
@@ -239,17 +256,20 @@ public class ChatFragment extends Fragment {
         });
     }
 
-    public void displayUserMessage(String uuid, String sender, String time, String content, String ackId) {
+    public void displayPrivateMessage(String messageId, String sender, String receiver, String text, String sendTime, String ackId) {
+        // Send back ack
+        hubConnection.send("ClientAckResponse", ackId);
+
         // Create ChatMessage according to parameters
         boolean isDuplicateMessage = false;
         for (Message message : messages) {
-            if (message.getUuid().equals(uuid)) {
+            if (message.getMessageId().equals(messageId)) {
                 isDuplicateMessage = true;
                 break;
             }
         }
         if (!isDuplicateMessage) {
-            ChatMessage chatMessage = new ChatMessage(uuid, sender, username, time, content, Message.RECEIVED_PRIVATE_MESSAGE);
+            ChatMessage chatMessage = new ChatMessage(messageId, sender, receiver, text, sendTime, Message.RECEIVED_PRIVATE_MESSAGE);
             messages.add(chatMessage);
         }
         requireActivity().runOnUiThread(() -> {
@@ -258,34 +278,16 @@ public class ChatFragment extends Fragment {
         });
     }
 
-    public void ack(String uuid) {
+    public void serverAck(String messageId) {
         for (Message message : messages) {
             synchronized (message) {
-                if (message.getUuid().equals(uuid)) {
+                if (message.getMessageId().equals(messageId)) {
                     message.ack();
-                    Log.d("ACK", uuid);
+                    Log.d("ACK", messageId);
                     break;
                 }
             }
         }
-        requireActivity().runOnUiThread(() -> {
-            chatContentAdapter.notifyDataSetChanged();
-            chatContentRecyclerView.scrollToPosition(messages.size() - 1);
-        });
-    }
-
-    public void broadcastEnterMessage(String username) {
-        EnterLeaveMessage enterMessage = new EnterLeaveMessage(username, Message.ENTER_MESSAGE);
-        messages.add(enterMessage);
-        requireActivity().runOnUiThread(() -> {
-            chatContentAdapter.notifyDataSetChanged();
-            chatContentRecyclerView.scrollToPosition(messages.size() - 1);
-        });
-    }
-
-    public void broadcastLeaveMessage(String username) {
-        EnterLeaveMessage leaveMessage = new EnterLeaveMessage(username, Message.LEAVE_MESSAGE);
-        messages.add(leaveMessage);
         requireActivity().runOnUiThread(() -> {
             chatContentAdapter.notifyDataSetChanged();
             chatContentRecyclerView.scrollToPosition(messages.size() - 1);
@@ -343,8 +345,7 @@ public class ChatFragment extends Fragment {
                 case Message.RECEIVED_PRIVATE_MESSAGE:
                     view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_received_private_message, parent, false);
                     break;
-                case Message.ENTER_MESSAGE:
-                case Message.LEAVE_MESSAGE:
+                case Message.SYSTEM_MESSAGE:
                 default:
                     view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_enter_leave_message, parent, false);
                     break;
@@ -356,14 +357,14 @@ public class ChatFragment extends Fragment {
         @Override
         public void onBindViewHolder(@NonNull ChatContentViewHolder viewHolder, int position) {
             Message message = messages.get(position);
-            if (Message.ENTER_MESSAGE == message.getMessageEnum() || Message.LEAVE_MESSAGE == message.getMessageEnum()) {
-                EnterLeaveMessage enterLeaveMessage = (EnterLeaveMessage) message;
-                viewHolder.enterLeaveContent.setText(enterLeaveMessage.getContent());
+            if (Message.SYSTEM_MESSAGE == message.getMessageEnum()) {
+                SystemMessage systemMessage = (SystemMessage) message;
+                viewHolder.enterLeaveContent.setText(systemMessage.getText());
             } else {
                 ChatMessage chatMessage = (ChatMessage) message;
                 viewHolder.messageSender.setText(chatMessage.getSender());
                 viewHolder.messageTime.setText(chatMessage.getTime());
-                viewHolder.messageContent.setText(chatMessage.getContent());
+                viewHolder.messageContent.setText(chatMessage.getText());
             }
         }
 

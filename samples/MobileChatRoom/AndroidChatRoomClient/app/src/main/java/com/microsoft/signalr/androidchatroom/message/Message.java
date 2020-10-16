@@ -9,15 +9,14 @@ public abstract class Message {
     public static final int SENT_PRIVATE_MESSAGE = 0x4;
     public static final int RECEIVED_BROADCAST_MESSAGE = 0x5;
     public static final int RECEIVED_PRIVATE_MESSAGE = 0x6;
-    public static final int ENTER_MESSAGE = 0x7;
-    public static final int LEAVE_MESSAGE = 0x8;
+    public static final int SYSTEM_MESSAGE = 0x7;
 
     private int messageEnum;
-    private String content;
-    private String uuid;
+    private String text;
+    private String messageId;
 
     public Message() {
-        this.uuid = UUID.randomUUID().toString();
+        this.messageId = UUID.randomUUID().toString();
     }
 
     public int getMessageEnum() {
@@ -28,20 +27,20 @@ public abstract class Message {
         this.messageEnum = messageEnum;
     }
 
-    protected void setUuid(String uuid) {
-        this.uuid = uuid;
+    protected void setMessageId(String messageId) {
+        this.messageId = messageId;
     }
 
-    public String getUuid() {
-        return uuid;
+    public String getMessageId() {
+        return messageId;
     }
 
-    public String getContent() {
-        return content;
+    public String getText() {
+        return text;
     }
 
-    public void setContent(String content) {
-        this.content = content;
+    public void setText(String text) {
+        this.text = text;
     }
 
     public void ack() {

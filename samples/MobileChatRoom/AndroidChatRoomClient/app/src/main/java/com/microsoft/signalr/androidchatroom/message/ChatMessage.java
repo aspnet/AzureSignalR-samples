@@ -6,20 +6,20 @@ public class ChatMessage extends Message {
     private String receiver;
     private String time;
 
-    public ChatMessage(String sender, String receiver, String time, String content, int messageEnum) {
+    public ChatMessage(String sender, String receiver, String text, String time, int messageEnum) {
         this.sender = sender;
         this.receiver = receiver;
         this.time = time;
-        setContent(content);
+        setText(text);
         setMessageEnum(messageEnum);
     }
 
-    public ChatMessage(String uuid, String sender, String receiver, String time, String content, int messageEnum) {
+    public ChatMessage(String messageId, String sender, String receiver, String text, String time, int messageEnum) {
         this.sender = sender;
         this.receiver = receiver;
         this.time = time;
-        setContent(content);
-        setUuid(uuid);
+        setText(text);
+        setMessageId(messageId);
         setMessageEnum(messageEnum);
     }
 
