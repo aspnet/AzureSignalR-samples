@@ -4,7 +4,8 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities
     {
         Waiting,
         Success,
-        TimeOut
+        TimeOut,
+        Failure
     }
 
 }
