@@ -16,27 +16,19 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities
 
         public Message ClientMessage { get; set; }
 
-        public string RetryMethod { get; set; }
-
-        public string SenderConnectionId { set; get; }
-
-        public string ReceiverConnectionId { set; get; }
-
-        public ClientAck(string clientAckId, DateTime startDateTime, Message message, string retryMethod, string senderConnectionId, string receiverConnectionId)
+        public ClientAck(string clientAckId, DateTime startDateTime, Message message)
         {
             this.ClientAckId = clientAckId;
             this.RetryCount = 0;
             this.ClientAckResult = ClientAckResultEnum.Waiting;
             this.ClientAckStartDateTime = startDateTime;
             this.ClientMessage = message;
-            this.RetryMethod = retryMethod;
-            this.SenderConnectionId = senderConnectionId;
-            this.ReceiverConnectionId = receiverConnectionId;
         }
 
-        public int IncRetryCount()
+        public int Retry()
         {
             this.RetryCount += 1;
+            this.ClientAckStartDateTime = DateTime.UtcNow;
             return this.RetryCount;
         }
     }

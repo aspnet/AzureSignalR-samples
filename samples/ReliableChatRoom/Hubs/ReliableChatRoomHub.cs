@@ -2,9 +2,12 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities;
 using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers;
 using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage;
+using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net.Mime;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
@@ -14,13 +17,16 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         private readonly IClientAckHandler _clientAckHandler;
         private readonly IUserHandler _userHandler;
         private readonly IMessageStorage _messageStorage;
+        private readonly CultureInfo _cultureInfo = new CultureInfo("en-US");
+        private readonly int _maxRetryTimes = 3;
+        private readonly Timer _resendTimer;
 
         public ReliableChatRoomHub(IClientAckHandler clientAckHandler, IUserHandler userHandler, IMessageStorage messageStorage)
         {
             _clientAckHandler = clientAckHandler;
             _userHandler = userHandler;
             _messageStorage = messageStorage;
-            _clientAckHandler.SetHub(this);
+            _resendTimer = new Timer(_ => ResendTimeOutMessages(), state: null, dueTime: TimeSpan.FromMilliseconds(500), period: TimeSpan.FromSeconds(1000));
         }
 
         public void EnterChatRoom(string deviceToken, string username)
@@ -70,14 +76,14 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
             if (!duplicatedMessageId)
             {
                 string senderConnectionId = Context.ConnectionId;
-                var clientAck = _clientAckHandler.CreateClientAck(message, "displayBroadcastMessage", senderConnectionId, null);
+                var clientAck = _clientAckHandler.CreateClientAck(message);
                 await Clients.AllExcept(Context.ConnectionId)
                     .SendAsync("displayBroadcastMessage",
                     message.MessageId,
                     message.Sender,
                     message.Receiver,
                     message.Text,
-                    message.SendTime,
+                    message.SendTime.ToString("MM/dd hh:mm:ss", _cultureInfo),
                     clientAck.ClientAckId);
             }
         }
@@ -85,12 +91,13 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         //  Complete the task specified by the ackId.
         public void ClientAckResponse(string clientAckId)
         {
+            Console.WriteLine(string.Format("ClientAckResponse clientAckId: {0}", clientAckId));
             _clientAckHandler.Ack(clientAckId);
         }
 
-        public void ClientReadResponse(string messageId)
+        public void ClientReadResponse(string messageId, string username)
         {
-            Clients.All.SendAsync("setMessageRead", messageId);
+            Clients.All.SendAsync("setMessageRead", messageId, username);
         }
 
         //  Send the message to the receiver
@@ -111,19 +118,61 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
                 string receiverConnectionId = _userHandler.GetUserConnectionId(receiver);
                 if (receiverConnectionId != null)
                 {
-                    var clientAck = _clientAckHandler.CreateClientAck(message, "displayPrivateMessage", senderConnectionId, receiverConnectionId);
+                    var clientAck = _clientAckHandler.CreateClientAck(message);
                     await Clients.AllExcept(Context.ConnectionId)
                         .SendAsync("displayPrivateMessage",
                         message.MessageId,
                         message.Sender,
                         message.Receiver,
                         message.Text,
-                        message.SendTime,
+                        message.SendTime.ToString("MM/dd hh:mm:ss", _cultureInfo),
                         clientAck.ClientAckId);
                 }
                 
             }
         }
 
+        private void ResendTimeOutMessages()
+        {
+            var timeOutClientAcks =_clientAckHandler.GetTimeOutClientAcks();
+            Console.WriteLine(string.Format("{0} ack(s) messages resending", timeOutClientAcks.Count));
+            foreach (ClientAck clientAck in timeOutClientAcks)
+            {
+                if (clientAck.RetryCount < _maxRetryTimes)
+                {
+                    clientAck.Retry();
+                    Message clientMessage = clientAck.ClientMessage;
+                    IClientProxy clientProxy;
+                    string retryMethod;
+                    if (clientAck.ClientMessage.Type == MessageType.Broadcast)
+                    {
+                        string sender = clientMessage.Sender;
+                        string senderConnectionId = _userHandler.GetUserConnectionId(sender);
+                        clientProxy = Clients.AllExcept(senderConnectionId);
+                        retryMethod = "displayBroadcastMessage";
+                    } else if (clientAck.ClientMessage.Type == MessageType.Private)
+                    {
+                        string receiver = clientMessage.Receiver;
+                        string receiverConnectionId = _userHandler.GetUserConnectionId(receiver);
+                        clientProxy = Clients.Client(receiverConnectionId);
+                        retryMethod = "displayPrivateMessage";
+                    } else
+                    {
+                        continue;
+                    }
+                    Console.WriteLine("Retry messageId: {0}; sender: {1}; receiver: {2};", clientMessage.MessageId, clientMessage.Sender, clientMessage.Receiver);
+                    clientProxy.SendAsync(retryMethod,
+                                        clientMessage.MessageId,
+                                        clientMessage.Sender,
+                                        clientMessage.Receiver,
+                                        clientMessage.Text,
+                                        clientMessage.SendTime.ToString("MM/dd hh:mm:ss", _cultureInfo),
+                                        clientAck.ClientAckId);
+                } else
+                {
+                    clientAck.ClientAckResult = ClientAckResultEnum.Failure;
+                }
+            }
+        }
     }
 }
