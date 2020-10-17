@@ -8,7 +8,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
 {
     public interface IMessageStorage
     {
-        void TryStoreMessage(Message message, out bool duplicatedMessageId);
+        bool TryStoreMessage(Message message);
         List<Message> GetHistoryMessage(string username, DateTime until, int offset, int count);
         List<Message> GetUnreadMessage(string username, DateTime until);
     }

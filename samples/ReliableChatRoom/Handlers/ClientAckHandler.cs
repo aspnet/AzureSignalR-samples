@@ -1,40 +1,46 @@
 using System;
 using System.Collections.Concurrent;
-using System.Threading.Tasks;
 using System.Threading;
 using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities;
 using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs;
 using Microsoft.AspNetCore.SignalR;
-using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
 {
     public class ClientAckHandler : IClientAckHandler, IDisposable
     {
-        private readonly ConcurrentDictionary<string, ClientAck> _clientAcks
-            = new ConcurrentDictionary<string, ClientAck>();
+        private readonly IHubContext<ReliableChatRoomHub> _hubContext;
+        private readonly IUserHandler _userHandler;
 
-        private readonly TimeSpan _ackThreshold;
+        private readonly ConcurrentDictionary<string, ClientAck> _clientAcks = new ConcurrentDictionary<string, ClientAck>();
 
+        private readonly TimeSpan _checkAckThreshold;
+        private readonly TimeSpan _checkAckInterval;
+        private readonly int _resendMessageThreshold;
+        private readonly TimeSpan _resendMessageInterval;
+        private readonly Timer _checkAckTimer;
+        private readonly Timer _resendMessageTimer;
 
-        private Timer _timer;
-
-        public ClientAckHandler()
-                    : this(completeAcksOnTimeout: true,
-                           ackThreshold: TimeSpan.FromSeconds(10),
-                           ackInterval: TimeSpan.FromSeconds(0.5),
-                           ackRetryThreshold: 3)
+        public ClientAckHandler(IHubContext<ReliableChatRoomHub> hubContext, IUserHandler userHandler)
+                    : this(
+                           checkAckThreshold: TimeSpan.FromMilliseconds(10000),
+                           checkAckInterval: TimeSpan.FromMilliseconds(500),
+                           resendMessageThreshold: 3,
+                           resendMessageInterval: TimeSpan.FromMilliseconds(1000))
         {
+            _hubContext = hubContext;
+            _userHandler = userHandler;
         }
 
-        public ClientAckHandler(bool completeAcksOnTimeout, TimeSpan ackThreshold, TimeSpan ackInterval, int ackRetryThreshold)
+        public ClientAckHandler(TimeSpan checkAckThreshold, TimeSpan checkAckInterval, int resendMessageThreshold, TimeSpan resendMessageInterval)
         {
-            if (completeAcksOnTimeout)
-            {
-                _timer = new Timer(_ => CheckAcks(), state: null, dueTime: TimeSpan.FromSeconds(0), period: ackInterval);
-            }
-
-            _ackThreshold = ackThreshold;
+            _checkAckThreshold = checkAckThreshold;
+            _checkAckInterval = checkAckInterval;
+            _resendMessageThreshold = resendMessageThreshold;
+            _resendMessageInterval = resendMessageInterval;
+            _checkAckTimer = new Timer(_ => CheckAcks(), state: null, dueTime: TimeSpan.FromSeconds(0), period: _checkAckInterval);
+            _resendMessageTimer = new Timer(_ => ResendTimeOutMessages(), state: null, dueTime: TimeSpan.FromSeconds(500), period: _resendMessageInterval);
         }
 
         public ClientAck CreateClientAck(Message message)
@@ -59,9 +65,10 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
 
         public void Dispose()
         {
-            if (_timer != null)
+            if (_checkAckTimer != null)
             {
-                _timer.Dispose();
+                _checkAckTimer.Dispose();
+                _resendMessageTimer.Dispose();
             }
         }
 
@@ -74,7 +81,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
                 if (clientAck.ClientAckResult == ClientAckResultEnum.Waiting)
                 {
                     var elapsed = DateTime.UtcNow - clientAck.ClientAckStartDateTime;
-                    if (elapsed > _ackThreshold)
+                    if (elapsed > _checkAckThreshold)
                     {
                         clientAck.ClientAckResult = ClientAckResultEnum.TimeOut;
                     }
@@ -82,20 +89,67 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
             }
         }
 
-        public ICollection<ClientAck> GetTimeOutClientAcks()
+        private void ResendTimeOutMessages()
         {
-            ICollection<ClientAck> timeOutClientAcks =
-                new List<ClientAck>();
-            foreach (var pair in _clientAcks)
+            //  Calculate timeout acks
+            var timeOutClientAcks = _clientAcks.Values.Where(ack => ack.ClientAckResult == ClientAckResultEnum.TimeOut).ToList();
+            if (timeOutClientAcks.Count == 0)
             {
-                string clientAckId = pair.Key;
-                ClientAck clientAck = pair.Value;
-                if (clientAck.ClientAckResult == ClientAckResultEnum.TimeOut)
+                Console.WriteLine("ResendTimeOutMessages: No messages need to resend");
+                return;
+            }
+
+
+            foreach (ClientAck clientAck in timeOutClientAcks)
+            {
+                //  Only resend acks within threshold
+                if (clientAck.RetryCount < _resendMessageThreshold)
                 {
-                    timeOutClientAcks.Add(clientAck);
+                    clientAck.Retry();
+                    Message clientMessage = clientAck.ClientMessage;
+                    if (clientAck.ClientMessage.Type == MessageType.Broadcast)
+                    {
+                        ResendBroadcastMessage(clientMessage, clientAck.ClientAckId);
+                    }
+                    else if (clientAck.ClientMessage.Type == MessageType.Private)
+                    {
+                        ResendPrivateMessage(clientMessage, clientAck.ClientAckId);
+                    }
+                }
+                //  Acks being retried more than threshold are set to failure
+                else
+                {
+                    clientAck.Fail();
                 }
             }
-            return timeOutClientAcks;
+        }
+
+        private void ResendBroadcastMessage(Message broadcastMessage, string ackId)
+        {
+            string senderConnectionId = _userHandler.GetUserConnectionId(broadcastMessage.Sender);
+            
+            _hubContext.Clients.AllExcept(senderConnectionId).SendAsync(
+                "displayBroadcastMessage",
+                broadcastMessage.MessageId,
+                broadcastMessage.Sender,
+                broadcastMessage.Receiver,
+                broadcastMessage.Text,
+                broadcastMessage.SendTime.ToString("MM/dd hh:mm:ss"),
+                ackId);
+        }
+
+        private void ResendPrivateMessage(Message privateMessage, string ackId)
+        {
+            string receiverConnectionId = _userHandler.GetUserConnectionId(privateMessage.Receiver);
+
+            _hubContext.Clients.Client(receiverConnectionId).SendAsync(
+                "displayPrivateMessage",
+                privateMessage.MessageId,
+                privateMessage.Sender,
+                privateMessage.Receiver,
+                privateMessage.Text,
+                privateMessage.SendTime.ToString("MM/dd hh:mm:ss"),
+                ackId);
         }
     }
 }

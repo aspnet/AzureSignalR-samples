@@ -52,10 +52,9 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
             return unreadMessage;
         }
 
-        public void TryStoreMessage(Message message, out bool duplicatedMessageId)
+        public bool TryStoreMessage(Message message)
         {
-            bool added = _messageTable.TryAdd(message.MessageId, message);
-            duplicatedMessageId = !added;
+            return _messageTable.TryAdd(message.MessageId, message);
         }
     }
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
 {
-    public class LoginHandler : IUserHandler
+    public class UserHandler : IUserHandler
     {
         private readonly ConcurrentDictionary<string, (string, string)> _loginTable =
             new ConcurrentDictionary<string, (string, string)>();
@@ -26,8 +26,12 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
         public (string, string) Login(string username, string connectionId, string deviceToken)
         {
             _loginTable.AddOrUpdate(username, (connectionId, deviceToken), (v1, v2)=>(connectionId, deviceToken));
-            _loginTable.TryGetValue(username, out (string, string) value);
-            return value;
+            bool isSuccess = _loginTable.TryGetValue(username, out (string, string) value);
+            if (isSuccess)
+            {
+                return value;
+            }
+            return (null, null);
         }
 
         public void Logout(string username)

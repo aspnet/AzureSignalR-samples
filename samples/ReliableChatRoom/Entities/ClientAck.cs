@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities
 {
@@ -25,11 +23,21 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities
             this.ClientMessage = message;
         }
 
-        public int Retry()
+        public void Retry()
         {
             this.RetryCount += 1;
+            this.ClientAckResult = ClientAckResultEnum.Waiting;
             this.ClientAckStartDateTime = DateTime.UtcNow;
-            return this.RetryCount;
+        }
+
+        public void Fail()
+        {
+            this.ClientAckResult = ClientAckResultEnum.Failure;
+        }
+
+        public void TimeOut()
+        {
+            this.ClientAckResult = ClientAckResultEnum.TimeOut;
         }
     }
 }
