@@ -23,5 +23,6 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities
             this.Text = text;
             this.SendTime = sendTime;
         }
+
     }
 }

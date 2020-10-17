@@ -9,6 +9,5 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
     {
         ClientAck CreateClientAck(Message message);
         void Ack(string clientAckId);
-        ICollection<ClientAck> GetTimeOutClientAcks();
     }
 }

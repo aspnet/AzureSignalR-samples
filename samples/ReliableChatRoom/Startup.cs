@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Factory;
 using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers;
 using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs;
 using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage;
@@ -24,9 +25,10 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
         {
             services.AddSignalR()
                     .AddAzureSignalR();
+            services.AddSingleton<IUserHandler, UserHandler>();
             services.AddSingleton<IMessageStorage, MessageStorage>();
-            services.AddSingleton<IClientAckHandler, ClientAckHandler>();
-            services.AddSingleton<IUserHandler, LoginHandler>();
+            services.AddSingleton<IMessageFactory, MessageFactory>();
+            services.AddSingleton<IClientAckHandler, ClientAckHandler>(); 
         }
 
         public void Configure(IApplicationBuilder app)
