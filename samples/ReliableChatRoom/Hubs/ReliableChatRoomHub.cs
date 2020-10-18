@@ -5,6 +5,7 @@ using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers;
 using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage;
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
 {
@@ -47,12 +48,18 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
             }
         }
 
-        public void LeaveChatRoom(string deviceToken, string username)
+        public override Task OnDisconnectedAsync(Exception exception)
         {
-            Console.WriteLine(string.Format("LeaveChatRoom device: {0} username: {1}", deviceToken, username));
+            LeaveChatRoom(Context.ConnectionId);
+            return base.OnDisconnectedAsync(exception);
+        }
+
+        public void LeaveChatRoom(string connectionId)
+        {
+            Console.WriteLine(string.Format("LeaveChatRoom connectionId: {0}", connectionId));
 
             //  Do not care about logout result
-            _userHandler.Logout(username);
+            string username = _userHandler.Logout(connectionId);
 
             //  Broadcast the system message
             Message logoutMessage = _messageFactory.CreateSystemMessage(username, "left", DateTime.UtcNow);

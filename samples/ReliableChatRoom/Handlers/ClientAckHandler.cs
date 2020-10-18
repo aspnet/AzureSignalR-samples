@@ -39,15 +39,14 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
             _checkAckInterval = checkAckInterval;
             _resendMessageThreshold = resendMessageThreshold;
             _resendMessageInterval = resendMessageInterval;
-            _checkAckTimer = new Timer(_ => CheckAcks(), state: null, dueTime: TimeSpan.FromSeconds(0), period: _checkAckInterval);
-            _resendMessageTimer = new Timer(_ => ResendTimeOutMessages(), state: null, dueTime: TimeSpan.FromSeconds(500), period: _resendMessageInterval);
+            _checkAckTimer = new Timer(_ => CheckAcks(), state: null, dueTime: TimeSpan.FromMilliseconds(0), period: _checkAckInterval);
+            _resendMessageTimer = new Timer(_ => ResendTimeOutMessages(), state: null, dueTime: TimeSpan.FromMilliseconds(500), period: _resendMessageInterval);
         }
 
         public ClientAck CreateClientAck(Message message)
         {
-            string id = Guid.NewGuid().ToString();
-            ClientAck clientAck = new ClientAck(id, DateTime.UtcNow, message);
-            _clientAcks.TryAdd(id, clientAck);
+            ClientAck clientAck = new ClientAck(Guid.NewGuid().ToString(), DateTime.UtcNow, message);
+            _clientAcks.TryAdd(clientAck.ClientAckId, clientAck);
             return clientAck;
         }
 
@@ -74,16 +73,15 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
 
         private void CheckAcks()
         {
-            foreach (var pair in _clientAcks)
+            foreach (ClientAck clientAck in _clientAcks.Values)
             {
-                string clientAckId = pair.Key;
-                ClientAck clientAck = pair.Value;
                 if (clientAck.ClientAckResult == ClientAckResultEnum.Waiting)
                 {
                     var elapsed = DateTime.UtcNow - clientAck.ClientAckStartDateTime;
                     if (elapsed > _checkAckThreshold)
                     {
-                        clientAck.ClientAckResult = ClientAckResultEnum.TimeOut;
+                        Console.WriteLine(string.Format("Ack id: {0} time out", clientAck.ClientAckId));
+                        clientAck.TimeOut();
                     }
                 }
             }
@@ -95,7 +93,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
             var timeOutClientAcks = _clientAcks.Values.Where(ack => ack.ClientAckResult == ClientAckResultEnum.TimeOut).ToList();
             if (timeOutClientAcks.Count == 0)
             {
-                Console.WriteLine("ResendTimeOutMessages: No messages need to resend");
+                //  No messages need to resend
                 return;
             }
 
@@ -106,6 +104,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
                 if (clientAck.RetryCount < _resendMessageThreshold)
                 {
                     clientAck.Retry();
+                    Console.WriteLine(string.Format("Retry {0}: {1}", clientAck.RetryCount, clientAck.ClientAckId));
                     Message clientMessage = clientAck.ClientMessage;
                     if (clientAck.ClientMessage.Type == MessageType.Broadcast)
                     {

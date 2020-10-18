@@ -34,9 +34,19 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
             return (null, null);
         }
 
-        public void Logout(string username)
+        public string Logout(string connectionId)
         {
+            string username = "";
+            foreach (var pair in _loginTable)
+            {
+                username = pair.Key;
+                if (pair.Value.Item1.Equals(connectionId))
+                {
+                    break;
+                }
+            }
             _loginTable.TryRemove(username, out _);
+            return username;
         }
 
     }
