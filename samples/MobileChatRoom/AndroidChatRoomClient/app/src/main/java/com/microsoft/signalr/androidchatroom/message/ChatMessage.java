@@ -4,23 +4,23 @@ public class ChatMessage extends Message {
 
     private String sender;
     private String receiver;
-    private String time;
 
-    public ChatMessage(String sender, String receiver, String text, String time, int messageEnum) {
+
+    public ChatMessage(String sender, String receiver, String text, long time, MessageType messageType) {
         this.sender = sender;
         this.receiver = receiver;
-        this.time = time;
+        setTime(time);
         setText(text);
-        setMessageEnum(messageEnum);
+        setMessageType(messageType);
     }
 
-    public ChatMessage(String messageId, String sender, String receiver, String text, String time, int messageEnum) {
+    public ChatMessage(String messageId, String sender, String receiver, String text, long time, MessageType messageType) {
         this.sender = sender;
         this.receiver = receiver;
-        this.time = time;
+        setTime(time);
         setText(text);
         setMessageId(messageId);
-        setMessageEnum(messageEnum);
+        setMessageType(messageType);
     }
 
     public String getReceiver() {
@@ -37,14 +37,6 @@ public class ChatMessage extends Message {
 
     public void setSender(String sender) {
         this.sender = sender;
-    }
-
-    public String getTime() {
-        return time;
-    }
-
-    public void setTime(String time) {
-        this.time = time;
     }
 
 }

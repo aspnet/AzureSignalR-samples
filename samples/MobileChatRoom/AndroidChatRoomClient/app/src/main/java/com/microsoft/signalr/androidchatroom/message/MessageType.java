@@ -1,0 +1,11 @@
+package com.microsoft.signalr.androidchatroom.message;
+
+public enum MessageType {
+    SENDING_BROADCAST_MESSAGE,
+    SENDING_PRIVATE_MESSAGE,
+    SENT_BROADCAST_MESSAGE,
+    SENT_PRIVATE_MESSAGE,
+    RECEIVED_BROADCAST_MESSAGE,
+    RECEIVED_PRIVATE_MESSAGE,
+    SYSTEM_MESSAGE,
+}

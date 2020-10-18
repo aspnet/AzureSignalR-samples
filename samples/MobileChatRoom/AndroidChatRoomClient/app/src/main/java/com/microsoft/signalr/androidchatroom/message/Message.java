@@ -3,28 +3,21 @@ package com.microsoft.signalr.androidchatroom.message;
 import java.util.UUID;
 
 public abstract class Message {
-    public static final int SENDING_BROADCAST_MESSAGE = 0x1;
-    public static final int SENDING_PRIVATE_MESSAGE = 0x2;
-    public static final int SENT_BROADCAST_MESSAGE = 0x3;
-    public static final int SENT_PRIVATE_MESSAGE = 0x4;
-    public static final int RECEIVED_BROADCAST_MESSAGE = 0x5;
-    public static final int RECEIVED_PRIVATE_MESSAGE = 0x6;
-    public static final int SYSTEM_MESSAGE = 0x7;
-
-    private int messageEnum;
+    private MessageType messageType;
     private String text;
     private String messageId;
+    private long time;
 
     public Message() {
         this.messageId = UUID.randomUUID().toString();
     }
 
-    public int getMessageEnum() {
-        return messageEnum;
+    public MessageType getMessageType() {
+        return messageType;
     }
 
-    public void setMessageEnum(int messageEnum) {
-        this.messageEnum = messageEnum;
+    public void setMessageType(MessageType messageType) {
+        this.messageType = messageType;
     }
 
     protected void setMessageId(String messageId) {
@@ -43,13 +36,21 @@ public abstract class Message {
         this.text = text;
     }
 
+    public long getTime() {
+        return time;
+    }
+
+    public void setTime(long time) {
+        this.time = time;
+    }
+
     public void ack() {
-        switch (messageEnum) {
+        switch (messageType) {
             case SENDING_BROADCAST_MESSAGE:
-                messageEnum = SENT_BROADCAST_MESSAGE;
+                messageType = MessageType.SENT_BROADCAST_MESSAGE;
                 break;
             case SENDING_PRIVATE_MESSAGE:
-                messageEnum = SENT_PRIVATE_MESSAGE;
+                messageType = MessageType.SENT_PRIVATE_MESSAGE;
                 break;
             default:
         }
