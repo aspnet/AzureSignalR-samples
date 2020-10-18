@@ -16,7 +16,9 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         private readonly IMessageStorage _messageStorage;
         private readonly IMessageFactory _messageFactory;
         private readonly IClientAckHandler _clientAckHandler;
-        
+
+        private readonly DateTime _javaEpoch = new DateTime(1970, 1, 1);
+
 
         public ReliableChatRoomHub(
             IHubContext<ReliableChatRoomHub> hubContext,
@@ -46,12 +48,6 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
                 _messageStorage.TryStoreMessage(loginMessage);
                 SendSystemMessage(loginMessage);
             }
-        }
-
-        public override Task OnDisconnectedAsync(Exception exception)
-        {
-            LeaveChatRoom(Context.ConnectionId);
-            return base.OnDisconnectedAsync(exception);
         }
 
         public void LeaveChatRoom(string connectionId)
@@ -135,7 +131,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
                                 broadcastMessage.Sender,
                                 broadcastMessage.Receiver,
                                 broadcastMessage.Text,
-                                broadcastMessage.SendTime.ToString("MM/dd hh:mm:ss"),
+                                (broadcastMessage.SendTime - _javaEpoch).Ticks / TimeSpan.TicksPerMillisecond,
                                 clientAck.ClientAckId);
         }
 
@@ -151,7 +147,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
                                 privateMessage.Sender,
                                 privateMessage.Receiver,
                                 privateMessage.Text,
-                                privateMessage.SendTime.ToString("MM/dd hh:mm:ss"),
+                                (privateMessage.SendTime - _javaEpoch).Ticks / TimeSpan.TicksPerMillisecond,
                                 clientAck.ClientAckId);
         }
     }
