@@ -159,13 +159,13 @@ public class ChatFragment extends Fragment {
                 synchronized (chatMessage) {
                     if (isBroadcastMessage) {
                         Log.d("SEND BCAST MESSAGE", chatMessage.toString());
-                        hubConnection.send("SendBroadcastMessage",
+                        hubConnection.send("OnBroadcastMessageReceived",
                                 chatMessage.getMessageId(),
                                 chatMessage.getSender(),
                                 chatMessage.getText());
                     } else {
                         Log.d("SEND PRIVATE MESSAGE", chatMessage.toString());
-                        hubConnection.send("SendPrivateMessage",
+                        hubConnection.send("OnPrivateMessageReceived",
                                 chatMessage.getMessageId(),
                                 chatMessage.getSender(),
                                 chatMessage.getReceiver(),
@@ -197,14 +197,14 @@ public class ChatFragment extends Fragment {
                 if (hubConnection.getConnectionState() == HubConnectionState.CONNECTED) {
                     if (message.getMessageEnum() == Message.SENDING_BROADCAST_MESSAGE) {
                         ChatMessage chatMessage = (ChatMessage) message;
-                        hubConnection.send("SendBroadcastMessage",
+                        hubConnection.send("OnBroadcastMessageReceived",
                                 chatMessage.getMessageId(),
                                 chatMessage.getSender(),
                                 chatMessage.getTime(),
                                 chatMessage.getText());
                     } else if (message.getMessageEnum() == Message.SENDING_PRIVATE_MESSAGE) {
                         ChatMessage chatMessage = (ChatMessage) message;
-                        hubConnection.send("SendPrivateMessage",
+                        hubConnection.send("OnPrivateMessageReceived",
                                 chatMessage.getMessageId(),
                                 chatMessage.getSender(),
                                 chatMessage.getReceiver(),
@@ -236,7 +236,7 @@ public class ChatFragment extends Fragment {
 
     public void displayBroadcastMessage(String messageId, String sender, String receiver, String text, String sendTime, String ackId) {
         // Send back ack
-        hubConnection.send("ClientAckResponse", ackId);
+        hubConnection.send("OnAckResponseReceived", ackId);
 
         // Create ChatMessage according to parameters
         boolean isDuplicateMessage = false;
@@ -258,7 +258,7 @@ public class ChatFragment extends Fragment {
 
     public void displayPrivateMessage(String messageId, String sender, String receiver, String text, String sendTime, String ackId) {
         // Send back ack
-        hubConnection.send("ClientAckResponse", ackId);
+        hubConnection.send("OnAckResponseReceived", ackId);
 
         // Create ChatMessage according to parameters
         boolean isDuplicateMessage = false;
