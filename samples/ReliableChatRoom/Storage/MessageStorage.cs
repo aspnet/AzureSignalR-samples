@@ -12,18 +12,20 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
         private readonly ConcurrentDictionary<string, Message> _messageTable =
             new ConcurrentDictionary<string, Message>();
 
-        public List<Message> GetHistoryMessage(string username, DateTime until, int offset, int count)
+        public List<Message> GetHistoryMessage(string username, string untilMessageId, int offset, int count)
         {
             List<Message> historyMessage = new List<Message>();
+            DateTime until = _messageTable[untilMessageId].SendTime;
+
             foreach (Message message in _messageTable.Values)
             {
                 if (message.SendTime > until)
                 {
-                    if (message.Type == MessageType.Broadcast)
+                    if (message.Type == MessageTypeEnum.Broadcast)
                     {
                         historyMessage.Add(message);
                     }
-                    else if (message.Type == MessageType.Private && message.Receiver.Equals(username))
+                    else if (message.Type == MessageTypeEnum.Private && message.Receiver.Equals(username))
                     {
                         historyMessage.Add(message);
                     }
@@ -33,16 +35,18 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
             return historyMessage.GetRange(offset, count);
         }
 
-        public List<Message> GetUnreadMessage(string username, DateTime until) 
+        public List<Message> GetUnreadMessage(string username, string untilMessageId) 
         {
             List<Message> unreadMessage = new List<Message>();
+            DateTime until = _messageTable[untilMessageId].SendTime;
+
             foreach (Message message in _messageTable.Values) {
                 if (message.SendTime > until)
                 {
-                    if (message.Type == MessageType.Broadcast)
+                    if (message.Type == MessageTypeEnum.Broadcast)
                     {
                         unreadMessage.Add(message);
-                    } else if (message.Type == MessageType.Private && message.Receiver.Equals(username))
+                    } else if (message.Type == MessageTypeEnum.Private && message.Receiver.Equals(username))
                     {
                         unreadMessage.Add(message);
                     }

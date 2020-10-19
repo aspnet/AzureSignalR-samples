@@ -9,7 +9,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
     public interface IMessageStorage
     {
         bool TryStoreMessage(Message message);
-        List<Message> GetHistoryMessage(string username, DateTime until, int offset, int count);
-        List<Message> GetUnreadMessage(string username, DateTime until);
+        List<Message> GetHistoryMessage(string username, string untilMessageId, int offset, int count);
+        List<Message> GetUnreadMessage(string username, string untilMessageId);
     }
 }

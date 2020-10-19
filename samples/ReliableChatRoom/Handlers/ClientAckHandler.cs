@@ -22,6 +22,8 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
         private readonly Timer _checkAckTimer;
         private readonly Timer _resendMessageTimer;
 
+        private readonly DateTime _javaEpoch = new DateTime(1970, 1, 1);
+
         public ClientAckHandler(IHubContext<ReliableChatRoomHub> hubContext, IUserHandler userHandler)
                     : this(
                            checkAckThreshold: TimeSpan.FromMilliseconds(10000),
@@ -106,11 +108,11 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
                     clientAck.Retry();
                     Console.WriteLine(string.Format("Retry {0}: {1}", clientAck.RetryCount, clientAck.ClientAckId));
                     Message clientMessage = clientAck.ClientMessage;
-                    if (clientAck.ClientMessage.Type == MessageType.Broadcast)
+                    if (clientAck.ClientMessage.Type == MessageTypeEnum.Broadcast)
                     {
                         ResendBroadcastMessage(clientMessage, clientAck.ClientAckId);
                     }
-                    else if (clientAck.ClientMessage.Type == MessageType.Private)
+                    else if (clientAck.ClientMessage.Type == MessageTypeEnum.Private)
                     {
                         ResendPrivateMessage(clientMessage, clientAck.ClientAckId);
                     }
@@ -126,29 +128,29 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
         private void ResendBroadcastMessage(Message broadcastMessage, string ackId)
         {
             string senderConnectionId = _userHandler.GetUserConnectionId(broadcastMessage.Sender);
-            
-            _hubContext.Clients.AllExcept(senderConnectionId).SendAsync(
-                "displayBroadcastMessage",
-                broadcastMessage.MessageId,
-                broadcastMessage.Sender,
-                broadcastMessage.Receiver,
-                broadcastMessage.Text,
-                broadcastMessage.SendTime.ToString("MM/dd hh:mm:ss"),
-                ackId);
+            Console.WriteLine(string.Format("ResendBroadcastMessage: sender connectionid: {0}", senderConnectionId));
+            _hubContext.Clients.AllExcept(senderConnectionId)
+                    .SendAsync("displayBroadcastMessage",
+                                broadcastMessage.MessageId,
+                                broadcastMessage.Sender,
+                                broadcastMessage.Receiver,
+                                broadcastMessage.Text,
+                                (broadcastMessage.SendTime - _javaEpoch).Ticks / TimeSpan.TicksPerMillisecond,
+                                ackId);
         }
 
         private void ResendPrivateMessage(Message privateMessage, string ackId)
         {
             string receiverConnectionId = _userHandler.GetUserConnectionId(privateMessage.Receiver);
-
-            _hubContext.Clients.Client(receiverConnectionId).SendAsync(
-                "displayPrivateMessage",
-                privateMessage.MessageId,
-                privateMessage.Sender,
-                privateMessage.Receiver,
-                privateMessage.Text,
-                privateMessage.SendTime.ToString("MM/dd hh:mm:ss"),
-                ackId);
+            Console.WriteLine(string.Format("ResendPrivateMessage: receiver connectionid: {0}", receiverConnectionId));
+            _hubContext.Clients.Client(receiverConnectionId)
+                    .SendAsync("displayPrivateMessage",
+                                privateMessage.MessageId,
+                                privateMessage.Sender,
+                                privateMessage.Receiver,
+                                privateMessage.Text,
+                                (privateMessage.SendTime - _javaEpoch).Ticks / TimeSpan.TicksPerMillisecond,
+                                ackId);
         }
     }
 }

@@ -34,6 +34,14 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
             _clientAckHandler = clientAckHandler;
         }
 
+
+        //  User periodically touches server to extend his session
+        public void TouchServer(string deviceToken, string username)
+        {
+            //Console.WriteLine(string.Format("TouchServer device: {0} username: {1}", deviceToken, username));
+            var value = _userHandler.Touch(username, Context.ConnectionId, deviceToken);
+        }
+
         public void EnterChatRoom(string deviceToken, string username)
         {
             Console.WriteLine(string.Format("EnterChatRoom device: {0} username: {1}", deviceToken, username));
