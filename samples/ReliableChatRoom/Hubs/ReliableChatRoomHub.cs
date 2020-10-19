@@ -17,7 +17,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         private readonly IMessageFactory _messageFactory;
         private readonly IClientAckHandler _clientAckHandler;
 
-        private readonly DateTime _javaEpoch = new DateTime(1970, 1, 1);
+        private readonly DateTime _defaultDateTime = new DateTime(1970, 1, 1);
 
 
         public ReliableChatRoomHub(
@@ -38,8 +38,11 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         //  User periodically touches server to extend his session
         public void TouchServer(string deviceToken, string username)
         {
-            //Console.WriteLine(string.Format("TouchServer device: {0} username: {1}", deviceToken, username));
-            var value = _userHandler.Touch(username, Context.ConnectionId, deviceToken);
+            DateTime touchedDateTime = _userHandler.Touch(username, Context.ConnectionId, deviceToken);
+            if (touchedDateTime == _defaultDateTime) //  Session either does not exist or expires
+            {
+                Clients.Caller.SendAsync("expireSession");
+            }
         }
 
         public void EnterChatRoom(string deviceToken, string username)
@@ -47,10 +50,10 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
             Console.WriteLine(string.Format("EnterChatRoom device: {0} username: {1}", deviceToken, username));
             
             //  Try to store user login information (ConnectionId & deviceToken)
-            var value = _userHandler.Login(username, Context.ConnectionId, deviceToken);
+            Session session = _userHandler.Login(username, Context.ConnectionId, deviceToken);
             
             //  If login was successful, broadcast the system message 
-            if (!value.Equals((null, null)))
+            if (session != null)
             {
                 Message loginMessage = _messageFactory.CreateSystemMessage(username, "joined", DateTime.UtcNow);
                 _messageStorage.TryStoreMessage(loginMessage);
@@ -63,10 +66,10 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
             Console.WriteLine(string.Format("LeaveChatRoom connectionId: {0}", connectionId));
 
             //  Do not care about logout result
-            string username = _userHandler.Logout(connectionId);
+            Session session = _userHandler.Logout(connectionId);
 
             //  Broadcast the system message
-            Message logoutMessage = _messageFactory.CreateSystemMessage(username, "left", DateTime.UtcNow);
+            Message logoutMessage = _messageFactory.CreateSystemMessage(session.Username, "left", DateTime.UtcNow);
             _messageStorage.TryStoreMessage(logoutMessage);
             SendSystemMessage(logoutMessage);
         }
@@ -139,7 +142,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
                                 broadcastMessage.Sender,
                                 broadcastMessage.Receiver,
                                 broadcastMessage.Text,
-                                (broadcastMessage.SendTime - _javaEpoch).Ticks / TimeSpan.TicksPerMillisecond,
+                                (broadcastMessage.SendTime - _defaultDateTime).Ticks / TimeSpan.TicksPerMillisecond,
                                 clientAck.ClientAckId);
         }
 
@@ -149,13 +152,13 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
             var clientAck = _clientAckHandler.CreateClientAck(privateMessage);
 
             //  Send only to receiver
-            Clients.Client(_userHandler.GetUserConnectionId(privateMessage.Receiver))
+            Clients.Client(_userHandler.GetUserSession(privateMessage.Receiver).ConnectionId)
                     .SendAsync("displayPrivateMessage",
                                 privateMessage.MessageId,
                                 privateMessage.Sender,
                                 privateMessage.Receiver,
                                 privateMessage.Text,
-                                (privateMessage.SendTime - _javaEpoch).Ticks / TimeSpan.TicksPerMillisecond,
+                                (privateMessage.SendTime - _defaultDateTime).Ticks / TimeSpan.TicksPerMillisecond,
                                 clientAck.ClientAckId);
         }
     }
