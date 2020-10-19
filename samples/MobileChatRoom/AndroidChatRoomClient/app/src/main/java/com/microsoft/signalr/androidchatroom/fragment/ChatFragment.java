@@ -25,6 +25,8 @@ import com.microsoft.signalr.androidchatroom.message.MessageType;
 import com.microsoft.signalr.androidchatroom.message.SystemMessage;
 import com.microsoft.signalr.androidchatroom.message.Message;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,6 +37,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.reactivex.CompletableObserver;
 import io.reactivex.disposables.Disposable;
@@ -58,7 +61,7 @@ public class ChatFragment extends Fragment {
     private ChatContentAdapter chatContentAdapter;
 
     // Reconnect timer
-    private boolean connectionStarted = false;
+    private AtomicBoolean firstConnectionStarted = new AtomicBoolean(false);
     private int reconnectDelay = 0; // immediate connect to server when enter the chat room
     private int reconnectInterval = 5000;
     private Timer reconnectTimer;
@@ -116,7 +119,6 @@ public class ChatFragment extends Fragment {
         // Create, register, and start hub connection
         this.hubConnection = HubConnectionBuilder.create(getString(R.string.app_server_url)).build();
         // Set reconnect timer
-        // TODO: Fix multiple join message
         reconnectTimer = new Timer();
         reconnectTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -148,8 +150,6 @@ public class ChatFragment extends Fragment {
 
         // Set onClickListener for SEND button
         chatBoxSendButton.setOnClickListener(this::chatBoxSendButtonClickListener);
-
-        connectionStarted = true;
     }
 
     public void chatBoxSendButtonClickListener(View view) {
@@ -198,6 +198,8 @@ public class ChatFragment extends Fragment {
     }
 
     public void displayPrivateMessage(String messageId, String sender, String receiver, String text, long sendTime, String ackId) {
+        Log.d("displayPrivateMessage", sender);
+
         // Send back ack
         hubConnection.send("OnAckResponseReceived", ackId);
 
@@ -304,23 +306,28 @@ public class ChatFragment extends Fragment {
             Log.d("reconnectHandler", "called");
             hubConnection.start().subscribe(new CompletableObserver() {
                 @Override
-                public void onSubscribe(Disposable d) {
+                public void onSubscribe(@NotNull Disposable d) {
 
                 }
 
                 @Override
                 public void onComplete() {
-                    if (!connectionStarted) { // very first start of connection
+                    if (!firstConnectionStarted.get()) { // very first start of connection
                         onHubConnectionStart();
+                        hubConnection.send("EnterChatRoom", deviceToken, username);
+                        firstConnectionStarted.set(true);
                     }
-                    hubConnection.send("EnterChatRoom", deviceToken, username);
+                    Log.d("Reconnection", "touch server after reconnection");
+                    hubConnection.send("TouchServer", deviceToken, username);
                 }
 
                 @Override
-                public void onError(Throwable e) {
+                public void onError(@NotNull Throwable e) {
                     Log.e("HubConnection", e.toString());
                 }
             });
+        } else {
+            hubConnection.send("TouchServer", deviceToken, username);
         }
     }
 
