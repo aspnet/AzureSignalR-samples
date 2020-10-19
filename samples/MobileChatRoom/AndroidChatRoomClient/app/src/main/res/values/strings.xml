@@ -17,4 +17,8 @@
 
     <string name="channel_name">Message Notification Channel</string>
     <string name="channel_description">Message Notification Channel Description</string>
+
+    <string name="alert_message">Session expired!</string>
+    <string name="alert_title">Alert</string>
+    <string name="alert_ok">Re-Login</string>
 </resources>

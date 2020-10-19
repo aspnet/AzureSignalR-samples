@@ -1,6 +1,8 @@
 package com.microsoft.signalr.androidchatroom.fragment;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,6 +14,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -19,6 +22,7 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import com.microsoft.signalr.HubConnection;
 import com.microsoft.signalr.HubConnectionBuilder;
 import com.microsoft.signalr.HubConnectionState;
+import com.microsoft.signalr.androidchatroom.MainActivity;
 import com.microsoft.signalr.androidchatroom.R;
 import com.microsoft.signalr.androidchatroom.message.ChatMessage;
 import com.microsoft.signalr.androidchatroom.message.MessageType;
@@ -61,7 +65,7 @@ public class ChatFragment extends Fragment {
     private ChatContentAdapter chatContentAdapter;
 
     // Reconnect timer
-    private AtomicBoolean firstConnectionStarted = new AtomicBoolean(false);
+    private AtomicBoolean sessionStarted = new AtomicBoolean(false);
     private int reconnectDelay = 0; // immediate connect to server when enter the chat room
     private int reconnectInterval = 5000;
     private Timer reconnectTimer;
@@ -138,7 +142,7 @@ public class ChatFragment extends Fragment {
 
     }
 
-    private void onHubConnectionStart() {
+    private void onSessionStart() {
         // Register the method handlers
         hubConnection.on("broadcastSystemMessage", this::broadcastSystemMessage,
                 String.class, String.class);
@@ -147,12 +151,19 @@ public class ChatFragment extends Fragment {
         hubConnection.on("displayPrivateMessage", this::displayPrivateMessage,
                 String.class, String.class, String.class, String.class, Long.class, String.class);
         hubConnection.on("serverAck", this::serverAck, String.class);
+        hubConnection.on("expireSession", this::expireSession);
 
         // Set onClickListener for SEND button
         chatBoxSendButton.setOnClickListener(this::chatBoxSendButtonClickListener);
     }
+    
+    private void onSessionExpire() {
+        Log.d("onSessionExpire", "CALLED");
+        hubConnection.stop();
+        chatBoxSendButton.setOnClickListener((v)-> {});
+    }
 
-    public void chatBoxSendButtonClickListener(View view) {
+    private void chatBoxSendButtonClickListener(View view) {
 
         if (chatBoxMessageEditText.getText().length() > 0) { // Empty message not allowed
             // Create and add message into list
@@ -227,6 +238,28 @@ public class ChatFragment extends Fragment {
         }
 
         refreshUiThread();
+    }
+
+    public void expireSession() {
+        onSessionExpire();
+        reconnectTimer.cancel();
+        resendChatMessageTimer.cancel();
+        showSessionExpiredDialog();
+    }
+
+    private void showSessionExpiredDialog() {
+        requireActivity().runOnUiThread(() -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+            builder.setMessage(R.string.alert_message)
+                    .setTitle(R.string.alert_title)
+                    .setCancelable(false);
+            builder.setPositiveButton(R.string.alert_ok, (dialog, id) -> {
+                Navigation.findNavController(getView()).navigate(R.id.action_ChatFragment_to_LoginFragment);
+                getActivity().recreate();
+            });
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        });
     }
 
     private ChatMessage createMessage() {
@@ -312,10 +345,10 @@ public class ChatFragment extends Fragment {
 
                 @Override
                 public void onComplete() {
-                    if (!firstConnectionStarted.get()) { // very first start of connection
-                        onHubConnectionStart();
+                    if (!sessionStarted.get()) { // very first start of connection
+                        onSessionStart();
                         hubConnection.send("EnterChatRoom", deviceToken, username);
-                        firstConnectionStarted.set(true);
+                        sessionStarted.set(true);
                     }
                     Log.d("Reconnection", "touch server after reconnection");
                     hubConnection.send("TouchServer", deviceToken, username);

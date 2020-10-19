@@ -21,5 +21,8 @@
         android:label="@string/chat_fragment_label"
         tools:layout="@layout/fragment_chat">
 
+        <action
+            android:id="@+id/action_ChatFragment_to_LoginFragment"
+            app:destination="@id/LoginFragment" />
     </fragment>
 </navigation>

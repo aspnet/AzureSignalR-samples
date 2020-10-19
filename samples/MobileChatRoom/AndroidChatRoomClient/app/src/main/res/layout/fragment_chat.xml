@@ -10,10 +10,10 @@
     <LinearLayout
         android:id="@+id/layout_chatcontent"
         android:layout_width="match_parent"
-        android:layout_height="400dp"
         app:layout_constraintBottom_toTopOf="@+id/layout_chat_receiver"
         app:layout_constraintTop_toTopOf="parent"
-        tools:layout_editor_absoluteX="16dp">
+        tools:layout_editor_absoluteX="16dp"
+        android:layout_height="550dp">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerview_chatcontent"
