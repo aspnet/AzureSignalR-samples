@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,92 +12,101 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
 {
     public class UserHandler : IUserHandler
     {
-        private readonly ConcurrentDictionary<string, (string, string, DateTime)> _userTable =
-            new ConcurrentDictionary<string, (string, string, DateTime)>();
+        private readonly ConcurrentDictionary<string, Session> _sessionTable =
+            new ConcurrentDictionary<string, Session>();
         private readonly DateTime _defaultDateTime = new DateTime(1970, 1, 1);
 
         private readonly Timer _sessionCheckingTimer;
-        private readonly TimeSpan _sessionExpireThreshold = TimeSpan.FromSeconds(60);
-
+        private readonly TimeSpan _sessionExpireThreshold = TimeSpan.FromSeconds(10);
+        private readonly TimeSpan _sessionCheckingInterval = TimeSpan.FromSeconds(10);
+        
         public UserHandler()
         {
-
+            this._sessionCheckingTimer = new Timer(_ => CheckSession(), state: null, dueTime: TimeSpan.FromMilliseconds(0), period: _sessionCheckingInterval);
         }
 
-        public string GetUserConnectionId(string username)
+        public Session GetUserSession(string username)
         {
-            _userTable.TryGetValue(username, out (string, string, DateTime) pair);
-            return pair.Item1;
-        }
-
-        public string GetUserDeviceToken(string username)
-        {
-            _userTable.TryGetValue(username, out (string, string, DateTime) pair);
-            return pair.Item2;
-        }
-
-        public DateTime GetUserLastTouch(string username)
-        {
-            _userTable.TryGetValue(username, out (string, string, DateTime) pair);
-            return pair.Item3;
-        }
-
-        public (string, string) Login(string username, string connectionId, string deviceToken)
-        {
-            _userTable.AddOrUpdate(username, (connectionId, deviceToken, DateTime.UtcNow), (k, v) => (connectionId, deviceToken, DateTime.UtcNow));
-            bool isSuccess = _userTable.TryGetValue(username, out (string, string, DateTime) value);
-            if (isSuccess)
+            bool hasUser = _sessionTable.TryGetValue(username, out Session storedSession);
+            if (hasUser)
             {
-                return (value.Item1, value.Item2);
+                return storedSession;
             }
-            return (null, null);
+            return null;
+        }
+
+        public Session Login(string username, string connectionId, string deviceToken)
+        {
+            bool isExpiredSession = _sessionTable.TryGetValue(username, out Session storedSession);
+            if (isExpiredSession)
+            {
+                storedSession.Revive(connectionId, deviceToken);
+                return storedSession;
+            } else
+            {
+                Session session = new Session(username, connectionId, deviceToken);
+                return _sessionTable.AddOrUpdate(username, session, (k, v) => session);
+            }
         }
 
         public DateTime Touch(string username, string connectionId, string deviceToken)
         {
-            if (!_userTable.ContainsKey(username))
+            if (!_sessionTable.ContainsKey(username))
             {
                 return _defaultDateTime;
             }
 
-            var oldVal = _userTable[username];
-            if (!connectionId.Equals(oldVal.Item1))
+            Session session = _sessionTable[username];
+
+            if (session.SessionType == SessionTypeEnum.Expired)
             {
-                Console.WriteLine(string.Format("Touch username: {0}\nconnectionId old: {1}\nconnectionId new: {2}", username, oldVal.Item1, connectionId));
+                return _defaultDateTime;
             }
 
-            _userTable.TryUpdate(username, (connectionId, deviceToken, DateTime.UtcNow), oldVal);
-            _userTable.TryGetValue(username, out (string, string, DateTime) value);
+            if (!connectionId.Equals(session.ConnectionId))
+            {
+                Console.WriteLine(string.Format("Touch username: {0}\nconnectionId old: {1}\nconnectionId new: {2}", username, session.ConnectionId, connectionId));
+                session.ConnectionId = connectionId;
+            }
+
+            session.LastTouchedDateTime = DateTime.UtcNow;
             
-            return value.Item3;
+            return session.LastTouchedDateTime;
         }
 
-        public string Logout(string connectionId)
+        public Session Logout(string connectionId)
         {
             string username = "";
-            foreach (var pair in _userTable)
+            foreach (var pair in _sessionTable)
             {
                 username = pair.Key;
-                if (pair.Value.Item1.Equals(connectionId))
+                if (pair.Value.ConnectionId.Equals(connectionId))
                 {
                     break;
                 }
             }
-            _userTable.TryRemove(username, out _);
-            return username;
+            bool removalSucceeded = _sessionTable.TryRemove(username, out Session removedSession);
+            if (removalSucceeded)
+            {
+                return removedSession;
+            }
+            return null;
         }
 
         private void CheckSession()
         {
-            foreach (var pair in _userTable) {
+            foreach (var pair in _sessionTable) {
                 string username = pair.Key;
-                var elapsed = DateTime.UtcNow - GetUserLastTouch(username);
-                if (elapsed > _checkAckThreshold)
+                Session session = pair.Value;
+                if (session.SessionType == SessionTypeEnum.Active)
                 {
-                    Console.WriteLine(string.Format("Ack id: {0} time out", clientAck.ClientAckId));
-                    clientAck.TimeOut();
+                    var elapsed = DateTime.UtcNow - session.LastTouchedDateTime;
+                    if (elapsed > _sessionExpireThreshold)
+                    {
+                        Console.WriteLine(string.Format("Session username: {0} time out. Force expire.", session.Username));
+                        session.Expire();
+                    }
                 }
-                
             }
         }
     }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,11 +8,9 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
 {
     public interface IUserHandler
     {
-        (string, string) Login(string username, string connectionId, string deviceToken);
+        Session Login(string username, string connectionId, string deviceToken);
         DateTime Touch(string username, string connectionId, string deviceToken);
-        string Logout(string connectionId);
-        string GetUserConnectionId(string username);
-        string GetUserDeviceToken(string username);
-        DateTime GetUserLastTouch(string username);
+        Session Logout(string connectionId);
+        Session GetUserSession(string username);
     }
 }
