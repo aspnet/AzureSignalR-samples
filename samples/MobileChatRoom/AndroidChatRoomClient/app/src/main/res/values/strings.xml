@@ -21,4 +21,7 @@
     <string name="alert_message">Session expired!</string>
     <string name="alert_title">Alert</string>
     <string name="alert_ok">Re-Login</string>
+
+    <string name="azure_notification_hub_connection_string">Endpoint=sb://com-microsoft-signalr-androidchatroom.servicebus.windows.net/;SharedAccessKeyName=DefaultListenSharedAccessSignature;SharedAccessKey=Mh7i1Z9n4euLov7vGdmZDwJ2pay3m/4t60JXWm4j3IM=</string>
+    <string name="azure_notification_hub_name">AndroidChatRoomNotificationHub</string>
 </resources>

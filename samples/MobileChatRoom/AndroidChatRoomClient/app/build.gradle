@@ -7,7 +7,7 @@ android {
 
     defaultConfig {
         applicationId 'com.microsoft.signalr.androidchatroom'
-        minSdkVersion 16
+        minSdkVersion 24
         targetSdkVersion 30
         versionCode 1
         versionName '1.0'
@@ -32,13 +32,20 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'com.google.android.material:material:1.2.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.2'
-    implementation 'androidx.navigation:navigation-fragment:2.3.0'
-    implementation 'androidx.navigation:navigation-ui:2.3.0'
-    implementation 'androidx.navigation:navigation-dynamic-features-fragment:2.3.0'
+    implementation 'androidx.navigation:navigation-fragment:2.3.1'
+    implementation 'androidx.navigation:navigation-ui:2.3.1'
+    implementation 'androidx.navigation:navigation-dynamic-features-fragment:2.3.1'
     implementation 'com.microsoft.signalr:signalr:3.0.0'
-    implementation 'com.google.firebase:firebase-analytics:17.6.0'
+    implementation 'com.microsoft.azure:notification-hubs-android-sdk:0.6@aar'
     implementation 'com.google.firebase:firebase-messaging:20.3.0'
+    implementation 'com.android.volley:volley:1.1.1'
     testImplementation 'junit:junit:4.13'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+}
+
+repositories {
+    maven {
+        url "https://dl.bintray.com/microsoftazuremobile/SDK"
+    }
 }
