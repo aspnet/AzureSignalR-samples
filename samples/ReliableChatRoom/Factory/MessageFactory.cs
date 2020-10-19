@@ -14,7 +14,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Factory
                 Guid.NewGuid().ToString(),
                 Message.SYSTEM_SENDER, Message.BROADCAST_RECEIVER,
                 string.Format("{0} has {1} the chat", username, action),
-                MessageType.System,
+                MessageTypeEnum.System,
                 sendTime);
         }
 
@@ -24,7 +24,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Factory
                 messageId,
                 sender, Message.BROADCAST_RECEIVER,
                 text,
-                MessageType.Broadcast,
+                MessageTypeEnum.Broadcast,
                 sendTime);
         }
 
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Factory
                 messageId,
                 sender, receiver,
                 text,
-                MessageType.Private,
+                MessageTypeEnum.Private,
                 sendTime);
         }
 

@@ -9,12 +9,12 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities
         
         public string MessageId { get; set; }
         public string Text { get; set; }
-        public MessageType Type { get; set; }
+        public MessageTypeEnum Type { get; set; }
         public string Sender { get; set; }
         public string Receiver { get; set; }
         public DateTime SendTime { get; set; }
 
-        public Message(string messageId, string sender, string receiver, string text, MessageType type, DateTime sendTime)
+        public Message(string messageId, string sender, string receiver, string text, MessageTypeEnum type, DateTime sendTime)
         {
             this.MessageId = messageId;
             this.Type = type;
