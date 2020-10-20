@@ -34,7 +34,7 @@ public class SignalRChatService extends Service implements ChatService {
 
     // User info
     private String username;
-    private String deviceToken;
+    private String registrationId;
 
     // Reconnect timer
     private AtomicBoolean sessionStarted = new AtomicBoolean(false);
@@ -64,9 +64,9 @@ public class SignalRChatService extends Service implements ChatService {
 
     //// Register methods
     @Override
-    public void register(String username, String deviceToken, MessageReceiver messageReceiver) {
+    public void register(String username, String registrationId, MessageReceiver messageReceiver) {
         this.username = username;
-        this.deviceToken = deviceToken;
+        this.registrationId = registrationId;
         this.messageReceiver = messageReceiver;
     }
 
@@ -229,11 +229,11 @@ public class SignalRChatService extends Service implements ChatService {
                 public void onComplete() {
                     if (!sessionStarted.get()) { // very first start of connection
                         onSessionStart();
-                        hubConnection.send("EnterChatRoom", deviceToken, username);
+                        hubConnection.send("EnterChatRoom", registrationId, username);
                         sessionStarted.set(true);
                     }
                     Log.d("Reconnection", "touch server after reconnection");
-                    hubConnection.send("TouchServer", deviceToken, username);
+                    hubConnection.send("TouchServer", registrationId, username);
                 }
 
                 @Override
@@ -242,7 +242,7 @@ public class SignalRChatService extends Service implements ChatService {
                 }
             });
         } else {
-            hubConnection.send("TouchServer", deviceToken, username);
+            hubConnection.send("TouchServer", registrationId, username);
         }
     }
 }

@@ -108,16 +108,9 @@ public class ChatFragment extends Fragment implements MessageReceiver {
         if ((username = getArguments().getString("username")) == null) {
             username = "Nobody";
         }
-
-        // Fetch device token for notification
-        FirebaseInstanceId.getInstance()
-                .getInstanceId()
-                .addOnSuccessListener(
-                        instanceIdResult -> {
-                            chatService.register(username, instanceIdResult.getToken(),this);
-                            chatService.startSession();
-                            chatBoxSendButton.setOnClickListener(this::chatBoxSendButtonClickListener);
-                        });
+        chatService.register(username, notificationService.getRegistrationId(),this);
+        chatService.startSession();
+        chatBoxSendButton.setOnClickListener(this::chatBoxSendButtonClickListener);
     }
 
     @Override

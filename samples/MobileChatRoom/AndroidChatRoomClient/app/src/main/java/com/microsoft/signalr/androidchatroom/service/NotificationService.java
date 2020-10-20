@@ -20,6 +20,7 @@ public class NotificationService extends Service {
 
     private static final String TAG = "NotificationService";
     private String deviceToken;
+    private String registrationId;
     private NotificationHub notificationHub;
 
     // Service binder
@@ -42,7 +43,7 @@ public class NotificationService extends Service {
                     @Override
                     public void run() {
                         try {
-                            notificationHub.register(deviceToken);
+                            registrationId = notificationHub.register(deviceToken).getRegistrationId();
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -51,5 +52,13 @@ public class NotificationService extends Service {
             }
         });
         return notificationServiceBinder;
+    }
+
+    public String getDeviceToken() {
+        return deviceToken;
+    }
+
+    public String getRegistrationId() {
+        return registrationId;
     }
 }
