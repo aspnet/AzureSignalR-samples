@@ -11,46 +11,46 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
 {
     public class ReliableChatRoomHub : Hub
     {
-        private readonly IHubContext<ReliableChatRoomHub> _hubContext;
         private readonly IUserHandler _userHandler;
         private readonly IMessageStorage _messageStorage;
         private readonly IMessageFactory _messageFactory;
         private readonly IClientAckHandler _clientAckHandler;
+        private readonly INotificationHandler _notificationHandler;
 
         private readonly DateTime _defaultDateTime = new DateTime(1970, 1, 1);
 
 
         public ReliableChatRoomHub(
-            IHubContext<ReliableChatRoomHub> hubContext,
             IUserHandler userHandler,
             IMessageStorage messageStorage,
             IMessageFactory messageFactory,
-            IClientAckHandler clientAckHandler)
+            IClientAckHandler clientAckHandler,
+            INotificationHandler notificationHandler)
         {
-            _hubContext = hubContext;
             _userHandler = userHandler;
             _messageStorage = messageStorage;
             _messageFactory = messageFactory;
             _clientAckHandler = clientAckHandler;
+            _notificationHandler = notificationHandler;
         }
 
 
         //  User periodically touches server to extend his session
-        public void TouchServer(string deviceToken, string username)
+        public void TouchServer(string registrationId, string username)
         {
-            DateTime touchedDateTime = _userHandler.Touch(username, Context.ConnectionId, deviceToken);
+            DateTime touchedDateTime = _userHandler.Touch(username, Context.ConnectionId, registrationId);
             if (touchedDateTime == _defaultDateTime) //  Session either does not exist or expires
             {
                 Clients.Caller.SendAsync("expireSession");
             }
         }
 
-        public void EnterChatRoom(string deviceToken, string username)
+        public void EnterChatRoom(string registrationId, string username)
         {
-            Console.WriteLine(string.Format("EnterChatRoom device: {0} username: {1}", deviceToken, username));
+            Console.WriteLine(string.Format("EnterChatRoom device: {0} username: {1}", registrationId, username));
             
-            //  Try to store user login information (ConnectionId & deviceToken)
-            Session session = _userHandler.Login(username, Context.ConnectionId, deviceToken);
+            //  Try to store user login information (ConnectionId & registrationId)
+            Session session = _userHandler.Login(username, Context.ConnectionId, registrationId);
             
             //  If login was successful, broadcast the system message 
             if (session != null)
@@ -88,6 +88,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
             if (isStored)
             {
                 SendBroadCastMessage(message);
+                _notificationHandler.SendBroadcastNotification(message);
             }
         }
 
@@ -106,6 +107,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
             if (isStored)
             {
                 SendPrivateMessage(message);
+                _notificationHandler.SendPrivateNotification(message);
             }
         }
 

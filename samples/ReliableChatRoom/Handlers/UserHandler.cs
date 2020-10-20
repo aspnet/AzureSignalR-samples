@@ -1,28 +1,31 @@
 ﻿using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities;
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
+
 
 namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
 {
-    public class UserHandler : IUserHandler
+    public class UserHandler : IUserHandler, IDisposable
     {
         private readonly ConcurrentDictionary<string, Session> _sessionTable =
             new ConcurrentDictionary<string, Session>();
         private readonly DateTime _defaultDateTime = new DateTime(1970, 1, 1);
 
         private readonly Timer _sessionCheckingTimer;
-        private readonly TimeSpan _sessionExpireThreshold = TimeSpan.FromSeconds(10);
-        private readonly TimeSpan _sessionCheckingInterval = TimeSpan.FromSeconds(10);
+        private readonly TimeSpan _sessionExpireThreshold = TimeSpan.FromSeconds(100);
+        private readonly TimeSpan _sessionCheckingInterval = TimeSpan.FromSeconds(100);
         
         public UserHandler()
         {
             this._sessionCheckingTimer = new Timer(_ => CheckSession(), state: null, dueTime: TimeSpan.FromMilliseconds(0), period: _sessionCheckingInterval);
+        }
+
+        public void Dispose()
+        {
+            _sessionCheckingTimer.Dispose();
         }
 
         public Session GetUserSession(string username)
@@ -35,43 +38,57 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
             return null;
         }
 
-        public Session Login(string username, string connectionId, string deviceToken)
+        public ICollection<Session> GetActiveSessions()
         {
-            bool isExpiredSession = _sessionTable.TryGetValue(username, out Session storedSession);
-            if (isExpiredSession)
+            ICollection<Session> activeSessions = new List<Session>();
+            foreach (Session session in _sessionTable.Values)
             {
-                storedSession.Revive(connectionId, deviceToken);
+                if (session.SessionType == SessionTypeEnum.Active)
+                {
+                    activeSessions.Add(session);
+                }
+            }
+            return activeSessions;
+        }
+
+        public Session Login(string username, string connectionId, string registrationId)
+        {
+            bool isStoredSession = _sessionTable.TryGetValue(username, out Session storedSession);
+            if (isStoredSession)
+            {
+                storedSession.Revive(connectionId, registrationId);
                 return storedSession;
             } else
             {
-                Session session = new Session(username, connectionId, deviceToken);
+                Session session = new Session(username, connectionId, registrationId);
                 return _sessionTable.AddOrUpdate(username, session, (k, v) => session);
             }
         }
 
-        public DateTime Touch(string username, string connectionId, string deviceToken)
+        public DateTime Touch(string username, string connectionId, string registrationId)
         {
-            if (!_sessionTable.ContainsKey(username))
+            bool isStoredSession = _sessionTable.TryGetValue(username, out Session storedSession);
+
+            if (!isStoredSession)
             {
                 return _defaultDateTime;
             }
 
-            Session session = _sessionTable[username];
-
-            if (session.SessionType == SessionTypeEnum.Expired)
+            if (storedSession.SessionType == SessionTypeEnum.Expired) //  You cannot touch an expired session
             {
                 return _defaultDateTime;
             }
 
-            if (!connectionId.Equals(session.ConnectionId))
+            if (!connectionId.Equals(storedSession.ConnectionId)) //  ConnectionIds between two continuous touches changed
             {
-                Console.WriteLine(string.Format("Touch username: {0}\nconnectionId old: {1}\nconnectionId new: {2}", username, session.ConnectionId, connectionId));
-                session.ConnectionId = connectionId;
+                Console.WriteLine(string.Format("Touch username: {0}\nconnectionId old: {1}\nconnectionId new: {2}", username, storedSession.ConnectionId, connectionId));
+                //  Update connectionId
+                storedSession.ConnectionId = connectionId;
             }
 
-            session.LastTouchedDateTime = DateTime.UtcNow;
+            storedSession.LastTouchedDateTime = DateTime.UtcNow;
             
-            return session.LastTouchedDateTime;
+            return storedSession.LastTouchedDateTime;
         }
 
         public Session Logout(string connectionId)
@@ -96,7 +113,6 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
         private void CheckSession()
         {
             foreach (var pair in _sessionTable) {
-                string username = pair.Key;
                 Session session = pair.Value;
                 if (session.SessionType == SessionTypeEnum.Active)
                 {
