@@ -28,7 +28,9 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
             services.AddSingleton<IUserHandler, UserHandler>();
             services.AddSingleton<IMessageStorage, MessageStorage>();
             services.AddSingleton<IMessageFactory, MessageFactory>();
-            services.AddSingleton<IClientAckHandler, ClientAckHandler>(); 
+            services.AddSingleton<IClientAckHandler, ClientAckHandler>();
+            services.AddSingleton<INotificationHandler, NotificationHandler>(provider => new NotificationHandler(provider.GetService<IUserHandler>(), Configuration["Azure:NotificationHub:ConnectionString"], Configuration["Azure:NotificationHub:HubName"]));
+
         }
 
         public void Configure(IApplicationBuilder app)

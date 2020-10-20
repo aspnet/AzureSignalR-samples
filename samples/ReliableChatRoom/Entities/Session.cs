@@ -9,15 +9,15 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities
     {
         public string Username { get; set; }
         public string ConnectionId { get; set; }
-        public string DeviceToken { get; set; }
+        public string RegistrationId { get; set; }
         public DateTime LastTouchedDateTime { get; set; }
         public SessionTypeEnum SessionType { get; set; }
         
-        public Session(string username, string connectionId, string deviceToken)
+        public Session(string username, string connectionId, string registrationId)
         {
             this.Username = username;
             this.ConnectionId = connectionId;
-            this.DeviceToken = deviceToken;
+            this.RegistrationId = registrationId;
             this.LastTouchedDateTime = DateTime.UtcNow;
             this.SessionType = SessionTypeEnum.Active;
         }
@@ -27,11 +27,11 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities
             this.SessionType = SessionTypeEnum.Expired;
         }
 
-        public void Revive(string connectionId, string deviceToken)
+        public void Revive(string connectionId, string registrationId)
         {
             this.SessionType = SessionTypeEnum.Active;
             this.ConnectionId = connectionId;
-            this.DeviceToken = deviceToken;
+            this.RegistrationId = registrationId;
         }
 
     }
