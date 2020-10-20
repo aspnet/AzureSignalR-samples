@@ -18,7 +18,7 @@
         tools:targetApi="m">
 
         <service
-            android:name="com.microsoft.signalr.androidchatroom.service.RegistrationIntentService"
+            android:name="com.microsoft.signalr.androidchatroom.service.NotificationService"
             android:exported="false">
         </service>
         <service android:name="com.microsoft.signalr.androidchatroom.service.SignalRChatService"

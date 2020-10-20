@@ -161,7 +161,8 @@ public class SignalRChatService extends Service implements ChatService {
         messageReceiver.setMessageAck(messageId);
     }
 
-    //// Message sender methods
+    //// Message sending methods
+    @Override
     public void sendMessage(ChatMessage chatMessage) {
         synchronized (chatMessage) {
             switch (chatMessage.getMessageType()) {

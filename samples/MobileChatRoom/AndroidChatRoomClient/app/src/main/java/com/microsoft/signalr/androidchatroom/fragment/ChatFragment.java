@@ -24,7 +24,8 @@ import com.microsoft.signalr.androidchatroom.message.ChatMessage;
 import com.microsoft.signalr.androidchatroom.message.MessageType;
 import com.microsoft.signalr.androidchatroom.message.SystemMessage;
 import com.microsoft.signalr.androidchatroom.message.Message;
-import com.microsoft.signalr.androidchatroom.service.SignalRChatService;
+import com.microsoft.signalr.androidchatroom.service.ChatService;
+import com.microsoft.signalr.androidchatroom.service.NotificationService;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -36,8 +37,9 @@ import java.util.Set;
 
 public class ChatFragment extends Fragment implements MessageReceiver {
     private static final String TAG = "ChatFragment";
-    // Chat Service
-    private SignalRChatService signalRChatService;
+    // Services
+    private ChatService chatService;
+    private NotificationService notificationService;
 
     // Messages
     private final List<Message> messages = new ArrayList<>();
@@ -54,7 +56,8 @@ public class ChatFragment extends Fragment implements MessageReceiver {
     public void onAttach(Context context) {
         super.onAttach(context);
         try {
-            signalRChatService = ((MainActivity) context).getSignalRChatService();
+            chatService = ((MainActivity) context).getChatService();
+            notificationService = ((MainActivity) context).getNotificationService();
         } catch (ClassCastException e) {
             Log.e(TAG, e.getMessage());
         }
@@ -64,7 +67,8 @@ public class ChatFragment extends Fragment implements MessageReceiver {
     public void onDetach() {
         super.onDetach();
         // Remove activity reference
-        signalRChatService = null;
+        chatService = null;
+        notificationService = null;
     }
 
     @Override
@@ -110,7 +114,8 @@ public class ChatFragment extends Fragment implements MessageReceiver {
                 .getInstanceId()
                 .addOnSuccessListener(
                         instanceIdResult -> {
-                            signalRChatService.register(username, instanceIdResult.getToken(),this);
+                            chatService.register(username, instanceIdResult.getToken(),this);
+                            chatService.startSession();
                             chatBoxSendButton.setOnClickListener(this::chatBoxSendButtonClickListener);
                         });
     }
@@ -178,7 +183,7 @@ public class ChatFragment extends Fragment implements MessageReceiver {
             messages.add(chatMessage);
 
             // If hubConnection is active then send message
-            signalRChatService.sendMessage(chatMessage);
+            chatService.sendMessage(chatMessage);
 
             // Refresh ui
             refreshUiThread();

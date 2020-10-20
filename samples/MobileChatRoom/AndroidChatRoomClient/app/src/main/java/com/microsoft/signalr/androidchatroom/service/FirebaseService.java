@@ -7,7 +7,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Binder;
 import android.os.Build;
+import android.os.IBinder;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -18,20 +20,19 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.microsoft.signalr.androidchatroom.activity.MainActivity;
 
+import java.util.Iterator;
+
 
 //  See https://docs.microsoft.com/en-us/azure/notification-hubs/notification-hubs-android-push-notification-google-fcm-get-started#test-send-notification-from-the-notification-hub
 public class FirebaseService extends FirebaseMessagingService {
     private static final String TAG = "FirebaseService";
-
-    public static final String NOTIFICATION_CHANNEL_ID = "nh-demo-channel-id";
-    public static final String NOTIFICATION_CHANNEL_NAME = "Notification Hubs Demo Channel";
-    public static final String NOTIFICATION_CHANNEL_DESCRIPTION = "Notification Hubs Demo Channel";
+    public static final String NOTIFICATION_CHANNEL_ID = "id_chatroom";
+    public static final String NOTIFICATION_CHANNEL_NAME = "ChatRoom Channel";
+    public static final String NOTIFICATION_CHANNEL_DESCRIPTION = "ChatRoom Channel Description";
     public static final int NOTIFICATION_ID = 1;
 
-    private NotificationManager mNotificationManager;
-    private Context ctx;
+    private NotificationManager notificationManager;
     private Builder builder;
-
 
     @Override
     public void onNewToken(@NonNull String s) {
@@ -48,52 +49,53 @@ public class FirebaseService extends FirebaseMessagingService {
         // Not getting messages here? See why this may be: https://goo.gl/39bRNJ
         Log.d(TAG, "From: " + remoteMessage.getFrom());
 
-        String nhMessage;
+        String title = null, text;
         // Check if message contains a notification payload.
         if (remoteMessage.getNotification() != null) {
             Log.d(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
-
-            nhMessage = remoteMessage.getNotification().getBody();
+            text = remoteMessage.getNotification().getBody();
         } else {
-            nhMessage = remoteMessage.getData().values().iterator().next();
+            Iterator<String> dataPayloadIterator = remoteMessage.getData().values().iterator();
+            title = dataPayloadIterator.next();
+            text = dataPayloadIterator.next();
         }
 
         // Also if you intend on generating your own notifications as a result of a received FCM
         // message, here is where that should be initiated. See sendNotification method below.
         if (!MainActivity.isVisible) {
-            sendNotification(nhMessage);
+            sendNotification(title, text);
         }
 
     }
 
-    private void sendNotification(String msg) {
+    private void sendNotification(String title, String text) {
 
-        Intent intent = new Intent(ctx, MainActivity.class);
+        Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
-        mNotificationManager = (NotificationManager)
-                ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager = (NotificationManager)
+                this.getSystemService(Context.NOTIFICATION_SERVICE);
 
-        PendingIntent contentIntent = PendingIntent.getActivity(ctx, 0,
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
                 intent, PendingIntent.FLAG_ONE_SHOT);
 
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(
-                ctx,
+                this,
                 NOTIFICATION_CHANNEL_ID)
-                .setContentText(msg)
+                .setContentText(text)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setSmallIcon(android.R.drawable.ic_popup_reminder)
                 .setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL)
                 .setAutoCancel(true);
-
+        if (title != null) {
+            notificationBuilder.setContentTitle(title);
+        }
         notificationBuilder.setContentIntent(contentIntent);
-        mNotificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
+        notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
     }
 
     public static void createChannelAndHandleNotifications(Context context) {
-        //ctx = context;
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                     NOTIFICATION_CHANNEL_ID,
