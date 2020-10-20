@@ -1,18 +1,19 @@
-package com.microsoft.signalr.androidchatroom.notificationhub;
+package com.microsoft.signalr.androidchatroom.service;
 
 import android.app.IntentService;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import com.google.android.gms.tasks.OnSuccessListener;
+
 import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.InstanceIdResult;
-import com.microsoft.signalr.androidchatroom.MainActivity;
 import com.microsoft.signalr.androidchatroom.R;
 import com.microsoft.windowsazure.messaging.NotificationHub;
+
 import java.util.concurrent.TimeUnit;
 
+
+//  See https://docs.microsoft.com/en-us/azure/notification-hubs/notification-hubs-android-push-notification-google-fcm-get-started#test-send-notification-from-the-notification-hub
 public class RegistrationIntentService extends IntentService {
 
     private static final String TAG = "RegIntentService";
@@ -33,19 +34,16 @@ public class RegistrationIntentService extends IntentService {
         String storedToken = null;
 
         try {
-            FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(new OnSuccessListener<InstanceIdResult>() {
-                @Override
-                public void onSuccess(InstanceIdResult instanceIdResult) {
-                    FCM_token = instanceIdResult.getToken();
-                    Log.d(TAG, "FCM Registration Token: " + FCM_token);
-                }
+            FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(instanceIdResult -> {
+                FCM_token = instanceIdResult.getToken();
+                Log.d(TAG, "FCM Registration Token: " + FCM_token);
             });
             TimeUnit.SECONDS.sleep(1);
 
             // Storing the registration ID that indicates whether the generated token has been
             // sent to your server. If it is not stored, send the token to your server.
             // Otherwise, your server should have already received the token.
-            if (((regID=sharedPreferences.getString("registrationID", null)) == null)){
+            if (((regID = sharedPreferences.getString("registrationID", null)) == null)) {
 
                 NotificationHub hub = new NotificationHub(getString(R.string.azure_notification_hub_name),
                         getString(R.string.azure_notification_hub_connection_string), this);
@@ -59,8 +57,8 @@ public class RegistrationIntentService extends IntentService {
                 resultString = "New NH Registration Successfully - RegId : " + regID;
                 Log.d(TAG, resultString);
 
-                sharedPreferences.edit().putString("registrationID", regID ).apply();
-                sharedPreferences.edit().putString("FCMtoken", FCM_token ).apply();
+                sharedPreferences.edit().putString("registrationID", regID).apply();
+                sharedPreferences.edit().putString("FCMtoken", FCM_token).apply();
             }
 
             // Check to see if the token has been compromised and needs refreshing.
@@ -78,22 +76,13 @@ public class RegistrationIntentService extends IntentService {
                 resultString = "New NH Registration Successfully - RegId : " + regID;
                 Log.d(TAG, resultString);
 
-                sharedPreferences.edit().putString("registrationID", regID ).apply();
-                sharedPreferences.edit().putString("FCMtoken", FCM_token ).apply();
-            }
-
-            else {
-                resultString = "Previously Registered Successfully - RegId : " + regID;
+                sharedPreferences.edit().putString("registrationID", regID).apply();
+                sharedPreferences.edit().putString("FCMtoken", FCM_token).apply();
             }
         } catch (Exception e) {
-            Log.e(TAG, resultString="Failed to complete registration", e);
+            Log.e(TAG, "Failed to complete registration", e);
             // If an exception happens while fetching the new token or updating registration data
             // on a third-party server, this ensures that we'll attempt the update at a later time.
-        }
-
-        // Notify UI that registration has completed.
-        if (MainActivity.isVisible) {
-            MainActivity.mainActivity.ToastNotify(resultString);
         }
     }
 }

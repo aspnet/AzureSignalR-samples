@@ -1,20 +1,22 @@
-package com.microsoft.signalr.androidchatroom;
+package com.microsoft.signalr.androidchatroom.activity;
 
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.os.Build;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.ServiceConnection;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.microsoft.signalr.androidchatroom.notificationhub.FirebaseService;
-import com.microsoft.signalr.androidchatroom.notificationhub.RegistrationIntentService;
+import com.microsoft.signalr.androidchatroom.R;
+import com.microsoft.signalr.androidchatroom.service.SignalRChatService;
+import com.microsoft.signalr.androidchatroom.service.FirebaseService;
+import com.microsoft.signalr.androidchatroom.service.RegistrationIntentService;
 
 import android.content.Intent;
+import android.os.IBinder;
 import android.util.Log;
-import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
@@ -25,6 +27,23 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
+    private SignalRChatService signalRChatService;
+    private boolean isBound = false;
+    private final ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            SignalRChatService.ChatServiceBinder chatServiceBinder = (SignalRChatService.ChatServiceBinder) service;
+            signalRChatService = chatServiceBinder.getService();
+            isBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            signalRChatService = null;
+            isBound = false;
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,9 +51,20 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        bindChatService();
+
         mainActivity = this;
         registerWithNotificationHubs();
         FirebaseService.createChannelAndHandleNotifications(getApplicationContext());
+    }
+
+    public SignalRChatService getSignalRChatService() {
+        return signalRChatService;
+    }
+
+    public void bindChatService() {
+        Intent intent = new Intent(this, SignalRChatService.class);
+        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
     public void registerWithNotificationHubs()

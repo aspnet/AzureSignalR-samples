@@ -2,7 +2,6 @@ package com.microsoft.signalr.androidchatroom.fragment;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,43 +18,30 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.iid.FirebaseInstanceId;
-import com.microsoft.signalr.HubConnection;
-import com.microsoft.signalr.HubConnectionBuilder;
-import com.microsoft.signalr.HubConnectionState;
-import com.microsoft.signalr.androidchatroom.MainActivity;
 import com.microsoft.signalr.androidchatroom.R;
+import com.microsoft.signalr.androidchatroom.activity.MainActivity;
 import com.microsoft.signalr.androidchatroom.message.ChatMessage;
 import com.microsoft.signalr.androidchatroom.message.MessageType;
 import com.microsoft.signalr.androidchatroom.message.SystemMessage;
 import com.microsoft.signalr.androidchatroom.message.Message;
-
-import org.jetbrains.annotations.NotNull;
+import com.microsoft.signalr.androidchatroom.service.SignalRChatService;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-import io.reactivex.CompletableObserver;
-import io.reactivex.disposables.Disposable;
-
-public class ChatFragment extends Fragment {
-    // SignalR HubConnection
-    private HubConnection hubConnection = null;
+public class ChatFragment extends Fragment implements MessageReceiver {
+    private static final String TAG = "ChatFragment";
+    // Chat Service
+    private SignalRChatService signalRChatService;
 
     // Messages
     private final List<Message> messages = new ArrayList<>();
-
-    // User info
     private String username;
-    private String deviceToken;
 
     // View elements and adapters
     private EditText chatBoxReceiverEditText;
@@ -64,16 +50,22 @@ public class ChatFragment extends Fragment {
     private RecyclerView chatContentRecyclerView;
     private ChatContentAdapter chatContentAdapter;
 
-    // Reconnect timer
-    private AtomicBoolean sessionStarted = new AtomicBoolean(false);
-    private int reconnectDelay = 0; // immediate connect to server when enter the chat room
-    private int reconnectInterval = 5000;
-    private Timer reconnectTimer;
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        try {
+            signalRChatService = ((MainActivity) context).getSignalRChatService();
+        } catch (ClassCastException e) {
+            Log.e(TAG, e.getMessage());
+        }
+    }
 
-    // Resend timer
-    private int resendChatMessageDelay = 2500;
-    private int resendChatMessageInterval = 2500;
-    private Timer resendChatMessageTimer;
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        // Remove activity reference
+        signalRChatService = null;
+    }
 
     @Override
     public View onCreateView(
@@ -82,13 +74,6 @@ public class ChatFragment extends Fragment {
     ) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_chat, container, false);
-
-        // Get passed parameters
-        if (getArguments() != null) {
-            this.username = getArguments().getString("username");
-        } else {
-            this.username = "Nobody";
-        }
 
         // Get view element references
         this.chatBoxReceiverEditText = view.findViewById(R.id.edit_chat_receiver);
@@ -113,125 +98,43 @@ public class ChatFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        // Set chat fragment for chat service
+
+        // Get passed username
+        if ((username = getArguments().getString("username")) == null) {
+            username = "Nobody";
+        }
 
         // Fetch device token for notification
         FirebaseInstanceId.getInstance()
                 .getInstanceId()
                 .addOnSuccessListener(
-                        instanceIdResult -> this.deviceToken = instanceIdResult.getToken());
-
-        // Create, register, and start hub connection
-        this.hubConnection = HubConnectionBuilder.create(getString(R.string.app_server_url)).build();
-        // Set reconnect timer
-        reconnectTimer = new Timer();
-        reconnectTimer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                connectToServer();
-            }
-        }, reconnectDelay, reconnectInterval);
-
-        // Set resend chat message timer
-        resendChatMessageTimer = new Timer();
-        resendChatMessageTimer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                resendChatMessageHandler();
-            }
-        }, resendChatMessageDelay, resendChatMessageInterval);
-
+                        instanceIdResult -> {
+                            signalRChatService.register(username, instanceIdResult.getToken(),this);
+                            chatBoxSendButton.setOnClickListener(this::chatBoxSendButtonClickListener);
+                        });
     }
 
-    private void onSessionStart() {
-        // Register the method handlers
-        hubConnection.on("broadcastSystemMessage", this::broadcastSystemMessage,
-                String.class, String.class);
-        hubConnection.on("displayBroadcastMessage", this::displayBroadcastMessage,
-                String.class, String.class, String.class, String.class, Long.class, String.class);
-        hubConnection.on("displayPrivateMessage", this::displayPrivateMessage,
-                String.class, String.class, String.class, String.class, Long.class, String.class);
-        hubConnection.on("serverAck", this::serverAck, String.class);
-        hubConnection.on("expireSession", this::expireSession);
-
-        // Set onClickListener for SEND button
-        chatBoxSendButton.setOnClickListener(this::chatBoxSendButtonClickListener);
-    }
-    
-    private void onSessionExpire() {
-        Log.d("onSessionExpire", "CALLED");
-        hubConnection.stop();
-        chatBoxSendButton.setOnClickListener((v)-> {});
-    }
-
-    private void chatBoxSendButtonClickListener(View view) {
-
-        if (chatBoxMessageEditText.getText().length() > 0) { // Empty message not allowed
-            // Create and add message into list
-            ChatMessage chatMessage = createMessage();
-            messages.add(chatMessage);
-
-            refreshUiThread();
-
-            // If hubConnection is active then send message
-            if (hubConnection.getConnectionState() == HubConnectionState.CONNECTED) {
-                sendMessage(chatMessage);
-            }
-        }
-    }
-
-    public void broadcastSystemMessage(String messageId, String text) {
+    @Override
+    public void tryAddMessage(Message message) {
         // Check for duplicated message
-        boolean isDuplicateMessage = checkForDuplicatedMessage(messageId);
+        boolean isDuplicateMessage = checkForDuplicatedMessage(message.getMessageId());
 
         // If not duplicated, create ChatMessage according to parameters
         if (!isDuplicateMessage) {
-            SystemMessage systemMessage = new SystemMessage(messageId, text);
-            messages.add(systemMessage);
+            messages.add(message);
         }
 
         refreshUiThread();
     }
 
-    public void displayBroadcastMessage(String messageId, String sender, String receiver, String text, long sendTime, String ackId) {
-        // Send back ack
-        hubConnection.send("OnAckResponseReceived", ackId);
-
-        // Check for duplicated message
-        boolean isDuplicateMessage = checkForDuplicatedMessage(messageId);
-
-        // If not duplicated, create ChatMessage according to parameters
-        if (!isDuplicateMessage) {
-            ChatMessage chatMessage = new ChatMessage(messageId, sender, receiver, text, sendTime, MessageType.RECEIVED_BROADCAST_MESSAGE);
-            messages.add(chatMessage);
-        }
-
-        refreshUiThread();
-    }
-
-    public void displayPrivateMessage(String messageId, String sender, String receiver, String text, long sendTime, String ackId) {
-        Log.d("displayPrivateMessage", sender);
-
-        // Send back ack
-        hubConnection.send("OnAckResponseReceived", ackId);
-
-        // Check for duplicated message
-        boolean isDuplicateMessage = checkForDuplicatedMessage(messageId);
-
-        // If not duplicated, create ChatMessage according to parameters
-        if (!isDuplicateMessage) {
-            ChatMessage chatMessage = new ChatMessage(messageId, sender, receiver, text, sendTime, MessageType.RECEIVED_PRIVATE_MESSAGE);
-            messages.add(chatMessage);
-        }
-
-        refreshUiThread();
-    }
-
-    public void serverAck(String messageId) {
+    @Override
+    public void setMessageAck(String messageId) {
         for (Message message : messages) {
             synchronized (message) {
                 if (message.getMessageId().equals(messageId)) {
                     message.ack();
-                    Log.d("ACK", messageId);
+                    Log.d("setMessageAck", messageId);
                     break;
                 }
             }
@@ -240,14 +143,20 @@ public class ChatFragment extends Fragment {
         refreshUiThread();
     }
 
-    public void expireSession() {
-        onSessionExpire();
-        reconnectTimer.cancel();
-        resendChatMessageTimer.cancel();
-        showSessionExpiredDialog();
+    @Override
+    public Set<ChatMessage> getSendingMessages() {
+        Set<ChatMessage> sendingMessages = new HashSet<>();
+        for (Message message : messages) {
+            if (message.getMessageType() == MessageType.SENDING_BROADCAST_MESSAGE
+                    || message.getMessageType() == MessageType.SENDING_PRIVATE_MESSAGE) {
+                sendingMessages.add((ChatMessage) message);
+            }
+        }
+        return sendingMessages;
     }
 
-    private void showSessionExpiredDialog() {
+    @Override
+    public void showSessionExpiredDialog() {
         requireActivity().runOnUiThread(() -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
             builder.setMessage(R.string.alert_message)
@@ -260,6 +169,20 @@ public class ChatFragment extends Fragment {
             AlertDialog dialog = builder.create();
             dialog.show();
         });
+    }
+
+    private void chatBoxSendButtonClickListener(View view) {
+        if (chatBoxMessageEditText.getText().length() > 0) { // Empty message not allowed
+            // Create and add message into list
+            ChatMessage chatMessage = createMessage();
+            messages.add(chatMessage);
+
+            // If hubConnection is active then send message
+            signalRChatService.sendMessage(chatMessage);
+
+            // Refresh ui
+            refreshUiThread();
+        }
     }
 
     private ChatMessage createMessage() {
@@ -290,7 +213,7 @@ public class ChatFragment extends Fragment {
 
     private void refreshUiThread() {
         // Sort by send time first
-        Collections.sort(messages, (m1, m2) -> (int) (m1.getTime() - m2.getTime()));
+        messages.sort((m1, m2) -> (int) (m1.getTime() - m2.getTime()));
 
         // Then refresh the UiThread
         requireActivity().runOnUiThread(() -> {
@@ -299,109 +222,21 @@ public class ChatFragment extends Fragment {
         });
     }
 
-    private void sendMessage(ChatMessage chatMessage) {
-        synchronized (chatMessage) {
-            switch (chatMessage.getMessageType()) {
-                case SENDING_BROADCAST_MESSAGE:
-                    sendBroadcastMessage(chatMessage);
-                    break;
-                case SENDING_PRIVATE_MESSAGE:
-                    sendPrivateMessage(chatMessage);
-                    break;
-                default:
-            }
-        }
-    }
-
-    private void sendBroadcastMessage(ChatMessage broadcastMessage) {
-        Log.d("SEND BCAST MESSAGE", broadcastMessage.toString());
-        if (hubConnection.getConnectionState() == HubConnectionState.CONNECTED) {
-            hubConnection.send("OnBroadcastMessageReceived",
-                    broadcastMessage.getMessageId(),
-                    broadcastMessage.getSender(),
-                    broadcastMessage.getText());
-        }
-    }
-
-    private void sendPrivateMessage(ChatMessage privateMessage) {
-        Log.d("SEND PRIVATE MESSAGE", privateMessage.toString());
-        if (hubConnection.getConnectionState() == HubConnectionState.CONNECTED) {
-            hubConnection.send("OnPrivateMessageReceived",
-                    privateMessage.getMessageId(),
-                    privateMessage.getSender(),
-                    privateMessage.getReceiver(),
-                    privateMessage.getText());
-        }
-    }
-
-    private void connectToServer() {
-        if (hubConnection.getConnectionState() != HubConnectionState.CONNECTED) {
-            Log.d("reconnectHandler", "called");
-            hubConnection.start().subscribe(new CompletableObserver() {
-                @Override
-                public void onSubscribe(@NotNull Disposable d) {
-
-                }
-
-                @Override
-                public void onComplete() {
-                    if (!sessionStarted.get()) { // very first start of connection
-                        onSessionStart();
-                        hubConnection.send("EnterChatRoom", deviceToken, username);
-                        sessionStarted.set(true);
-                    }
-                    Log.d("Reconnection", "touch server after reconnection");
-                    hubConnection.send("TouchServer", deviceToken, username);
-                }
-
-                @Override
-                public void onError(@NotNull Throwable e) {
-                    Log.e("HubConnection", e.toString());
-                }
-            });
-        } else {
-            hubConnection.send("TouchServer", deviceToken, username);
-        }
-    }
-
-    private void resendChatMessageHandler() {
-        // Calculate chat messages to resend
-        Set<ChatMessage> sendingMessages = new HashSet<>();
-        for (Message message : messages) {
-            if (message.getMessageType() == MessageType.SENDING_BROADCAST_MESSAGE
-                    || message.getMessageType() == MessageType.SENDING_PRIVATE_MESSAGE) {
-                sendingMessages.add((ChatMessage) message);
-            }
-        }
-
-        if (sendingMessages.size() > 0 && hubConnection.getConnectionState() == HubConnectionState.CONNECTED) {
-            resendChatMessages(sendingMessages);
-        }
-    }
-
-    private void resendChatMessages(Set<ChatMessage> messagesToSend) {
-        for (ChatMessage message : messagesToSend) {
-            synchronized (message) {
-                sendMessage(message);
-            }
-        }
-    }
-
     static class ChatContentViewHolder extends RecyclerView.ViewHolder {
         // For ChatMessage
-        private TextView messageSender;
-        private TextView messageContent;
-        private TextView messageTime;
+        private final TextView messageSender;
+        private final TextView messageContent;
+        private final TextView messageTime;
 
         // For EnterLeaveMessage
-        private TextView enterLeaveContent;
+        private final TextView enterLeaveContent;
 
         ChatContentViewHolder(View view) {
             super(view);
-            this.messageSender = (TextView) view.findViewById(R.id.textview_message_sender);
-            this.messageContent = (TextView) view.findViewById(R.id.textview_message_content);
-            this.messageTime = (TextView) view.findViewById(R.id.textview_message_time);
-            this.enterLeaveContent = (TextView) view.findViewById(R.id.textview_enter_leave_content);
+            this.messageSender = view.findViewById(R.id.textview_message_sender);
+            this.messageContent = view.findViewById(R.id.textview_message_content);
+            this.messageTime = view.findViewById(R.id.textview_message_time);
+            this.enterLeaveContent = view.findViewById(R.id.textview_enter_leave_content);
         }
     }
 
@@ -414,11 +249,11 @@ public class ChatFragment extends Fragment {
         private static final int RECEIVED_BROADCAST_MESSAGE_VIEW = 5;
         private static final int RECEIVED_PRIVATE_MESSAGE_VIEW = 6;
 
-        private Context context;
-        private List<Message> messages;
+        private final Context context;
+        private final List<Message> messages;
 
         // Used for datetime formatting
-        private SimpleDateFormat sdf = new SimpleDateFormat("MM/dd hh:mm:ss", Locale.US);
+        private final SimpleDateFormat sdf = new SimpleDateFormat("MM/dd hh:mm:ss", Locale.US);
 
         public ChatContentAdapter(List<Message> messages, Context context) {
             this.messages = messages;
@@ -488,7 +323,7 @@ public class ChatFragment extends Fragment {
         @Override
         public int getItemViewType(int position) {
             int viewType;
-            switch(messages.get(position).getMessageType()) {
+            switch (messages.get(position).getMessageType()) {
                 case SYSTEM_MESSAGE:
                     viewType = SYSTEM_MESSAGE_VIEW;
                     break;

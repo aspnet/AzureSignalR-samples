@@ -8,7 +8,7 @@
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
 
     <application
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
@@ -18,26 +18,22 @@
         tools:targetApi="m">
 
         <service
-            android:name="com.microsoft.signalr.androidchatroom.notificationhub.RegistrationIntentService"
+            android:name="com.microsoft.signalr.androidchatroom.service.RegistrationIntentService"
             android:exported="false">
         </service>
+        <service android:name="com.microsoft.signalr.androidchatroom.service.SignalRChatService"
+                android:exported="false">
+        </service>
         <service
-            android:name="com.microsoft.signalr.androidchatroom.notificationhub.FirebaseService"
+            android:name="com.microsoft.signalr.androidchatroom.service.FirebaseService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
 
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_icon"
-            android:resource="@drawable/ic_launcher_foreground" />
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_color"
-            android:resource="@color/colorAccent" />
-
         <activity
-            android:name=".MainActivity"
+            android:name=".activity.MainActivity"
             android:label="@string/app_name"
             android:launchMode="singleInstance"
             android:theme="@style/AppTheme.NoActionBar">

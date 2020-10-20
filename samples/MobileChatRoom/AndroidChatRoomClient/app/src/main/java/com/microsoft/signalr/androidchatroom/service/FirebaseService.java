@@ -1,4 +1,4 @@
-package com.microsoft.signalr.androidchatroom.notificationhub;
+package com.microsoft.signalr.androidchatroom.service;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -10,30 +10,41 @@ import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.core.app.NotificationCompat.Builder;
 import androidx.core.app.NotificationCompat;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
-import com.microsoft.signalr.androidchatroom.MainActivity;
+import com.microsoft.signalr.androidchatroom.activity.MainActivity;
 
-public class FirebaseService extends FirebaseMessagingService
-{
-    private String TAG = "FirebaseService";
+
+//  See https://docs.microsoft.com/en-us/azure/notification-hubs/notification-hubs-android-push-notification-google-fcm-get-started#test-send-notification-from-the-notification-hub
+public class FirebaseService extends FirebaseMessagingService {
+    private static final String TAG = "FirebaseService";
 
     public static final String NOTIFICATION_CHANNEL_ID = "nh-demo-channel-id";
     public static final String NOTIFICATION_CHANNEL_NAME = "Notification Hubs Demo Channel";
     public static final String NOTIFICATION_CHANNEL_DESCRIPTION = "Notification Hubs Demo Channel";
-
     public static final int NOTIFICATION_ID = 1;
+
     private NotificationManager mNotificationManager;
-    NotificationCompat.Builder builder;
-    static Context ctx;
+    private Context ctx;
+    private Builder builder;
+
+
+    @Override
+    public void onNewToken(@NonNull String s) {
+        super.onNewToken(s);
+    }
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         // ...
 
         // TODO(developer): Handle FCM messages here.
+
+
         // Not getting messages here? See why this may be: https://goo.gl/39bRNJ
         Log.d(TAG, "From: " + remoteMessage.getFrom());
 
@@ -43,17 +54,16 @@ public class FirebaseService extends FirebaseMessagingService
             Log.d(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
 
             nhMessage = remoteMessage.getNotification().getBody();
-        }
-        else {
+        } else {
             nhMessage = remoteMessage.getData().values().iterator().next();
         }
 
         // Also if you intend on generating your own notifications as a result of a received FCM
         // message, here is where that should be initiated. See sendNotification method below.
-        if (MainActivity.isVisible) {
-            MainActivity.mainActivity.ToastNotify(nhMessage);
+        if (!MainActivity.isVisible) {
+            sendNotification(nhMessage);
         }
-        sendNotification(nhMessage);
+
     }
 
     private void sendNotification(String msg) {
@@ -74,14 +84,15 @@ public class FirebaseService extends FirebaseMessagingService
                 .setContentText(msg)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setSmallIcon(android.R.drawable.ic_popup_reminder)
-                .setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL);
+                .setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL)
+                .setAutoCancel(true);
 
         notificationBuilder.setContentIntent(contentIntent);
         mNotificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
     }
 
     public static void createChannelAndHandleNotifications(Context context) {
-        ctx = context;
+        //ctx = context;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
