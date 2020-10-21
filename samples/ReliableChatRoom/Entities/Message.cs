@@ -1,4 +1,6 @@
+using Newtonsoft.Json;
 using System;
+using System.Runtime.Serialization;
 
 namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities
 {
@@ -23,6 +25,5 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities
             this.Text = text;
             this.SendTime = sendTime;
         }
-
     }
 }

@@ -26,7 +26,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
             {
                 string jsonPayload = string.Format(_formatString, broadcastMessage.Sender, broadcastMessage.Text);
                 string targetTagExpression = string.Format("! {0}", _userHandler.GetUserSession(broadcastMessage.Sender).DeviceUuid);
-                Console.WriteLine(string.Format("SendBroadcastNotification to everyone but tag {0}\nJson: {1}", targetTagExpression, jsonPayload));
+                Console.WriteLine(string.Format("Send broadcast notification from {0}", broadcastMessage.Sender));
                 _notificationHub.SendFcmNativeNotificationAsync(jsonPayload, targetTagExpression);
             }
         }
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
             {
                 string jsonPayload = string.Format(_formatString, privateMessage.Sender, privateMessage.Text);
                 string targetTagExpression = string.Format("{0}", receiverSession.DeviceUuid);
-                Console.WriteLine(string.Format("SendBroadcastNotification to tag {0}\nJson: {1}", targetTagExpression, jsonPayload));
+                Console.WriteLine(string.Format("Send private notification from {0}", privateMessage.Receiver));
                 _notificationHub.SendFcmNativeNotificationAsync(jsonPayload, targetTagExpression);
             }            
         }

@@ -3,7 +3,9 @@ using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities;
 using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Factory;
 using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers;
 using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage;
+using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,6 +20,8 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         private readonly INotificationHandler _notificationHandler;
 
         private readonly DateTime _defaultDateTime = new DateTime(1970, 1, 1);
+        private readonly int _pullOnceOffset = 0;
+        private readonly int _pullOnceSize = 2;
 
 
         public ReliableChatRoomHub(
@@ -41,7 +45,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
             DateTime touchedDateTime = _userHandler.Touch(username, Context.ConnectionId, deviceUuid);
             if (touchedDateTime == _defaultDateTime) //  Session either does not exist or expires
             {
-                Clients.Caller.SendAsync("expireSession");
+                Clients.Caller.SendAsync("expireSession", true);
             }
         }
 
@@ -114,8 +118,8 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         public void OnAckResponseReceived(string clientAckId)
         {
             Console.WriteLine(string.Format("OnAckResponseReceived clientAckId: {0}", clientAckId));
-
-            //  Complete the waiting client ack object
+            
+             //  Complete the waiting client ack object
             _clientAckHandler.Ack(clientAckId);
         }
 
@@ -127,9 +131,28 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
             Clients.All.SendAsync("setMessageRead", messageId, username);
         }
 
+        public void OnPullHistoryMessagesReceived(string username, string untilMessageId)
+        {
+            Console.WriteLine(string.Format("OnPullHistoryMessageReceived username: {0}; until: {1}", username, untilMessageId));
+
+            List<Message> historyMessages = _messageStorage.GetHistoryMessage(username, untilMessageId, _pullOnceOffset, _pullOnceSize);
+            Clients.Client(Context.ConnectionId).SendAsync("addHistoryMessages", JsonConvert.SerializeObject(historyMessages));
+        }
+
+        public void OnPullUnreadMessagesReceived(string username, string untilMessageId)
+        {
+            Console.WriteLine(string.Format("OnPullUnreadMessageReceived username: {0}; until: {1}", username, untilMessageId));
+
+            List<Message> unreadMessages = _messageStorage.GetUnreadMessage(username, untilMessageId);
+            Clients.Client(Context.ConnectionId).SendAsync("addUnreadMessages", JsonConvert.SerializeObject(unreadMessages));
+        }
+
         private void SendSystemMessage(Message systemMessage)
         {
-            Clients.All.SendAsync("broadcastSystemMessage", systemMessage.MessageId, systemMessage.Text);
+            Clients.All.SendAsync("broadcastSystemMessage",
+                systemMessage.MessageId,
+                systemMessage.Text,
+                (systemMessage.SendTime - _defaultDateTime).Ticks / TimeSpan.TicksPerMillisecond);
         }
 
         private void SendBroadCastMessage(Message broadcastMessage)
