@@ -34,7 +34,7 @@ public class SignalRChatService extends Service implements ChatService {
 
     // User info
     private String username;
-    private String registrationId;
+    private String deviceUuid;
 
     // Reconnect timer
     private AtomicBoolean sessionStarted = new AtomicBoolean(false);
@@ -64,9 +64,9 @@ public class SignalRChatService extends Service implements ChatService {
 
     //// Register methods
     @Override
-    public void register(String username, String registrationId, MessageReceiver messageReceiver) {
+    public void register(String username, String deviceUuid, MessageReceiver messageReceiver) {
         this.username = username;
-        this.registrationId = registrationId;
+        this.deviceUuid = deviceUuid;
         this.messageReceiver = messageReceiver;
     }
 
@@ -112,6 +112,7 @@ public class SignalRChatService extends Service implements ChatService {
         hubConnection.stop();
         reconnectTimer.cancel();
         resendChatMessageTimer.cancel();
+        sessionStarted.set(false);
         messageReceiver.showSessionExpiredDialog();
     }
 
@@ -229,11 +230,11 @@ public class SignalRChatService extends Service implements ChatService {
                 public void onComplete() {
                     if (!sessionStarted.get()) { // very first start of connection
                         onSessionStart();
-                        hubConnection.send("EnterChatRoom", registrationId, username);
+                        hubConnection.send("EnterChatRoom", deviceUuid, username);
                         sessionStarted.set(true);
                     }
                     Log.d("Reconnection", "touch server after reconnection");
-                    hubConnection.send("TouchServer", registrationId, username);
+                    hubConnection.send("TouchServer", deviceUuid, username);
                 }
 
                 @Override
@@ -242,7 +243,7 @@ public class SignalRChatService extends Service implements ChatService {
                 }
             });
         } else {
-            hubConnection.send("TouchServer", registrationId, username);
+            hubConnection.send("TouchServer", deviceUuid, username);
         }
     }
 }

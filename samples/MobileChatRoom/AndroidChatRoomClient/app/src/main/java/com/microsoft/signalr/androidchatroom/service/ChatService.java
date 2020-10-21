@@ -18,5 +18,5 @@ public interface ChatService {
     void serverAck(String messageId);
 
     //// register methods
-    void register(String username, String registrationId, MessageReceiver messageReceiver);
+    void register(String username, String deviceUuid, MessageReceiver messageReceiver);
 }

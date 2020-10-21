@@ -44,6 +44,7 @@ public class ChatFragment extends Fragment implements MessageReceiver {
     // Messages
     private final List<Message> messages = new ArrayList<>();
     private String username;
+    private String deviceUuid;
 
     // View elements and adapters
     private EditText chatBoxReceiverEditText;
@@ -108,7 +109,12 @@ public class ChatFragment extends Fragment implements MessageReceiver {
         if ((username = getArguments().getString("username")) == null) {
             username = "Nobody";
         }
-        chatService.register(username, notificationService.getRegistrationId(),this);
+
+        // Get deviceUuid
+        deviceUuid = notificationService.getDeviceUuid();
+
+        // Register user info into chat service
+        chatService.register(username, deviceUuid,this);
         chatService.startSession();
         chatBoxSendButton.setOnClickListener(this::chatBoxSendButtonClickListener);
     }

@@ -6,12 +6,20 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
+import com.google.android.gms.tasks.OnCanceledListener;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
 import com.microsoft.signalr.androidchatroom.R;
 import com.microsoft.windowsazure.messaging.NotificationHub;
 
+import java.util.Arrays;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 
@@ -19,9 +27,11 @@ import java.util.concurrent.TimeUnit;
 public class NotificationService extends Service {
 
     private static final String TAG = "NotificationService";
+    private final String deviceUuid = UUID.randomUUID().toString();
     private String deviceToken;
     private String registrationId;
     private NotificationHub notificationHub;
+
 
     // Service binder
     private final IBinder notificationServiceBinder = new NotificationService.NotificationServiceBinder();
@@ -43,12 +53,13 @@ public class NotificationService extends Service {
                     @Override
                     public void run() {
                         try {
-                            registrationId = notificationHub.register(deviceToken).getRegistrationId();
+                            Log.d(TAG, String.format("Register with deviceToken: %s; tag: %s", deviceToken, deviceUuid));
+                            registrationId = notificationHub.register(deviceToken, deviceUuid).getRegistrationId();
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            Log.d(TAG, Arrays.toString(e.getStackTrace()));
                         }
                     }
-                };
+                }.start();
             }
         });
         return notificationServiceBinder;
@@ -60,5 +71,9 @@ public class NotificationService extends Service {
 
     public String getRegistrationId() {
         return registrationId;
+    }
+
+    public String getDeviceUuid() {
+        return deviceUuid;
     }
 }

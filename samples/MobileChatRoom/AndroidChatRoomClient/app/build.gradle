@@ -36,7 +36,7 @@ dependencies {
     implementation 'androidx.navigation:navigation-ui:2.3.1'
     implementation 'androidx.navigation:navigation-dynamic-features-fragment:2.3.1'
     implementation 'com.microsoft.signalr:signalr:3.0.0'
-    implementation 'com.microsoft.azure:notification-hubs-android-sdk:0.6@aar'
+    implementation 'com.microsoft.azure:notification-hubs-android-sdk:1.1.2@aar'
     implementation 'com.google.firebase:firebase-messaging:20.3.0'
     implementation 'com.android.volley:volley:1.1.1'
     testImplementation 'junit:junit:4.13'
