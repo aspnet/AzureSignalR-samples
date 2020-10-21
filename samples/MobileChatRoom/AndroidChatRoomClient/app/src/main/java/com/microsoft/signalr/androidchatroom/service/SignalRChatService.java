@@ -8,17 +8,24 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.microsoft.signalr.HubConnection;
 import com.microsoft.signalr.HubConnectionBuilder;
 import com.microsoft.signalr.HubConnectionState;
 import com.microsoft.signalr.androidchatroom.R;
 import com.microsoft.signalr.androidchatroom.message.ChatMessage;
 import com.microsoft.signalr.androidchatroom.fragment.MessageReceiver;
+import com.microsoft.signalr.androidchatroom.message.Message;
 import com.microsoft.signalr.androidchatroom.message.MessageType;
 import com.microsoft.signalr.androidchatroom.message.SystemMessage;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -46,6 +53,9 @@ public class SignalRChatService extends Service implements ChatService {
     private int resendChatMessageDelay = 2500;
     private int resendChatMessageInterval = 2500;
     private Timer resendChatMessageTimer;
+
+    // Gson object for deserialization
+    private final Gson gson = new Gson();
 
     // Service binder
     private final IBinder chatServiceBinder = new ChatServiceBinder();
@@ -95,41 +105,43 @@ public class SignalRChatService extends Service implements ChatService {
     }
 
     private void onSessionStart() {
-        // Register the method handlers
+        // Register the method handlers called by the server
         hubConnection.on("broadcastSystemMessage", this::broadcastSystemMessage,
-                String.class, String.class);
+                String.class, String.class, Long.class);
         hubConnection.on("displayBroadcastMessage", this::displayBroadcastMessage,
                 String.class, String.class, String.class, String.class, Long.class, String.class);
         hubConnection.on("displayPrivateMessage", this::displayPrivateMessage,
                 String.class, String.class, String.class, String.class, Long.class, String.class);
         hubConnection.on("serverAck", this::serverAck, String.class);
-        hubConnection.on("expireSession", this::expireSession);
+        hubConnection.on("expireSession", this::expireSession, Boolean.class);
+        hubConnection.on("addHistoryMessages", this::addHistoryMessages, String.class);
+        hubConnection.on("addUnreadMessages", this::addUnreadMessages, String.class);
     }
 
     @Override
-    public void expireSession() {
+    public void expireSession(boolean showAlert) {
         Log.d("expireSession", "Server expired the session");
         hubConnection.stop();
         reconnectTimer.cancel();
         resendChatMessageTimer.cancel();
         sessionStarted.set(false);
-        messageReceiver.showSessionExpiredDialog();
+        if (showAlert) {
+            messageReceiver.showSessionExpiredDialog();
+        }
     }
 
 
     //// Message methods called by server
-    @Override
-    public void broadcastSystemMessage(String messageId, String text) {
+    public void broadcastSystemMessage(String messageId, String text, long sendTime) {
         Log.d("broadcastSystemMessage", text);
 
         // Create message
-        SystemMessage systemMessage = new SystemMessage(messageId, text);
+        SystemMessage systemMessage = new SystemMessage(messageId, text, sendTime);
 
         // Try to add message to fragment
         messageReceiver.tryAddMessage(systemMessage);
     }
 
-    @Override
     public void displayBroadcastMessage(String messageId, String sender, String receiver, String text, long sendTime, String ackId) {
         Log.d("displayBroadcastMessage", sender);
 
@@ -143,7 +155,6 @@ public class SignalRChatService extends Service implements ChatService {
         messageReceiver.tryAddMessage(chatMessage);
     }
 
-    @Override
     public void displayPrivateMessage(String messageId, String sender, String receiver, String text, long sendTime, String ackId) {
         Log.d("displayPrivateMessage", sender);
 
@@ -157,9 +168,29 @@ public class SignalRChatService extends Service implements ChatService {
         messageReceiver.tryAddMessage(chatMessage);
     }
 
-    @Override
     public void serverAck(String messageId) {
+        Log.d("serverAck", messageId);
         messageReceiver.setMessageAck(messageId);
+    }
+
+    public void addHistoryMessages(String serializedString) {
+        List<Message> historyMessages = new ArrayList<>();
+        JsonArray jsonArray = gson.fromJson(serializedString, JsonArray.class);
+        for (JsonElement jsonElement : jsonArray) {
+            ChatMessage chatMessage = ChatMessage.fromJsonObject(jsonElement.getAsJsonObject(), username);
+            historyMessages.add(chatMessage);
+        }
+        messageReceiver.tryAddAllMessages(historyMessages);
+    }
+
+    public void addUnreadMessages(String serializedString) {
+        List<Message> unreadMessages = new ArrayList<>();
+        JsonArray jsonArray = gson.fromJson(serializedString, JsonArray.class);
+        for (JsonElement jsonElement : jsonArray) {
+            ChatMessage chatMessage = ChatMessage.fromJsonObject(jsonElement.getAsJsonObject(), username);
+            unreadMessages.add(chatMessage);
+        }
+        messageReceiver.tryAddAllMessages(unreadMessages);
     }
 
     //// Message sending methods
@@ -196,6 +227,22 @@ public class SignalRChatService extends Service implements ChatService {
                     privateMessage.getSender(),
                     privateMessage.getReceiver(),
                     privateMessage.getText());
+        }
+    }
+
+    //// Pulling message methods
+    @Override
+    public void pullHistoryMessages(String untilMessageId) {
+        if (hubConnection.getConnectionState() == HubConnectionState.CONNECTED) {
+            Log.d("pullHistoryMessages", "Called with messageId: " + untilMessageId);
+            hubConnection.send("OnPullHistoryMessagesReceived", username, untilMessageId);
+        }
+    }
+
+    @Override
+    public void pullUnreadMessages(String untilMessageId) {
+        if (hubConnection.getConnectionState() == HubConnectionState.CONNECTED) {
+            hubConnection.send("OnPullUnreadMessagesReceived", username, untilMessageId);
         }
     }
 

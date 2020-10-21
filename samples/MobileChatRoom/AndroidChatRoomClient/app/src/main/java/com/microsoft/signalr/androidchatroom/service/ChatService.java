@@ -9,14 +9,12 @@ public interface ChatService {
 
     //// Session management methods
     void startSession();
-    void expireSession();
-
-    //// Message methods called by server
-    void broadcastSystemMessage(String messageId, String text);
-    void displayBroadcastMessage(String messageId, String sender, String receiver, String text, long sendTime, String ackId);
-    void displayPrivateMessage(String messageId, String sender, String receiver, String text, long sendTime, String ackId);
-    void serverAck(String messageId);
+    void expireSession(boolean showAlert);
 
     //// register methods
     void register(String username, String deviceUuid, MessageReceiver messageReceiver);
+
+    //// Pulling methods
+    void pullHistoryMessages(String untilMessageId);
+    void pullUnreadMessages(String untilMessageId);
 }

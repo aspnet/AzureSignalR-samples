@@ -17,7 +17,6 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.iid.FirebaseInstanceId;
 import com.microsoft.signalr.androidchatroom.R;
 import com.microsoft.signalr.androidchatroom.activity.MainActivity;
 import com.microsoft.signalr.androidchatroom.message.ChatMessage;
@@ -28,15 +27,18 @@ import com.microsoft.signalr.androidchatroom.service.ChatService;
 import com.microsoft.signalr.androidchatroom.service.NotificationService;
 
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ChatFragment extends Fragment implements MessageReceiver {
     private static final String TAG = "ChatFragment";
+
     // Services
     private ChatService chatService;
     private NotificationService notificationService;
@@ -117,6 +119,26 @@ public class ChatFragment extends Fragment implements MessageReceiver {
         chatService.register(username, deviceUuid,this);
         chatService.startSession();
         chatBoxSendButton.setOnClickListener(this::chatBoxSendButtonClickListener);
+        chatContentRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if (!recyclerView.canScrollVertically(-1)) {
+                    Log.d(TAG, "OnScroll cannot scroll vertical -1");
+                    String untilMessageId = "";
+                    for (Message message : messages) {
+                        if (message.getMessageType() == MessageType.RECEIVED_BROADCAST_MESSAGE ||
+                            message.getMessageType() == MessageType.RECEIVED_PRIVATE_MESSAGE ||
+                            message.getMessageType() == MessageType.SENT_BROADCAST_MESSAGE ||
+                            message.getMessageType() == MessageType.SENT_PRIVATE_MESSAGE) {
+                            untilMessageId = message.getMessageId();
+                            break;
+                        }
+                    }
+                    chatService.pullHistoryMessages(untilMessageId);
+                }
+            }
+        });
     }
 
     @Override
@@ -129,7 +151,20 @@ public class ChatFragment extends Fragment implements MessageReceiver {
             messages.add(message);
         }
 
-        refreshUiThread();
+        refreshUiThread(true);
+    }
+
+    @Override
+    public void tryAddAllMessages(List<Message> messages) {
+        Set<String> existedMessageIds = this.messages.stream().map(Message::getMessageId).collect(Collectors.toSet());
+        for (Message message : messages) {
+            if (!existedMessageIds.contains(message.getMessageId())) {
+                this.messages.add(message);
+                existedMessageIds.add(message.getMessageId());
+            }
+        }
+
+        refreshUiThread(false);
     }
 
     @Override
@@ -144,7 +179,7 @@ public class ChatFragment extends Fragment implements MessageReceiver {
             }
         }
 
-        refreshUiThread();
+        refreshUiThread(true);
     }
 
     @Override
@@ -185,7 +220,7 @@ public class ChatFragment extends Fragment implements MessageReceiver {
             chatService.sendMessage(chatMessage);
 
             // Refresh ui
-            refreshUiThread();
+            refreshUiThread(true);
         }
     }
 
@@ -215,14 +250,21 @@ public class ChatFragment extends Fragment implements MessageReceiver {
         return isDuplicateMessage;
     }
 
-    private void refreshUiThread() {
+    private void refreshUiThread(boolean toEnd) {
         // Sort by send time first
         messages.sort((m1, m2) -> (int) (m1.getTime() - m2.getTime()));
 
         // Then refresh the UiThread
         requireActivity().runOnUiThread(() -> {
             chatContentAdapter.notifyDataSetChanged();
-            chatContentRecyclerView.scrollToPosition(messages.size() - 1);
+            if (toEnd) {
+                Log.d(TAG, "Scrolling to position "+ (messages.size() - 1) );
+                chatContentRecyclerView.scrollToPosition(messages.size() - 1);
+            } else {
+                Log.d(TAG, "Scrolling to position 0");
+                chatContentRecyclerView.scrollToPosition(0);
+            }
+
         });
     }
 

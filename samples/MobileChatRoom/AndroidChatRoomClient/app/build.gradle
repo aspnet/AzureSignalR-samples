@@ -7,7 +7,7 @@ android {
 
     defaultConfig {
         applicationId 'com.microsoft.signalr.androidchatroom'
-        minSdkVersion 24
+        minSdkVersion 26
         targetSdkVersion 30
         versionCode 1
         versionName '1.0'
@@ -39,6 +39,7 @@ dependencies {
     implementation 'com.microsoft.azure:notification-hubs-android-sdk:1.1.2@aar'
     implementation 'com.google.firebase:firebase-messaging:20.3.0'
     implementation 'com.android.volley:volley:1.1.1'
+    implementation 'com.google.code.gson:gson:2.8.6'
     testImplementation 'junit:junit:4.13'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'

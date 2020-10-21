@@ -84,6 +84,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        chatService.expireSession(false);
+    }
+
+    @Override
     protected void onStart() {
         super.onStart();
         isVisible = true;
