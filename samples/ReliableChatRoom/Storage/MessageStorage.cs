@@ -15,33 +15,52 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
         public List<Message> GetHistoryMessage(string username, string untilMessageId, int offset, int count)
         {
             List<Message> historyMessage = new List<Message>();
-            DateTime until = _messageTable[untilMessageId].SendTime;
+            DateTime until;
+            if (!untilMessageId.Equals("")) {
+                until = _messageTable[untilMessageId].SendTime;
+            } else
+            {
+                until = DateTime.UtcNow;
+            }
 
             foreach (Message message in _messageTable.Values)
             {
-                if (message.SendTime > until)
+                if (message.SendTime < until)
                 {
                     if (message.Type == MessageTypeEnum.Broadcast)
                     {
                         historyMessage.Add(message);
                     }
-                    else if (message.Type == MessageTypeEnum.Private && message.Receiver.Equals(username))
+                    else if (message.Type == MessageTypeEnum.Private && 
+                        (message.Receiver.Equals(username) || message.Sender.Equals(username)))
                     {
                         historyMessage.Add(message);
                     }
                 }
             }
             historyMessage.Sort((p, q) => q.SendTime.CompareTo(p.SendTime));
+            if (offset >= historyMessage.Count || offset + count > historyMessage.Count)
+            {
+                return historyMessage;
+            }
             return historyMessage.GetRange(offset, count);
         }
 
         public List<Message> GetUnreadMessage(string username, string untilMessageId) 
         {
             List<Message> unreadMessage = new List<Message>();
-            DateTime until = _messageTable[untilMessageId].SendTime;
+            DateTime until;
+            if (!untilMessageId.Equals(""))
+            {
+                until = _messageTable[untilMessageId].SendTime;
+            }
+            else
+            {
+                until = DateTime.UtcNow;
+            }
 
             foreach (Message message in _messageTable.Values) {
-                if (message.SendTime > until)
+                if (message.SendTime < until)
                 {
                     if (message.Type == MessageTypeEnum.Broadcast)
                     {
