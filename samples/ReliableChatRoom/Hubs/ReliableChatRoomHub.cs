@@ -36,21 +36,21 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
 
 
         //  User periodically touches server to extend his session
-        public void TouchServer(string registrationId, string username)
+        public void TouchServer(string deviceUuid, string username)
         {
-            DateTime touchedDateTime = _userHandler.Touch(username, Context.ConnectionId, registrationId);
+            DateTime touchedDateTime = _userHandler.Touch(username, Context.ConnectionId, deviceUuid);
             if (touchedDateTime == _defaultDateTime) //  Session either does not exist or expires
             {
                 Clients.Caller.SendAsync("expireSession");
             }
         }
 
-        public void EnterChatRoom(string registrationId, string username)
+        public void EnterChatRoom(string deviceUuid, string username)
         {
-            Console.WriteLine(string.Format("EnterChatRoom device: {0} username: {1}", registrationId, username));
+            Console.WriteLine(string.Format("EnterChatRoom device: {0} username: {1}", deviceUuid, username));
             
-            //  Try to store user login information (ConnectionId & registrationId)
-            Session session = _userHandler.Login(username, Context.ConnectionId, registrationId);
+            //  Try to store user login information (ConnectionId & deviceUuid)
+            Session session = _userHandler.Login(username, Context.ConnectionId, deviceUuid);
             
             //  If login was successful, broadcast the system message 
             if (session != null)
