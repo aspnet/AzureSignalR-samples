@@ -105,19 +105,13 @@ The url of upstream is not encryption at rest. If you have any sensitive informa
 
 The following steps demonstrate how to use Key Vault secret reference to save `signalr_extensions`.
 
-1. Enable managed identity (Currently only **user assigned identity** supports RBAC).
+1. Enable managed identity.
 
-    1. Create user assigned identity.
+    1. Enable managed identity with system assigned identity.
 
-    ```bash
-    az identity create -g "myResourceGroup" -n "<USER ASSIGNED IDENTITY NAME>"
-    ```
+        Open portal and navigate to **Identity**, and switch to **System assigned** page. Switch **Status** to **On**.
 
-    2. Enable managed identity with user assigned identity.
-
-        Open portal and navigate to **Identity**, and switch to **User assigned** page. Click **Add** and choose the identity created before.
-
-        ![UserAssignedIdentity](user-assigned-identity.png)
+        ![SystemAssignedIdentity](system-assigned-identity.png)
 
 2. Create a Key Vault instance.
 
@@ -131,13 +125,19 @@ The following steps demonstrate how to use Key Vault secret reference to save `s
     az keyvault secret set --name "signalrkey" --vault-name "<your-unique-keyvault-name>" --value "<signalr_extension_code_copied_from_azure_function>"
     ```
 
-4. Get the secret identity of the secret.
+4. Grant **Secret Read** permission to the Key Vault.
+
+    ```bash
+    az keyvault set-policy --name "<your-unique-keyvault-name>" --object-id "<object-id-shown-in-system-assigned-identity>" --secret-permissions get
+    ```
+
+5. Get the secret identity of the secret.
 
     ```bash
     az keyvault secret show --name "signalrkey" --vault-name "<your-unique-keyvault-name>" --query id -o tsv
     ```
 
-4. Update **Upstream URL Pattern** with Key Vault reference. You need to follow the syntax `{@Microsoft.KeyVault(SecretUri=<secret-identity>)}`. As shown below:
+6. Update **Upstream URL Pattern** with Key Vault reference. You need to follow the syntax `{@Microsoft.KeyVault(SecretUri=<secret-identity>)}`. As shown below:
 
     ![KeyVaultReference](key-vault-reference.png)
 
