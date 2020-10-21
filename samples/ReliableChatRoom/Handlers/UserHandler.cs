@@ -51,21 +51,21 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
             return activeSessions;
         }
 
-        public Session Login(string username, string connectionId, string registrationId)
+        public Session Login(string username, string connectionId, string deviceUuid)
         {
             bool isStoredSession = _sessionTable.TryGetValue(username, out Session storedSession);
             if (isStoredSession)
             {
-                storedSession.Revive(connectionId, registrationId);
+                storedSession.Revive(connectionId, deviceUuid);
                 return storedSession;
             } else
             {
-                Session session = new Session(username, connectionId, registrationId);
+                Session session = new Session(username, connectionId, deviceUuid);
                 return _sessionTable.AddOrUpdate(username, session, (k, v) => session);
             }
         }
 
-        public DateTime Touch(string username, string connectionId, string registrationId)
+        public DateTime Touch(string username, string connectionId, string deviceUuid)
         {
             bool isStoredSession = _sessionTable.TryGetValue(username, out Session storedSession);
 

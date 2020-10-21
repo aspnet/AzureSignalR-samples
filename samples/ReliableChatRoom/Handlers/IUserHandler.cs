@@ -8,8 +8,8 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
 {
     public interface IUserHandler
     {
-        Session Login(string username, string connectionId, string registrationId);
-        DateTime Touch(string username, string connectionId, string registrationId);
+        Session Login(string username, string connectionId, string deviceUuid);
+        DateTime Touch(string username, string connectionId, string deviceUuid);
         Session Logout(string connectionId);
         Session GetUserSession(string username);
         ICollection<Session> GetActiveSessions();
