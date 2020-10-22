@@ -11,7 +11,7 @@ public interface MessageReceiver {
 
     void tryAddAllMessages(List<Message> messages);
 
-    void setMessageAck(String messageId);
+    void setMessageAck(String messageId, long receivedTimeInLong);
 
     Set<ChatMessage> getSendingMessages();
 

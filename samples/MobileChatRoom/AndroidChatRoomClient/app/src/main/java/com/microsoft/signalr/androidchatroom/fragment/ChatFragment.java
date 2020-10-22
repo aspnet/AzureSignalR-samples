@@ -125,17 +125,17 @@ public class ChatFragment extends Fragment implements MessageReceiver {
                 super.onScrolled(recyclerView, dx, dy);
                 if (!recyclerView.canScrollVertically(-1)) {
                     Log.d(TAG, "OnScroll cannot scroll vertical -1");
-                    String untilMessageId = "";
+                    long untilTime = System.currentTimeMillis();
                     for (Message message : messages) {
                         if (message.getMessageType() == MessageType.RECEIVED_BROADCAST_MESSAGE ||
                             message.getMessageType() == MessageType.RECEIVED_PRIVATE_MESSAGE ||
                             message.getMessageType() == MessageType.SENT_BROADCAST_MESSAGE ||
                             message.getMessageType() == MessageType.SENT_PRIVATE_MESSAGE) {
-                            untilMessageId = message.getMessageId();
+                            untilTime = message.getTime();
                             break;
                         }
                     }
-                    chatService.pullHistoryMessages(untilMessageId);
+                    chatService.pullHistoryMessages(untilTime);
                 }
             }
         });
@@ -168,11 +168,11 @@ public class ChatFragment extends Fragment implements MessageReceiver {
     }
 
     @Override
-    public void setMessageAck(String messageId) {
+    public void setMessageAck(String messageId, long receivedTimeInLong) {
         for (Message message : messages) {
             synchronized (message) {
                 if (message.getMessageId().equals(messageId)) {
-                    message.ack();
+                    message.ack(receivedTimeInLong);
                     Log.d("setMessageAck", messageId);
                     break;
                 }

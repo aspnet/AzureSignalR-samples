@@ -112,10 +112,9 @@ public class SignalRChatService extends Service implements ChatService {
                 String.class, String.class, String.class, String.class, Long.class, String.class);
         hubConnection.on("displayPrivateMessage", this::displayPrivateMessage,
                 String.class, String.class, String.class, String.class, Long.class, String.class);
-        hubConnection.on("serverAck", this::serverAck, String.class);
+        hubConnection.on("serverAck", this::serverAck, String.class, Long.class);
         hubConnection.on("expireSession", this::expireSession, Boolean.class);
         hubConnection.on("addHistoryMessages", this::addHistoryMessages, String.class);
-        hubConnection.on("addUnreadMessages", this::addUnreadMessages, String.class);
     }
 
     @Override
@@ -168,9 +167,9 @@ public class SignalRChatService extends Service implements ChatService {
         messageReceiver.tryAddMessage(chatMessage);
     }
 
-    public void serverAck(String messageId) {
+    public void serverAck(String messageId, long receivedTimeInLong) {
         Log.d("serverAck", messageId);
-        messageReceiver.setMessageAck(messageId);
+        messageReceiver.setMessageAck(messageId, receivedTimeInLong);
     }
 
     public void addHistoryMessages(String serializedString) {
@@ -181,16 +180,6 @@ public class SignalRChatService extends Service implements ChatService {
             historyMessages.add(chatMessage);
         }
         messageReceiver.tryAddAllMessages(historyMessages);
-    }
-
-    public void addUnreadMessages(String serializedString) {
-        List<Message> unreadMessages = new ArrayList<>();
-        JsonArray jsonArray = gson.fromJson(serializedString, JsonArray.class);
-        for (JsonElement jsonElement : jsonArray) {
-            ChatMessage chatMessage = ChatMessage.fromJsonObject(jsonElement.getAsJsonObject(), username);
-            unreadMessages.add(chatMessage);
-        }
-        messageReceiver.tryAddAllMessages(unreadMessages);
     }
 
     //// Message sending methods
@@ -232,17 +221,10 @@ public class SignalRChatService extends Service implements ChatService {
 
     //// Pulling message methods
     @Override
-    public void pullHistoryMessages(String untilMessageId) {
+    public void pullHistoryMessages(long untilTimeInLong) {
         if (hubConnection.getConnectionState() == HubConnectionState.CONNECTED) {
-            Log.d("pullHistoryMessages", "Called with messageId: " + untilMessageId);
-            hubConnection.send("OnPullHistoryMessagesReceived", username, untilMessageId);
-        }
-    }
-
-    @Override
-    public void pullUnreadMessages(String untilMessageId) {
-        if (hubConnection.getConnectionState() == HubConnectionState.CONNECTED) {
-            hubConnection.send("OnPullUnreadMessagesReceived", username, untilMessageId);
+            Log.d("pullHistoryMessages", "Called with long time: " + untilTimeInLong);
+            hubConnection.send("OnPullHistoryMessagesReceived", username, untilTimeInLong);
         }
     }
 

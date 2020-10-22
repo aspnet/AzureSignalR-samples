@@ -15,6 +15,5 @@ public interface ChatService {
     void register(String username, String deviceUuid, MessageReceiver messageReceiver);
 
     //// Pulling methods
-    void pullHistoryMessages(String untilMessageId);
-    void pullUnreadMessages(String untilMessageId);
+    void pullHistoryMessages(long untilTimeInLong);
 }

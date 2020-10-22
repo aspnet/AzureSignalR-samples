@@ -44,7 +44,7 @@ public abstract class Message {
         this.time = time;
     }
 
-    public void ack() {
+    public void ack(long receivedTimeInLong) {
         switch (messageType) {
             case SENDING_BROADCAST_MESSAGE:
                 messageType = MessageType.SENT_BROADCAST_MESSAGE;
@@ -54,5 +54,6 @@ public abstract class Message {
                 break;
             default:
         }
+        setTime(receivedTimeInLong);
     }
 }
