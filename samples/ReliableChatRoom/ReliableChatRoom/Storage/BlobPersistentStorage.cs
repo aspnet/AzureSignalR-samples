@@ -11,16 +11,17 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
 {
-    public class CloudStorage : IPersistentStorage
+    public class BlobPersistentStorage : IPersistentStorage
     {
         private readonly BlobServiceClient _blobServiceClient;
         private readonly BlobContainerClient _blobContainerClient;
+
         private readonly IMessageFactory _messageFactory;
 
         private readonly DateTime _defaultDateTime = new DateTime(1970, 1, 1);
         private readonly string _containerName = "mobilechatroom";
 
-        public CloudStorage(IMessageFactory messageFactory, string connectionString)
+        public BlobPersistentStorage(IMessageFactory messageFactory, string connectionString)
         {
             _blobServiceClient = new BlobServiceClient(connectionString);
             _blobContainerClient = _blobServiceClient.GetBlobContainerClient(_containerName);

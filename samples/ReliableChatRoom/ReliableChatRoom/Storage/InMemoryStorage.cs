@@ -15,6 +15,11 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
 
         private readonly IPersistentStorage _persistentStorage;
         private DateTime _lastLoadDateTime;
+        private readonly DateTime _defaultDateTime = new DateTime(1970, 1, 1);
+        private TimeSpan[] _spansToTraceBack = 
+            {   TimeSpan.FromMinutes(1), TimeSpan.FromHours(1),
+                TimeSpan.FromHours(4), TimeSpan.FromHours(12),
+                TimeSpan.FromDays(1)  };
 
         public InMemoryStorage(IPersistentStorage persistentStorage)
         {
@@ -26,11 +31,18 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
         {
             List<Message> historyMessage = new List<Message>();
 
-            DateTime startDateTime = endDateTime - TimeSpan.FromSeconds(60);
-
-            if (startDateTime < _lastLoadDateTime)
+            DateTime startDateTime = _defaultDateTime;
+            foreach (TimeSpan traceBackSpan in _spansToTraceBack)
             {
-                LoadToDictionary(startDateTime);
+                startDateTime = endDateTime - traceBackSpan;
+                if (startDateTime < _lastLoadDateTime)
+                {
+                    int loadCount = LoadToDictionary(startDateTime);
+                    if (loadCount > 0)
+                    {
+                        break;
+                    }
+                }
             }
 
             foreach (Message message in _messageTable.Values)
@@ -67,7 +79,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
                     Console.WriteLine(string.Format("After persist size: {0}", _messageTable.Count));
                 }
             }
-            return false;
+            return true;
         }
 
         private void Persist(DateTime endDateTime)
@@ -94,18 +106,22 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
             }
         }
 
-        private void LoadToDictionary(DateTime startDateTime)
+        private int LoadToDictionary(DateTime startDateTime)
         {
             bool success = _persistentStorage.TryLoadMessageList(startDateTime, _lastLoadDateTime, out List<Message> outMessages);
             if (success)
             {
                 Console.WriteLine(string.Format("LoadToDictionary {0} messages loaded", outMessages.Count));
+
                 foreach (var message in outMessages)
                 {
                     _messageTable.TryAdd(message.MessageId, message);
                 }
+
                 _lastLoadDateTime = startDateTime;
+                return outMessages.Count;
             }
+            return 0;
         }
     }
 }
