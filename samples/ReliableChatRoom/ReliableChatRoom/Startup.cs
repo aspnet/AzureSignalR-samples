@@ -30,7 +30,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
             services.AddSingleton<IMessageFactory, MessageFactory>();
             services.AddSingleton<IClientAckHandler, ClientAckHandler>();
             services.AddSingleton<INotificationHandler, NotificationHandler>(provider => new NotificationHandler(provider.GetService<IUserHandler>(), Configuration["Azure:NotificationHub:ConnectionString"], Configuration["Azure:NotificationHub:HubName"]));
-            services.AddSingleton<IPersistentStorage, CloudStorage>(provider => new CloudStorage(provider.GetService<IMessageFactory>(), Configuration["Azure:Storage:ConnectionString"]));
+            services.AddSingleton<IPersistentStorage, BlobPersistentStorage>(provider => new BlobPersistentStorage(provider.GetService<IMessageFactory>(), Configuration["Azure:Storage:ConnectionString"]));
         }
 
         public void Configure(IApplicationBuilder app)
