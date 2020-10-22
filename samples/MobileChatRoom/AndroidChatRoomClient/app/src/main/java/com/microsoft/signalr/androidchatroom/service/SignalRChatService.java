@@ -44,6 +44,7 @@ public class SignalRChatService extends Service implements ChatService {
     private String deviceUuid;
 
     // Reconnect timer
+    private Boolean firstPull = true;
     private AtomicBoolean sessionStarted = new AtomicBoolean(false);
     private int reconnectDelay = 0; // immediate connect to server when enter the chat room
     private int reconnectInterval = 5000;
@@ -138,7 +139,7 @@ public class SignalRChatService extends Service implements ChatService {
         SystemMessage systemMessage = new SystemMessage(messageId, text, sendTime);
 
         // Try to add message to fragment
-        messageReceiver.tryAddMessage(systemMessage);
+        messageReceiver.tryAddMessage(systemMessage, 1);
     }
 
     public void displayBroadcastMessage(String messageId, String sender, String receiver, String text, long sendTime, String ackId) {
@@ -151,7 +152,7 @@ public class SignalRChatService extends Service implements ChatService {
         ChatMessage chatMessage = new ChatMessage(messageId, sender, receiver, text, sendTime, MessageType.RECEIVED_BROADCAST_MESSAGE);
 
         // Try to add message to fragment
-        messageReceiver.tryAddMessage(chatMessage);
+        messageReceiver.tryAddMessage(chatMessage, 1);
     }
 
     public void displayPrivateMessage(String messageId, String sender, String receiver, String text, long sendTime, String ackId) {
@@ -164,7 +165,7 @@ public class SignalRChatService extends Service implements ChatService {
         ChatMessage chatMessage = new ChatMessage(messageId, sender, receiver, text, sendTime, MessageType.RECEIVED_PRIVATE_MESSAGE);
 
         // Try to add message to fragment
-        messageReceiver.tryAddMessage(chatMessage);
+        messageReceiver.tryAddMessage(chatMessage, 1);
     }
 
     public void serverAck(String messageId, long receivedTimeInLong) {
@@ -179,7 +180,17 @@ public class SignalRChatService extends Service implements ChatService {
             ChatMessage chatMessage = ChatMessage.fromJsonObject(jsonElement.getAsJsonObject(), username);
             historyMessages.add(chatMessage);
         }
-        messageReceiver.tryAddAllMessages(historyMessages);
+        if (firstPull) {
+            synchronized (firstPull) {
+                if (firstPull) {
+                    messageReceiver.tryAddAllMessages(historyMessages, 1);
+                    firstPull = false;
+                }
+            }
+        } else {
+            messageReceiver.tryAddAllMessages(historyMessages, -1);
+        }
+
     }
 
     //// Message sending methods
@@ -248,7 +259,6 @@ public class SignalRChatService extends Service implements ChatService {
 
     private void connectToServer() {
         if (hubConnection.getConnectionState() != HubConnectionState.CONNECTED) {
-            Log.d("reconnectHandler", "called");
             hubConnection.start().subscribe(new CompletableObserver() {
                 @Override
                 public void onSubscribe(@NotNull Disposable d) {
@@ -260,6 +270,7 @@ public class SignalRChatService extends Service implements ChatService {
                     if (!sessionStarted.get()) { // very first start of connection
                         onSessionStart();
                         hubConnection.send("EnterChatRoom", deviceUuid, username);
+                        messageReceiver.activate();
                         sessionStarted.set(true);
                     }
                     Log.d("Reconnection", "touch server after reconnection");

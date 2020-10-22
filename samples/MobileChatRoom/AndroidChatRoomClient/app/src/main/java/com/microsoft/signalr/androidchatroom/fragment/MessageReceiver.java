@@ -7,9 +7,12 @@ import java.util.List;
 import java.util.Set;
 
 public interface MessageReceiver {
-    void tryAddMessage(Message message);
 
-    void tryAddAllMessages(List<Message> messages);
+    void activate();
+
+    void tryAddMessage(Message message, int direction);
+
+    void tryAddAllMessages(List<Message> messages, int direction);
 
     void setMessageAck(String messageId, long receivedTimeInLong);
 

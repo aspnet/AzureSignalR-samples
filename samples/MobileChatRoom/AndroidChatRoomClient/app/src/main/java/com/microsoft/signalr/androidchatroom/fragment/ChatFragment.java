@@ -118,6 +118,10 @@ public class ChatFragment extends Fragment implements MessageReceiver {
         // Register user info into chat service
         chatService.register(username, deviceUuid,this);
         chatService.startSession();
+    }
+
+    @Override
+    public void activate() {
         chatBoxSendButton.setOnClickListener(this::chatBoxSendButtonClickListener);
         chatContentRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -128,9 +132,9 @@ public class ChatFragment extends Fragment implements MessageReceiver {
                     long untilTime = System.currentTimeMillis();
                     for (Message message : messages) {
                         if (message.getMessageType() == MessageType.RECEIVED_BROADCAST_MESSAGE ||
-                            message.getMessageType() == MessageType.RECEIVED_PRIVATE_MESSAGE ||
-                            message.getMessageType() == MessageType.SENT_BROADCAST_MESSAGE ||
-                            message.getMessageType() == MessageType.SENT_PRIVATE_MESSAGE) {
+                                message.getMessageType() == MessageType.RECEIVED_PRIVATE_MESSAGE ||
+                                message.getMessageType() == MessageType.SENT_BROADCAST_MESSAGE ||
+                                message.getMessageType() == MessageType.SENT_PRIVATE_MESSAGE) {
                             untilTime = message.getTime();
                             break;
                         }
@@ -142,7 +146,7 @@ public class ChatFragment extends Fragment implements MessageReceiver {
     }
 
     @Override
-    public void tryAddMessage(Message message) {
+    public void tryAddMessage(Message message, int direction) {
         // Check for duplicated message
         boolean isDuplicateMessage = checkForDuplicatedMessage(message.getMessageId());
 
@@ -151,11 +155,11 @@ public class ChatFragment extends Fragment implements MessageReceiver {
             messages.add(message);
         }
 
-        refreshUiThread(true);
+        refreshUiThread(direction);
     }
 
     @Override
-    public void tryAddAllMessages(List<Message> messages) {
+    public void tryAddAllMessages(List<Message> messages, int direction) {
         Set<String> existedMessageIds = this.messages.stream().map(Message::getMessageId).collect(Collectors.toSet());
         for (Message message : messages) {
             if (!existedMessageIds.contains(message.getMessageId())) {
@@ -164,7 +168,7 @@ public class ChatFragment extends Fragment implements MessageReceiver {
             }
         }
 
-        refreshUiThread(false);
+        refreshUiThread(direction);
     }
 
     @Override
@@ -179,7 +183,7 @@ public class ChatFragment extends Fragment implements MessageReceiver {
             }
         }
 
-        refreshUiThread(true);
+        refreshUiThread(0);
     }
 
     @Override
@@ -220,7 +224,7 @@ public class ChatFragment extends Fragment implements MessageReceiver {
             chatService.sendMessage(chatMessage);
 
             // Refresh ui
-            refreshUiThread(true);
+            refreshUiThread(1);
         }
     }
 
@@ -250,21 +254,25 @@ public class ChatFragment extends Fragment implements MessageReceiver {
         return isDuplicateMessage;
     }
 
-    private void refreshUiThread(boolean toEnd) {
+    private void refreshUiThread(int direction) {
         // Sort by send time first
         messages.sort((m1, m2) -> (int) (m1.getTime() - m2.getTime()));
 
         // Then refresh the UiThread
         requireActivity().runOnUiThread(() -> {
             chatContentAdapter.notifyDataSetChanged();
-            if (toEnd) {
-                Log.d(TAG, "Scrolling to position "+ (messages.size() - 1) );
-                chatContentRecyclerView.scrollToPosition(messages.size() - 1);
-            } else {
-                Log.d(TAG, "Scrolling to position 0");
-                chatContentRecyclerView.scrollToPosition(0);
-            }
+            switch (direction) {
+                case 1:
+                    Log.d(TAG, "Scrolling to position "+ (messages.size() - 1) );
+                    chatContentRecyclerView.scrollToPosition(messages.size() - 1);
+                    break;
+                case -1:
+                    Log.d(TAG, "Scrolling to position 0");
+                    chatContentRecyclerView.scrollToPosition(0);
+                    break;
+                default:
 
+            }
         });
     }
 
