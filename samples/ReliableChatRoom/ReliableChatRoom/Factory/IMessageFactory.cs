@@ -12,6 +12,8 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Factory
         Message CreateBroadcastMessage(string messageId, string sender, string text, DateTime sendTime);
         Message CreatePrivateMessage(string messageId, string sender, string receiver, string text, DateTime sendTime);
         List<Message> FromJsonString(string jsonString);
+        Message FromSingleJsonString(string jsonString);
         string ToJsonString(List<Message> messages);
+        string ToJsonString(Message message);
     }
 }

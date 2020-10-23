@@ -8,7 +8,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
 {
     public interface INotificationHandler
     {
-        void SendPrivateNotification(Message privateMessage);
-        void SendBroadcastNotification(Message broadcastMessage);
+        Task SendPrivateNotification(Message privateMessage);
+        Task SendBroadcastNotification(Message broadcastMessage);
     }
 }

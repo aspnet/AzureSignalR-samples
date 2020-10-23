@@ -28,39 +28,39 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
             _messageFactory = messageFactory;
         }
 
-        public bool TryLoadMessageList(DateTime startDateTime, DateTime endDateTime, out List<Message> outMessages)
+        public async Task<List<Message>> TryLoadMessageListAsync(DateTime startDateTime, DateTime endDateTime)
         {
             // Blob names
-            List<string> blobNames = GetDescBlobNames(_blobContainerClient);
+            List<string> blobNames = await GetDescBlobNames(_blobContainerClient);
 
             // History messages
-            outMessages = new List<Message>();
+            List<Message> historyMessages = new List<Message>();
             foreach (string blobName in blobNames)
             {
                 var blobClient = _blobContainerClient.GetBlobClient(blobName);
-                outMessages.AddRange(GetMessagesFromBlobOnPredicate(blobClient, (m) => (m.SendTime >= startDateTime && m.SendTime < endDateTime)));
+                historyMessages.AddRange(await GetMessagesFromBlobOnPredicate(blobClient, (m) => (m.SendTime >= startDateTime && m.SendTime < endDateTime)));
             }
 
-            return true;
+            return historyMessages;
         }
 
-        public bool TryStoreMessageList(List<Message> messages)
+        public async Task<bool> TryStoreMessageListAsync(List<Message> messages)
         {
             string blobName = Guid.NewGuid().ToString();
             string jsonString = _messageFactory.ToJsonString(messages);
             using (var stream = GenerateStreamFromString(jsonString))
             {
-                _blobContainerClient.UploadBlob(blobName, stream);
+                await _blobContainerClient.UploadBlobAsync(blobName, stream);
             }
             
             return true;
         }
 
-        private List<string> GetDescBlobNames(BlobContainerClient blobContainerClient)
+        private async Task<List<string>> GetDescBlobNames(BlobContainerClient blobContainerClient)
         {
             // Get blob names inside that container
             List<string> blobNames = new List<string>();
-            foreach (BlobItem blobItem in blobContainerClient.GetBlobs())
+            await foreach (BlobItem blobItem in blobContainerClient.GetBlobsAsync())
             {
                 blobNames.Add(blobItem.Name);
             }
@@ -71,11 +71,16 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
             return blobNames;
         }
 
-        private List<Message> GetMessagesFromBlobOnPredicate(BlobClient blobClient, Func<Message, bool> func)
+        private async Task<List<Message>> GetMessagesFromBlobOnPredicate(BlobClient blobClient, Func<Message, bool> func)
         {
-            StreamReader streamReader = new StreamReader(blobClient.Download().Value.Content);
+            //  Download to a stream
+            Stream downloadedStream = (await blobClient.DownloadAsync()).Value.Content;
+            
+            //  Read the stream into a jsonString
+            StreamReader streamReader = new StreamReader(downloadedStream);
             string jsonString = streamReader.ReadToEnd();
 
+            //  Convert the jsonString to list of Messages
             List<Message> storedMessages = _messageFactory.FromJsonString(jsonString);
 
             return storedMessages.Where(func).ToList();
