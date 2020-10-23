@@ -221,7 +221,9 @@ public class ChatFragment extends Fragment implements MessageReceiver {
             messages.add(chatMessage);
 
             // If hubConnection is active then send message
-            chatService.sendMessage(chatMessage);
+            synchronized (chatMessage) {
+                chatService.sendMessage(chatMessage);
+            }
 
             // Refresh ui
             refreshUiThread(1);

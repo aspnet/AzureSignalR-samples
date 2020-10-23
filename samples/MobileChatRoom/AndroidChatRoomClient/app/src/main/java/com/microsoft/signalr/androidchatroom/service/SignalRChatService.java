@@ -51,8 +51,8 @@ public class SignalRChatService extends Service implements ChatService {
     private Timer reconnectTimer;
 
     // Resend timer
-    private int resendChatMessageDelay = 2500;
-    private int resendChatMessageInterval = 2500;
+    private int resendChatMessageDelay = 5000;
+    private int resendChatMessageInterval = 5000;
     private Timer resendChatMessageTimer;
 
     // Gson object for deserialization
@@ -252,7 +252,10 @@ public class SignalRChatService extends Service implements ChatService {
     private void resendChatMessages(Set<ChatMessage> messagesToSend) {
         for (ChatMessage message : messagesToSend) {
             synchronized (message) {
-                sendMessage(message);
+                if (message.getMessageType() == MessageType.SENDING_BROADCAST_MESSAGE ||
+                    message.getMessageType() == MessageType.SENDING_PRIVATE_MESSAGE) {
+                    sendMessage(message);
+                }
             }
         }
     }
