@@ -8,7 +8,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
 {
     public interface IPersistentStorage
     {
-        bool TryStoreMessageList(List<Message> messages);
-        bool TryLoadMessageList(DateTime startDateTime, DateTime endDateTime, out List<Message> outMessages);
+        Task<bool> TryStoreMessageListAsync(List<Message> messages);
+        Task<List<Message>> TryLoadMessageListAsync(DateTime startDateTime, DateTime endDateTime);
     }
 }

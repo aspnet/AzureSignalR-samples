@@ -19,7 +19,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
             _notificationHub = NotificationHubClient.CreateClientFromConnectionString(connectionString, hubName);
         }
 
-        public void SendBroadcastNotification(Message broadcastMessage)
+        public async Task SendBroadcastNotification(Message broadcastMessage)
         {
             Session senderSession = _userHandler.GetUserSession(broadcastMessage.Sender);
             if (senderSession != null)  //  Though sender session is very unlikely to be null
@@ -27,11 +27,11 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
                 string jsonPayload = string.Format(_formatString, broadcastMessage.Sender, broadcastMessage.Text);
                 string targetTagExpression = string.Format("! {0}", _userHandler.GetUserSession(broadcastMessage.Sender).DeviceUuid);
                 Console.WriteLine(string.Format("Send broadcast notification from {0}", broadcastMessage.Sender));
-                _notificationHub.SendFcmNativeNotificationAsync(jsonPayload, targetTagExpression);
+                await _notificationHub.SendFcmNativeNotificationAsync(jsonPayload, targetTagExpression);
             }
         }
 
-        public void SendPrivateNotification(Message privateMessage)
+        public async Task SendPrivateNotification(Message privateMessage)
         {
             Session receiverSession = _userHandler.GetUserSession(privateMessage.Receiver);
             if (receiverSession != null) //  This happens when send to a non-existing receiver
@@ -39,7 +39,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
                 string jsonPayload = string.Format(_formatString, privateMessage.Sender, privateMessage.Text);
                 string targetTagExpression = string.Format("{0}", receiverSession.DeviceUuid);
                 Console.WriteLine(string.Format("Send private notification from {0}", privateMessage.Receiver));
-                _notificationHub.SendFcmNativeNotificationAsync(jsonPayload, targetTagExpression);
+                await _notificationHub.SendFcmNativeNotificationAsync(jsonPayload, targetTagExpression);
             }            
         }
     }
