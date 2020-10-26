@@ -134,7 +134,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
                                 broadcastMessage.MessageId,
                                 broadcastMessage.Sender,
                                 broadcastMessage.Receiver,
-                                broadcastMessage.Text,
+                                broadcastMessage.Payload,
                                 (broadcastMessage.SendTime - _javaEpoch).Ticks / TimeSpan.TicksPerMillisecond,
                                 ackId);
         }
@@ -148,7 +148,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
                                 privateMessage.MessageId,
                                 privateMessage.Sender,
                                 privateMessage.Receiver,
-                                privateMessage.Text,
+                                privateMessage.Payload,
                                 (privateMessage.SendTime - _javaEpoch).Ticks / TimeSpan.TicksPerMillisecond,
                                 ackId);
         }

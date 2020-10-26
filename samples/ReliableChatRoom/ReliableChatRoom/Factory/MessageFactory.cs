@@ -57,7 +57,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Factory
             return JsonConvert.SerializeObject(messages);
         }
 
-        public string ToJsonString(Message message)
+        public string ToSingleJsonString(Message message)
         {
             return JsonConvert.SerializeObject(message);
         }
