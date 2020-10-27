@@ -43,7 +43,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Factory
         /// </summary>
         /// <param name="jsonString">The json string from which a list of messages is created</param>
         /// <returns>The converted list of <see cref="Message"/></returns>
-        List<Message> FromJsonString(string jsonString);
+        List<Message> FromListJsonString(string jsonString);
 
         /// <summary>
         /// Converts an instance of <see cref="Message"/> from a json string.
@@ -57,7 +57,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Factory
         /// </summary>
         /// <param name="messages">The list of messages from which the json string is created</param>
         /// <returns>The converted json string</returns>
-        string ToJsonString(List<Message> messages);
+        string ToListJsonString(List<Message> messages);
 
         /// <summary>
         /// Converts a json string from an instance of <see cref="Message"/>.

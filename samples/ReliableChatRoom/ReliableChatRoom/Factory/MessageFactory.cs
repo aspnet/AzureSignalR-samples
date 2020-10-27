@@ -40,7 +40,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Factory
                 sendTime);
         }
 
-        public List<Message> FromJsonString(string jsonString)
+        public List<Message> FromListJsonString(string jsonString)
         {
             List<Message> messages = (List<Message>) JsonConvert.DeserializeObject(jsonString, typeof(List<Message>));
             return messages;
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Factory
             return message;
         }
 
-        public string ToJsonString(List<Message> messages)
+        public string ToListJsonString(List<Message> messages)
         {
             return JsonConvert.SerializeObject(messages);
         }
