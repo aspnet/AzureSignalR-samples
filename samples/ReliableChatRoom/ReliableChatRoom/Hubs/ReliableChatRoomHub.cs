@@ -144,12 +144,13 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         /// Hub method. Called when client sends back an ACK on any message.
         /// </summary>
         /// <param name="clientAckId">The unique id representing a ClientAck object</param>
-        public void OnAckResponseReceived(string clientAckId)
+        /// <param name="username">The ack sender's username</param>
+        public void OnAckResponseReceived(string clientAckId, string username)
         {
             Console.WriteLine("OnAckResponseReceived clientAckId: {0}", clientAckId);
             
              //  Complete the waiting client ack object
-            _clientAckHandler.Ack(clientAckId);
+            _clientAckHandler.Ack(clientAckId, username);
         }
 
         /// <summary>
