@@ -35,7 +35,7 @@ public class ChatMessage extends Message {
         String messageId = jsonObject.get("MessageId").getAsString();
         String sender = jsonObject.get("Sender").getAsString();
         String receiver = jsonObject.get("Receiver").getAsString();
-        String text = jsonObject.get("Text").getAsString();
+        String text = jsonObject.get("Payload").getAsString();
         long time;
         try {
             time = sdf.parse(jsonObject.get("SendTime").getAsString()).getTime() + utcOffset;

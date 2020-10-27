@@ -174,12 +174,14 @@ public class SignalRChatService extends Service implements ChatService {
     }
 
     public void addHistoryMessages(String serializedString) {
+        Log.d("addHistoryMessages", serializedString);
         List<Message> historyMessages = new ArrayList<>();
         JsonArray jsonArray = gson.fromJson(serializedString, JsonArray.class);
         for (JsonElement jsonElement : jsonArray) {
             ChatMessage chatMessage = ChatMessage.fromJsonObject(jsonElement.getAsJsonObject(), username);
             historyMessages.add(chatMessage);
         }
+        Log.d("addHistoryMessages", historyMessages.toString());
         if (firstPull) {
             synchronized (firstPull) {
                 if (firstPull) {
