@@ -146,7 +146,7 @@ public class SignalRChatService extends Service implements ChatService {
         Log.d("displayBroadcastMessage", sender);
 
         // Send back ack
-        hubConnection.send("OnAckResponseReceived", ackId);
+        hubConnection.send("OnAckResponseReceived", ackId, username);
 
         // Create message
         ChatMessage chatMessage = new ChatMessage(messageId, sender, receiver, text, sendTime, MessageType.RECEIVED_BROADCAST_MESSAGE);
@@ -159,7 +159,7 @@ public class SignalRChatService extends Service implements ChatService {
         Log.d("displayPrivateMessage", sender);
 
         // Send back ack
-        hubConnection.send("OnAckResponseReceived", ackId);
+        hubConnection.send("OnAckResponseReceived", ackId, username);
 
         // Create message
         ChatMessage chatMessage = new ChatMessage(messageId, sender, receiver, text, sendTime, MessageType.RECEIVED_PRIVATE_MESSAGE);
@@ -190,7 +190,7 @@ public class SignalRChatService extends Service implements ChatService {
                 }
             }
         } else {
-            messageReceiver.tryAddAllMessages(historyMessages, -1);
+            messageReceiver.tryAddAllMessages(historyMessages, 0);
         }
 
     }
