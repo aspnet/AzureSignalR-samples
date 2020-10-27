@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers;
 
 namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities
@@ -26,13 +27,17 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities
         // For which client message this ClientAck is waiting.
         public Message ClientMessage { get; set; }
 
-        public ClientAck(string clientAckId, DateTime startDateTime, Message message)
+        // Username of receivers
+        public List<string> Receivers { get; set; }
+
+        public ClientAck(string clientAckId, DateTime startDateTime, Message message, List<string> receivers)
         {
             this.ClientAckId = clientAckId;
             this.RetryCount = 0;
             this.ClientAckResult = ClientAckResultEnum.Waiting;
             this.ClientAckStartDateTime = startDateTime;
             this.ClientMessage = message;
+            this.Receivers = receivers;
         }
 
         /// <summary>

@@ -58,13 +58,18 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
                          where message.RowKey.CompareTo(endDateTimeString) < 0 &&
                          (message.Sender.CompareTo(username) == 0 ||
                          message.Receiver.CompareTo(username) == 0)
-                         select message).Take(5).AsTableQuery();
+                         select message).AsTableQuery();
 
-            // Execute query
-            TableQuerySegment<MessageEntity> messageEntities;
+            List<MessageEntity> messageEntities;
             try
             {
-                messageEntities = await query.ExecuteSegmentedAsync(new TableContinuationToken());
+                // Execute query
+                TableQuerySegment<MessageEntity> messageEntitiesQuerySegment;
+                messageEntitiesQuerySegment = await query.ExecuteSegmentedAsync(new TableContinuationToken());
+
+                // Sort by time desc and limit results
+                messageEntities = messageEntitiesQuerySegment.ToList();
+                messageEntities.Sort((p, q) => (string.Compare(q.RowKey, p.RowKey)));
             } catch (Exception ex) // Any failure in ExecuteSegmentedAsync will appear as exception
             {
                 Console.WriteLine(ex.Message);
@@ -75,7 +80,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
 
             // Process query result
             List<Message> historyMessages = new List<Message>();
-            foreach (var messageEntity in messageEntities)
+            foreach (var messageEntity in messageEntities.Take(5))
             {
                 historyMessages.Add(_messageFactory.FromSingleJsonString(messageEntity.MessageJsonString));
             }

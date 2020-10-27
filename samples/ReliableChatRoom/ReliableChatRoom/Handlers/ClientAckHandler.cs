@@ -5,6 +5,7 @@ using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities;
 using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
 {
@@ -47,20 +48,30 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
 
         public ClientAck CreateClientAck(Message message)
         {
-            ClientAck clientAck = new ClientAck(Guid.NewGuid().ToString(), DateTime.UtcNow, message);
+            List<string> receivers;
+            if (message.Type == MessageTypeEnum.Broadcast)
+            {
+                receivers = new List<string>(_userHandler.GetActiveSessions().Select<Session, string>(sess => sess.Username));
+                receivers.Remove(message.Sender);
+            } else
+            {
+                receivers = new List<string>() { message.Receiver };
+            }
+
+            ClientAck clientAck = new ClientAck(Guid.NewGuid().ToString(), DateTime.UtcNow, message, receivers);
             _clientAcks.TryAdd(clientAck.ClientAckId, clientAck);
             return clientAck;
         }
 
-        public void Ack(string id)
+        public void Ack(string id, string username)
         {
             if (_clientAcks.TryGetValue(id, out var clientAck))
             {
-                clientAck.ClientAckResult = ClientAckResultEnum.Success;
+                clientAck.Receivers.Remove(username);
             }
             else
             {
-                throw new Exception("AckId not found");
+                Console.WriteLine("ClientAck id: {0} not found; sender: {1}.", id, username);
             }
         }
 
@@ -79,11 +90,17 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
             {
                 if (clientAck.ClientAckResult == ClientAckResultEnum.Waiting)
                 {
-                    var elapsed = DateTime.UtcNow - clientAck.ClientAckStartDateTime;
-                    if (elapsed > _checkAckThreshold)
+                    if (clientAck.Receivers.Count == 0)
                     {
-                        Console.WriteLine(string.Format("Ack id: {0} time out", clientAck.ClientAckId));
-                        clientAck.TimeOut();
+                        clientAck.ClientAckResult = ClientAckResultEnum.Success;
+                    } else
+                    {
+                        var elapsed = DateTime.UtcNow - clientAck.ClientAckStartDateTime;
+                        if (elapsed > _checkAckThreshold)
+                        {
+                            Console.WriteLine(string.Format("Ack id: {0} time out", clientAck.ClientAckId));
+                            clientAck.TimeOut();
+                        }
                     }
                 }
             }

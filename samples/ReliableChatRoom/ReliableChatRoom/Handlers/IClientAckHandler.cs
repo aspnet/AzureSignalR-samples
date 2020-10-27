@@ -21,6 +21,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
         /// Ack and complete the <see cref="ClientAck"/> with a clientAckId.
         /// </summary>
         /// <param name="clientAckId">The unique id that specifies a <see cref="ClientAck"/></param>
-        void Ack(string clientAckId);
+        /// <param name="username">The ack sender's username</param>
+        void Ack(string clientAckId, string username);
     }
 }
