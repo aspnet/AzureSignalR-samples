@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
 {
+    [Obsolete]
     public class TwoLevelMessageStorage : IMessageStorage
     {
         private readonly ConcurrentDictionary<string, Message> _messageTable =
@@ -30,7 +31,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
             _lastLoadDateTime = DateTime.UtcNow;
         }
 
-        public async Task<bool> GetHistoryMessageAsync(string username, DateTime endDateTime, GetHistoryMessageSucceededCallback callback)
+        public async Task<bool> FetchHistoryMessageAsync(string username, DateTime endDateTime, OnFetchSuccess callback)
         {
             List<Message> historyMessage = new List<Message>();
 
@@ -73,7 +74,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
             return true;
         }
 
-        public async Task<bool> TryStoreMessageAsync(Message message, TryStoreSucceededCallback callback)
+        public async Task<bool> TryStoreMessageAsync(Message message, OnStoreSuccess callback)
         {
             Console.WriteLine("TryStoreMessage");
             bool success = _messageTable.TryAdd(message.MessageId, message);

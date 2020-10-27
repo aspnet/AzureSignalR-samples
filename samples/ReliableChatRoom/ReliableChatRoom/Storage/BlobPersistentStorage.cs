@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
 {
+    [Obsolete]
     public class BlobPersistentStorage : IPersistentStorage
     {
         private readonly BlobServiceClient _blobServiceClient;
@@ -47,7 +48,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
         public async Task<bool> TryStoreMessageListAsync(List<Message> messages)
         {
             string blobName = Guid.NewGuid().ToString();
-            string jsonString = _messageFactory.ToJsonString(messages);
+            string jsonString = _messageFactory.ToListJsonString(messages);
             using (var stream = GenerateStreamFromString(jsonString))
             {
                 await _blobContainerClient.UploadBlobAsync(blobName, stream);
@@ -81,7 +82,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
             string jsonString = streamReader.ReadToEnd();
 
             //  Convert the jsonString to list of Messages
-            List<Message> storedMessages = _messageFactory.FromJsonString(jsonString);
+            List<Message> storedMessages = _messageFactory.FromListJsonString(jsonString);
 
             return storedMessages.Where(func).ToList();
         }

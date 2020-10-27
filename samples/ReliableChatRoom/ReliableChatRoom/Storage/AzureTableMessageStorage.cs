@@ -30,29 +30,48 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
             _cloudTable = _cloudTableClient.GetTableReference(_tableName);
         }
 
-        public async Task<bool> TryStoreMessageAsync(Message message, TryStoreSucceededCallback callback)
+        public async Task<bool> TryStoreMessageAsync(Message message, OnStoreSuccess callback)
         {
-            MessageEntity messageEntity = CreateMessageEntity(message);
-            TableResult result = await _cloudTable.ExecuteAsync(TableOperation.InsertOrReplace(messageEntity));
+            try
+            {
+                MessageEntity messageEntity = CreateMessageEntity(message);
+                await _cloudTable.ExecuteAsync(TableOperation.InsertOrReplace(messageEntity));
+            } catch (Exception ex) // Any failure in ExecuteAsync will appear as exception
+            {
+                Console.WriteLine(ex.Message);
 
+                // Directly return and do not execute the callback method
+                return false;
+            }
+            
             // Callback
-            await callback(message, _hubContext);
-            return true;
+            return await callback(message, _hubContext);
         }
 
-        public async Task<bool> GetHistoryMessageAsync(string username, DateTime endDateTime, GetHistoryMessageSucceededCallback callback)
+        public async Task<bool> FetchHistoryMessageAsync(string username, DateTime endDateTime, OnFetchSuccess callback)
         {
             string endDateTimeString = endDateTime.ToString(_dateFormatString);
 
-            // Linq query
+            // Define Linq query
             TableQuery<MessageEntity> messageQuery = _cloudTable.CreateQuery<MessageEntity>();
             var query = (from message in messageQuery
                          where message.RowKey.CompareTo(endDateTimeString) < 0 &&
                          (message.Sender.CompareTo(username) == 0 ||
                          message.Receiver.CompareTo(username) == 0)
                          select message).Take(5).AsTableQuery();
-            
-            var messageEntities = await query.ExecuteSegmentedAsync(new TableContinuationToken());
+
+            // Execute query
+            TableQuerySegment<MessageEntity> messageEntities;
+            try
+            {
+                messageEntities = await query.ExecuteSegmentedAsync(new TableContinuationToken());
+            } catch (Exception ex) // Any failure in ExecuteSegmentedAsync will appear as exception
+            {
+                Console.WriteLine(ex.Message);
+
+                // Directly return and do not execute the callback method
+                return false;
+            }
 
             // Process query result
             List<Message> historyMessages = new List<Message>();
@@ -62,14 +81,12 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
             }
 
             //  Callback
-            await callback(historyMessages, _hubContext);
-            
-            return true;
+            return await callback(historyMessages, _hubContext);
         }
 
         private MessageEntity CreateMessageEntity(Message message)
         {
-            return new MessageEntity(message.MessageId, message.SendTime.ToString(_dateFormatString), message.Sender, message.Receiver, _messageFactory.ToJsonString(message));
+            return new MessageEntity(message.MessageId, message.SendTime.ToString(_dateFormatString), message.Sender, message.Receiver, _messageFactory.ToSingleJsonString(message));
         }
 
         public class MessageEntity : TableEntity

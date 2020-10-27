@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Azure.Documents;
 using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities;
 using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Factory;
 using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers;
@@ -6,6 +7,7 @@ using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -180,7 +182,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
             var untilDateTime = JavaLongToCSharpDateTime(untilTime);
 
             //  Fetch history from message storage. After done, send them back with a callback method SendHistoryMessages.
-            await _messageStorage.GetHistoryMessageAsync(username, untilDateTime, SendHistoryMessages);
+            await _messageStorage.FetchHistoryMessageAsync(username, untilDateTime, SendHistoryMessages);
         }
 
         /// <summary>
@@ -193,7 +195,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
             //  Broadcast to all other users
             await Clients.All.SendAsync("broadcastSystemMessage",
                     systemMessage.MessageId,
-                    systemMessage.Text,
+                    systemMessage.Payload,
                     CSharpDateTimeToJavaLong(systemMessage.SendTime));
         }
 
@@ -202,24 +204,37 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         /// </summary>
         /// <param name="broadcastMessage">Broadcast message to send</param>
         /// <param name="hubContext">IHubContext to call client methods</param>
-        /// <returns>Task</returns>
-        private async Task SendBroadCastMessage(Message broadcastMessage, IHubContext<ReliableChatRoomHub> hubContext)
+        /// <returns>
+        /// An Async Task of bool result.
+        /// true - Callback was success
+        /// false - Callback was failure
+        /// </returns>
+        private async Task<bool> SendBroadCastMessage(Message broadcastMessage, IHubContext<ReliableChatRoomHub> hubContext)
         {
             //  Create a client ack 
             var clientAck = _clientAckHandler.CreateClientAck(broadcastMessage);
 
-            //  Send notification first
-            await _notificationHandler.SendBroadcastNotification(broadcastMessage);
+            //  Send notification first and do not block for result
+            _ = _notificationHandler.SendBroadcastNotification(broadcastMessage);
 
             //  Broadcast to all other users
-            await hubContext.Clients.AllExcept(_userHandler.GetUserSession(broadcastMessage.Sender).ConnectionId)
+            try
+            {
+                await hubContext.Clients.AllExcept(_userHandler.GetUserSession(broadcastMessage.Sender).ConnectionId)
                     .SendAsync("displayBroadcastMessage",
                                 broadcastMessage.MessageId,
                                 broadcastMessage.Sender,
                                 broadcastMessage.Receiver,
-                                broadcastMessage.Text,
+                                broadcastMessage.Payload,
                                 CSharpDateTimeToJavaLong(broadcastMessage.SendTime),
                                 clientAck.ClientAckId);
+            } catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+
+            return true;            
         }
 
         /// <summary>
@@ -227,24 +242,37 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         /// </summary>
         /// <param name="privateMessage">Private message to send</param>
         /// <param name="hubContext">IHubContext to call client methods</param>
-        /// <returns>Task</returns>
-        private async Task SendPrivateMessage(Message privateMessage, IHubContext<ReliableChatRoomHub> hubContext)
+        /// <returns>
+        /// An Async Task of bool result.
+        /// true - Callback was success
+        /// false - Callback was failure
+        /// </returns>
+        private async Task<bool> SendPrivateMessage(Message privateMessage, IHubContext<ReliableChatRoomHub> hubContext)
         {
             //  Create a client ack 
             var clientAck = _clientAckHandler.CreateClientAck(privateMessage);
 
-            //  Send notification first
-            await _notificationHandler.SendPrivateNotification(privateMessage);
+            //  Send notification first and do not block for result
+            _ = _notificationHandler.SendPrivateNotification(privateMessage);
 
-            //  Send to receiver then
-            await hubContext.Clients.Client(_userHandler.GetUserSession(privateMessage.Receiver).ConnectionId)
-                    .SendAsync("displayPrivateMessage",
-                                privateMessage.MessageId,
-                                privateMessage.Sender,
-                                privateMessage.Receiver,
-                                privateMessage.Text,
-                                CSharpDateTimeToJavaLong(privateMessage.SendTime),
-                                clientAck.ClientAckId);
+            try
+            {
+                //  Send to receiver then
+                await hubContext.Clients.Client(_userHandler.GetUserSession(privateMessage.Receiver).ConnectionId)
+                        .SendAsync("displayPrivateMessage",
+                                    privateMessage.MessageId,
+                                    privateMessage.Sender,
+                                    privateMessage.Receiver,
+                                    privateMessage.Payload,
+                                    CSharpDateTimeToJavaLong(privateMessage.SendTime),
+                                    clientAck.ClientAckId);
+            } catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -252,12 +280,26 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         /// </summary>
         /// <param name="historyMessages">List of history messages to send back</param>
         /// <param name="hubContext">IHubContext to call client methods</param>
-        /// <returns></returns>
-        private async Task SendHistoryMessages(List<Message> historyMessages, IHubContext<ReliableChatRoomHub> hubContext)
+        /// <returns>
+        /// An Async Task of bool result.
+        /// true - Callback was success
+        /// false - Callback was failure
+        /// </returns>
+        private async Task<bool> SendHistoryMessages(List<Message> historyMessages, IHubContext<ReliableChatRoomHub> hubContext)
         {
-            //  Convert list of history messages to jsonString, then send to the client.
-            await hubContext.Clients.Client(Context.ConnectionId)
-                .SendAsync("addHistoryMessages", _messageFactory.ToJsonString(historyMessages));
+            try
+            {
+                //  Convert list of history messages to jsonString, then send to the client.
+                Console.WriteLine("SendHistoryMessages");
+                await hubContext.Clients.Client(Context.ConnectionId)
+                    .SendAsync("addHistoryMessages", _messageFactory.ToListJsonString(historyMessages));
+            } catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>

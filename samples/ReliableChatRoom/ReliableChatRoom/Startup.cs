@@ -31,8 +31,9 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
             services.AddSingleton<IClientAckHandler, ClientAckHandler>();
             services.AddSingleton<INotificationHandler, NotificationHandler>(provider => new NotificationHandler(provider.GetService<IUserHandler>(), Configuration["Azure:NotificationHub:ConnectionString"], Configuration["Azure:NotificationHub:HubName"]));
 
-            //services.AddSingleton<IMessageStorage, TwoLevelMessageStorage>();
-            //services.AddSingleton<IPersistentStorage, BlobPersistentStorage>(provider => new BlobPersistentStorage(provider.GetService<IMessageFactory>(), Configuration["Azure:Storage:ConnectionString"]));
+            // Obsolete implementation of IMessageStorage
+            // services.AddSingleton<IMessageStorage, TwoLevelMessageStorage>();
+            // services.AddSingleton<IPersistentStorage, BlobPersistentStorage>(provider => new BlobPersistentStorage(provider.GetService<IMessageFactory>(), Configuration["Azure:Storage:ConnectionString"]));
 
             services.AddSingleton<IMessageStorage, AzureTableMessageStorage>(provider => new AzureTableMessageStorage(provider.GetService<IHubContext<ReliableChatRoomHub>>(), provider.GetService<IMessageFactory>(), Configuration["Azure:Storage:ConnectionString"]));
         }
