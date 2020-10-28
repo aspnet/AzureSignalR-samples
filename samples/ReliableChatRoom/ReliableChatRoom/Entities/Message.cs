@@ -27,18 +27,32 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities
 
         // Content of message. Can be either a text string or rich content represented by a Base64 string
         public string Payload { get; set; }
+        
+        [JsonIgnore]
+        public string ImagePayload { get; set; }
+
+        // Indicate whether it is an image message
+        public bool IsImage { get; set; }
 
         // The time when the broadcast message reaches the server are labeled as sendTime
         public DateTime SendTime { get; set; }
 
         // Constructor
-        public Message(string messageId, string sender, string receiver, string payload, MessageTypeEnum type, DateTime sendTime)
+        public Message(string messageId, string sender, string receiver, string payload, bool isImage, MessageTypeEnum type, DateTime sendTime)
         {
             this.MessageId = messageId;
             this.Type = type;
             this.Sender = sender;
             this.Receiver = receiver;
-            this.Payload = payload;
+            if (isImage)
+            {
+                this.ImagePayload = payload;
+                this.Payload = "";
+            } else
+            {
+                this.Payload = payload;
+            }
+            this.IsImage = isImage;
             this.SendTime = sendTime;
         }
     }

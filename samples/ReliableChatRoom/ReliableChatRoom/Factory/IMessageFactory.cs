@@ -25,7 +25,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Factory
         /// <param name="payload">Content of message. Can be either a text string or rich content represented by a Base64 string</param>
         /// <param name="sendTime">The time when the broadcast message reaches the server are labeled as sendTime</param>
         /// <returns>A <see cref="MessageTypeEnum.Broadcast"/> <see cref="Message"/></returns>
-        Message CreateBroadcastMessage(string messageId, string sender, string payload, DateTime sendTime);
+        Message CreateBroadcastMessage(string messageId, string sender, string payload, bool isImage, DateTime sendTime);
 
         /// <summary>
         /// Creates a <see cref="MessageTypeEnum.Private"/> <see cref="Message"/> according to the given username, action, and sendDate.
@@ -36,7 +36,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Factory
         /// <param name="payload">Receiver of the message</param>
         /// <param name="sendTime">The time when the broadcast message reaches the server are labeled as sendTime</param>
         /// <returns>A <see cref="MessageTypeEnum.Private"/> <see cref="Message"/></returns>
-        Message CreatePrivateMessage(string messageId, string sender, string receiver, string payload, DateTime sendTime);
+        Message CreatePrivateMessage(string messageId, string sender, string receiver, string payload, bool isImage, DateTime sendTime);
 
         /// <summary>
         /// Converts a list of <see cref="Message"/> from a json string.
