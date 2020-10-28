@@ -101,19 +101,24 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         /// <param name="sender">The client who send the message</param>
         /// <param name="payload">The message content. Can be string / binary object in base64</param>
         /// <returns></returns>
-        public async Task OnBroadcastMessageReceived(string messageId, string sender, string payload)
+        public async Task OnBroadcastMessageReceived(string messageId, string sender, string payload, bool isImage)
         {
-            Console.WriteLine("OnBroadcastMessageReceived {0} {1} {2}", messageId, sender, payload);
+            Console.WriteLine("OnBroadcastMessageReceived {0} {1} payload size={2}", messageId, sender, payload.Length);
 
             //  Create message
-            Message message = _messageFactory.CreateBroadcastMessage(messageId, sender, payload, DateTime.UtcNow);
+            Message message = _messageFactory.CreateBroadcastMessage(messageId, sender, payload, isImage, DateTime.UtcNow);
 
-            //  Try to store the message and execute a callback 
-            Task<bool> storeTask = _messageStorage.TryStoreMessageAsync(message, SendBroadCastMessage);
-
-            //  Send back a server ack regardless of whether is a duplicated message
+            // Send back server ack without waiting for method result
             long receivedTimeInLong = CSharpDateTimeToJavaLong(message.SendTime);
-            await Clients.Client(Context.ConnectionId).SendAsync("serverAck", message.MessageId, receivedTimeInLong);
+            _ = Clients.Client(Context.ConnectionId).SendAsync("serverAck", message.MessageId, receivedTimeInLong);
+
+            //  Try to store the message 
+            bool success = await _messageStorage.TryStoreMessageAsync(message);
+
+            if (success)
+            {
+                await SendBroadCastMessage(message);
+            }
         }
 
         /// <summary>
@@ -124,20 +129,25 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         /// <param name="receiver">The client who receives the message</param>
         /// <param name="payload">The message content. Can be string / binary object in base64</param>
         /// <returns></returns>
-        public async Task OnPrivateMessageReceived(string messageId, string sender, string receiver, string payload)
+        public async Task OnPrivateMessageReceived(string messageId, string sender, string receiver, string payload, bool isImage)
         {
 
-            Console.WriteLine("OnPrivateMessageReceive {0} {1} {2} {3}", messageId, sender, receiver, payload);
-            
-            //  Create message
-            Message message = _messageFactory.CreatePrivateMessage(messageId, sender, receiver, payload, DateTime.UtcNow);
+            Console.WriteLine("OnPrivateMessageReceive {0} {1} {2} payload size={3}", messageId, sender, receiver, payload.Length);
 
-            //  Try to store the message and execute a callback 
-            Task<bool> storeTask =  _messageStorage.TryStoreMessageAsync(message, SendPrivateMessage);
+            //  Create message and send back server ack
+            Message message = _messageFactory.CreatePrivateMessage(messageId, sender, receiver, payload, isImage, DateTime.UtcNow);
 
-            //  Sender server ack back to client
+            // Send back server ack without waiting for result
             long receivedTimeInLong = CSharpDateTimeToJavaLong(message.SendTime);
-            await Clients.Client(Context.ConnectionId).SendAsync("serverAck", message.MessageId, receivedTimeInLong);
+            _ = Clients.Client(Context.ConnectionId).SendAsync("serverAck", message.MessageId, receivedTimeInLong);
+
+            //  Try to store the message
+            bool success = await _messageStorage.TryStoreMessageAsync(message);
+
+            if (success)
+            {
+                await SendPrivateMessage(message);
+            }
         }
 
         /// <summary>
@@ -183,7 +193,25 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
             var untilDateTime = JavaLongToCSharpDateTime(untilTime);
 
             //  Fetch history from message storage. After done, send them back with a callback method SendHistoryMessages.
-            await _messageStorage.FetchHistoryMessageAsync(username, untilDateTime, SendHistoryMessages);
+            List<Message> historyMessages = new List<Message>();
+            bool success = await _messageStorage.TryFetchHistoryMessageAsync(username, untilDateTime, historyMessages);
+
+            if (success)
+            {
+                await SendHistoryMessages(historyMessages);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="username"></param>
+        /// <param name="messageId"></param>
+        /// <returns></returns>
+        public async Task OnImageMessagesReceived(string username, string messageId)
+        {
+            string imagePayload = await _messageStorage.TryFetchImageContent(messageId);
+            await Clients.Client(_userHandler.GetUserSession(username).ConnectionId).SendAsync("receiveImageContent", messageId, imagePayload);
         }
 
         /// <summary>
@@ -201,16 +229,15 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         }
 
         /// <summary>
-        /// Utility method & Callback method of <see cref="IMessageStorage">. Sends broadcast message to clients other than sender
+        /// Utility method. Sends broadcast message to clients other than sender
         /// </summary>
         /// <param name="broadcastMessage">Broadcast message to send</param>
-        /// <param name="hubContext">IHubContext to call client methods</param>
         /// <returns>
         /// An Async Task of bool result.
         /// true - Callback was success
         /// false - Callback was failure
         /// </returns>
-        private async Task<bool> SendBroadCastMessage(Message broadcastMessage, IHubContext<ReliableChatRoomHub> hubContext)
+        private async Task<bool> SendBroadCastMessage(Message broadcastMessage)
         {
             //  Create a client ack 
             var clientAck = _clientAckHandler.CreateClientAck(broadcastMessage);
@@ -221,12 +248,13 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
             //  Broadcast to all other users
             try
             {
-                await hubContext.Clients.AllExcept(_userHandler.GetUserSession(broadcastMessage.Sender).ConnectionId)
+                await Clients.AllExcept(_userHandler.GetUserSession(broadcastMessage.Sender).ConnectionId)
                     .SendAsync("displayBroadcastMessage",
                                 broadcastMessage.MessageId,
                                 broadcastMessage.Sender,
                                 broadcastMessage.Receiver,
                                 broadcastMessage.Payload,
+                                broadcastMessage.IsImage,
                                 CSharpDateTimeToJavaLong(broadcastMessage.SendTime),
                                 clientAck.ClientAckId);
             } catch (Exception ex)
@@ -239,7 +267,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         }
 
         /// <summary>
-        /// Utility method & Callback method of <see cref="IMessageStorage">. Sends private message to the receiver client.
+        /// Utility method. Sends private message to the receiver client.
         /// </summary>
         /// <param name="privateMessage">Private message to send</param>
         /// <param name="hubContext">IHubContext to call client methods</param>
@@ -248,7 +276,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         /// true - Callback was success
         /// false - Callback was failure
         /// </returns>
-        private async Task<bool> SendPrivateMessage(Message privateMessage, IHubContext<ReliableChatRoomHub> hubContext)
+        private async Task<bool> SendPrivateMessage(Message privateMessage)
         {
             //  Create a client ack 
             var clientAck = _clientAckHandler.CreateClientAck(privateMessage);
@@ -259,12 +287,13 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
             try
             {
                 //  Send to receiver then
-                await hubContext.Clients.Client(_userHandler.GetUserSession(privateMessage.Receiver).ConnectionId)
+                await Clients.Client(_userHandler.GetUserSession(privateMessage.Receiver).ConnectionId)
                         .SendAsync("displayPrivateMessage",
                                     privateMessage.MessageId,
                                     privateMessage.Sender,
                                     privateMessage.Receiver,
                                     privateMessage.Payload,
+                                    privateMessage.IsImage,
                                     CSharpDateTimeToJavaLong(privateMessage.SendTime),
                                     clientAck.ClientAckId);
             } catch (Exception ex)
@@ -277,22 +306,21 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         }
 
         /// <summary>
-        /// Utility method & Callback method of <see cref="IMessageStorage">. Sends list of history messages to the requesting client.
+        /// Utility method. Sends list of history messages to the requesting client.
         /// </summary>
         /// <param name="historyMessages">List of history messages to send back</param>
-        /// <param name="hubContext">IHubContext to call client methods</param>
         /// <returns>
         /// An Async Task of bool result.
         /// true - Callback was success
         /// false - Callback was failure
         /// </returns>
-        private async Task<bool> SendHistoryMessages(List<Message> historyMessages, IHubContext<ReliableChatRoomHub> hubContext)
+        private async Task<bool> SendHistoryMessages(List<Message> historyMessages)
         {
             try
             {
                 //  Convert list of history messages to jsonString, then send to the client.
                 Console.WriteLine("SendHistoryMessages");
-                await hubContext.Clients.Client(Context.ConnectionId)
+                await Clients.Client(Context.ConnectionId)
                     .SendAsync("addHistoryMessages", _messageFactory.ToListJsonString(historyMessages));
             } catch (Exception ex)
             {

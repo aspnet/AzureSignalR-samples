@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Azure.Storage.Blobs;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Azure.Cosmos.Table.Queryable;
 using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities;
@@ -6,6 +7,7 @@ using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Factory;
 using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -14,41 +16,78 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
     public class AzureTableMessageStorage : IMessageStorage
     {
         private readonly IMessageFactory _messageFactory;
-        private readonly IHubContext<ReliableChatRoomHub> _hubContext;
+
         private readonly CloudStorageAccount _cloudStorageAccount;
         private readonly CloudTableClient _cloudTableClient;
         private readonly CloudTable _cloudTable;
         private readonly string _tableName = "mobilechatroom";
-        private readonly string _dateFormatString = "yyyy'-'MM'-'dd'T'HH':'mm':'ss.ffff";
 
-        public AzureTableMessageStorage(IHubContext<ReliableChatRoomHub> hubContext, IMessageFactory messageFactory, string connectionString)
+        private readonly BlobServiceClient _blobServiceClient;
+        private readonly BlobContainerClient _blobContainerClient;
+        private readonly string _containerName = "mobilechatroom";
+
+        private readonly string _dateFormatString = "yyyy'-'MM'-'dd'T'HH':'mm':'ss.ffff";
+        private readonly int _messageCountPerFetch = 5;
+
+        public AzureTableMessageStorage(IMessageFactory messageFactory, string connectionString)
         {
-            _hubContext = hubContext;
             _messageFactory = messageFactory;
+
             _cloudStorageAccount = CloudStorageAccount.Parse(connectionString);
             _cloudTableClient = _cloudStorageAccount.CreateCloudTableClient(new TableClientConfiguration());
             _cloudTable = _cloudTableClient.GetTableReference(_tableName);
+
+            _blobServiceClient = new BlobServiceClient(connectionString);
+            _blobContainerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
         }
 
-        public async Task<bool> TryStoreMessageAsync(Message message, OnStoreSuccess callback)
+        public async Task<bool> TryStoreMessageAsync(Message message)
         {
             try
             {
                 MessageEntity messageEntity = CreateMessageEntity(message);
-                await _cloudTable.ExecuteAsync(TableOperation.InsertOrReplace(messageEntity));
+                List<Task> tasks = new List<Task>();
+
+                tasks.Add(_cloudTable.ExecuteAsync(TableOperation.InsertOrReplace(messageEntity)));
+
+                if (message.IsImage)
+                {
+                    tasks.Add(TryStoreImageAsync(message.MessageId, message.ImagePayload));
+                }
+
+                await Task.WhenAll(tasks);
             } catch (Exception ex) // Any failure in ExecuteAsync will appear as exception
             {
-                Console.WriteLine(ex.Message);
-
-                // Directly return and do not execute the callback method
+                Console.WriteLine(ex);
                 return false;
             }
-            
-            // Callback
-            return await callback(message, _hubContext);
+
+            return true;
         }
 
-        public async Task<bool> FetchHistoryMessageAsync(string username, DateTime endDateTime, OnFetchSuccess callback)
+        private async Task<bool> TryStoreImageAsync(string messageId, string imagePayload)
+        {
+            using (var stream = GenerateStreamFromString(imagePayload))
+            {
+                await _blobContainerClient.UploadBlobAsync(messageId, stream);
+            }
+
+            return true;
+        }
+
+        private Stream GenerateStreamFromString(string s)
+        {
+            var stream = new MemoryStream();
+            var writer = new StreamWriter(stream);
+
+            writer.Write(s);
+            writer.Flush();
+            stream.Position = 0;
+
+            return stream;
+        }
+
+        public async Task<bool> TryFetchHistoryMessageAsync(string username, DateTime endDateTime, List<Message> historyMessages)
         {
             string endDateTimeString = endDateTime.ToString(_dateFormatString);
 
@@ -67,26 +106,38 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
                 TableQuerySegment<MessageEntity> messageEntitiesQuerySegment;
                 messageEntitiesQuerySegment = await query.ExecuteSegmentedAsync(new TableContinuationToken());
 
-                // Sort by time desc and limit results
+                // Sort by time desc
                 messageEntities = messageEntitiesQuerySegment.ToList();
                 messageEntities.Sort((p, q) => (string.Compare(q.RowKey, p.RowKey)));
             } catch (Exception ex) // Any failure in ExecuteSegmentedAsync will appear as exception
             {
                 Console.WriteLine(ex.Message);
 
-                // Directly return and do not execute the callback method
+                // Load failed
                 return false;
             }
 
-            // Process query result
-            List<Message> historyMessages = new List<Message>();
-            foreach (var messageEntity in messageEntities.Take(5))
+            // Process query result with a limit of 
+            foreach (var messageEntity in messageEntities.Take(_messageCountPerFetch))
             {
                 historyMessages.Add(_messageFactory.FromSingleJsonString(messageEntity.MessageJsonString));
             }
 
-            //  Callback
-            return await callback(historyMessages, _hubContext);
+            return true;
+        }
+
+        public async Task<string> TryFetchImageContent(string messageId)
+        {
+            var blobClient = _blobContainerClient.GetBlobClient(messageId);
+
+            //  Download to a stream
+            Stream downloadedStream = (await blobClient.DownloadAsync()).Value.Content;
+
+            //  Read the stream into a jsonString
+            StreamReader streamReader = new StreamReader(downloadedStream);
+            string imagePayload = streamReader.ReadToEnd();
+
+            return imagePayload;
         }
 
         private MessageEntity CreateMessageEntity(Message message)

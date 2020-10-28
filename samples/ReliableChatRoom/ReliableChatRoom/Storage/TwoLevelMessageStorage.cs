@@ -31,10 +31,8 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
             _lastLoadDateTime = DateTime.UtcNow;
         }
 
-        public async Task<bool> FetchHistoryMessageAsync(string username, DateTime endDateTime, OnFetchSuccess callback)
+        public async Task<bool> TryFetchHistoryMessageAsync(string username, DateTime endDateTime, List<Message> historyMessages)
         {
-            List<Message> historyMessage = new List<Message>();
-
             DateTime startDateTime = _defaultDateTime;
             foreach (TimeSpan traceBackSpan in _spansToTraceBack)
             {
@@ -55,26 +53,23 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
                 {
                     if (message.Type == MessageTypeEnum.Broadcast)
                     {
-                        historyMessage.Add(message);
+                        historyMessages.Add(message);
                     }
                     else if (message.Type == MessageTypeEnum.Private &&
                         (message.Receiver.Equals(username) || message.Sender.Equals(username)))
                     {
-                        historyMessage.Add(message);
+                        historyMessages.Add(message);
                     }
                 }
             }
 
 
-            historyMessage.Sort((p, q) => q.SendTime.CompareTo(p.SendTime));
+            historyMessages.Sort((p, q) => q.SendTime.CompareTo(p.SendTime));
 
-            // Callback
-            await callback(historyMessage, _hubContext);
-            
             return true;
         }
 
-        public async Task<bool> TryStoreMessageAsync(Message message, OnStoreSuccess callback)
+        public async Task<bool> TryStoreMessageAsync(Message message)
         {
             Console.WriteLine("TryStoreMessage");
             bool success = _messageTable.TryAdd(message.MessageId, message);
@@ -87,9 +82,6 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
                     Console.WriteLine(string.Format("After persist size: {0}", _messageTable.Count));
                 }
             }
-
-            // Callback
-            await callback(message, _hubContext);
 
             return true;
         }
@@ -132,6 +124,12 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
 
             _lastLoadDateTime = startDateTime;
             return historyMessages.Count;
+        }
+
+        public async Task<string> TryFetchImageContent(string messageId)
+        {
+            await Task.Delay(1000);
+            return "";
         }
     }
 }

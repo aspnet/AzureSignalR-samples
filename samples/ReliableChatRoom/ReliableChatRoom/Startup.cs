@@ -24,7 +24,9 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSignalR()
+            services.AddSignalR(o => {
+                o.MaximumReceiveMessageSize = 1024 * 1024 * 1024;
+            })
                     .AddAzureSignalR();
             services.AddSingleton<IUserHandler, UserHandler>();
             services.AddSingleton<IMessageFactory, MessageFactory>();
@@ -35,7 +37,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
             // services.AddSingleton<IMessageStorage, TwoLevelMessageStorage>();
             // services.AddSingleton<IPersistentStorage, BlobPersistentStorage>(provider => new BlobPersistentStorage(provider.GetService<IMessageFactory>(), Configuration["Azure:Storage:ConnectionString"]));
 
-            services.AddSingleton<IMessageStorage, AzureTableMessageStorage>(provider => new AzureTableMessageStorage(provider.GetService<IHubContext<ReliableChatRoomHub>>(), provider.GetService<IMessageFactory>(), Configuration["Azure:Storage:ConnectionString"]));
+            services.AddSingleton<IMessageStorage, AzureTableMessageStorage>(provider => new AzureTableMessageStorage(provider.GetService<IMessageFactory>(), Configuration["Azure:Storage:ConnectionString"]));
         }
 
         public void Configure(IApplicationBuilder app)
