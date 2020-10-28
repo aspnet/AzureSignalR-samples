@@ -1,6 +1,5 @@
 package com.microsoft.signalr.androidchatroom.fragment;
 
-import com.microsoft.signalr.androidchatroom.message.ChatMessage;
 import com.microsoft.signalr.androidchatroom.message.Message;
 
 import java.util.List;
@@ -16,7 +15,9 @@ public interface MessageReceiver {
 
     void setMessageAck(String messageId, long receivedTimeInLong);
 
-    Set<ChatMessage> getSendingMessages();
+    Set<Message> getSendingMessages();
 
     void showSessionExpiredDialog();
+
+    void loadImageContent(String messageId, String payload);
 }

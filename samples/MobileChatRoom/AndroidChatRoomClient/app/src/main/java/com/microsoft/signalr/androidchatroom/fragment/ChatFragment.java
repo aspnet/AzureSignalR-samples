@@ -2,6 +2,10 @@ package com.microsoft.signalr.androidchatroom.fragment;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -9,7 +13,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -19,16 +25,19 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.microsoft.signalr.androidchatroom.R;
 import com.microsoft.signalr.androidchatroom.activity.MainActivity;
-import com.microsoft.signalr.androidchatroom.message.ChatMessage;
-import com.microsoft.signalr.androidchatroom.message.MessageType;
-import com.microsoft.signalr.androidchatroom.message.SystemMessage;
+import com.microsoft.signalr.androidchatroom.message.MessageFactory;
+import com.microsoft.signalr.androidchatroom.message.MessageTypeEnum;
 import com.microsoft.signalr.androidchatroom.message.Message;
 import com.microsoft.signalr.androidchatroom.service.ChatService;
 import com.microsoft.signalr.androidchatroom.service.NotificationService;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -36,8 +45,11 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static android.app.Activity.RESULT_OK;
+
 public class ChatFragment extends Fragment implements MessageReceiver {
     private static final String TAG = "ChatFragment";
+    private static final int RESULT_LOAD_IMAGE = 1;
 
     // Services
     private ChatService chatService;
@@ -52,6 +64,7 @@ public class ChatFragment extends Fragment implements MessageReceiver {
     private EditText chatBoxReceiverEditText;
     private EditText chatBoxMessageEditText;
     private Button chatBoxSendButton;
+    private Button chatBoxImageButton;
     private RecyclerView chatContentRecyclerView;
     private ChatContentAdapter chatContentAdapter;
 
@@ -86,6 +99,7 @@ public class ChatFragment extends Fragment implements MessageReceiver {
         this.chatBoxReceiverEditText = view.findViewById(R.id.edit_chat_receiver);
         this.chatBoxMessageEditText = view.findViewById(R.id.edit_chat_message);
         this.chatBoxSendButton = view.findViewById(R.id.button_chatbox_send);
+        this.chatBoxImageButton = view.findViewById(R.id.button_chatbox_image);
         this.chatContentRecyclerView = view.findViewById(R.id.recyclerview_chatcontent);
 
         // Create objects
@@ -116,13 +130,16 @@ public class ChatFragment extends Fragment implements MessageReceiver {
         deviceUuid = notificationService.getDeviceUuid();
 
         // Register user info into chat service
-        chatService.register(username, deviceUuid,this);
-        chatService.startSession();
+        new Thread(() -> {
+            chatService.register(username, deviceUuid, this);
+            chatService.startSession();
+        }).start();
     }
 
     @Override
     public void activate() {
         chatBoxSendButton.setOnClickListener(this::chatBoxSendButtonClickListener);
+        chatBoxImageButton.setOnClickListener(this::chatBoxImageButtonClickListener);
         chatContentRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
@@ -131,10 +148,7 @@ public class ChatFragment extends Fragment implements MessageReceiver {
                     Log.d(TAG, "OnScroll cannot scroll vertical -1");
                     long untilTime = System.currentTimeMillis();
                     for (Message message : messages) {
-                        if (message.getMessageType() == MessageType.RECEIVED_BROADCAST_MESSAGE ||
-                                message.getMessageType() == MessageType.RECEIVED_PRIVATE_MESSAGE ||
-                                message.getMessageType() == MessageType.SENT_BROADCAST_MESSAGE ||
-                                message.getMessageType() == MessageType.SENT_PRIVATE_MESSAGE) {
+                        if (message.getMessageType().name().contains("RECEIVED") || message.getMessageType().name().contains("SENT")) {
                             untilTime = message.getTime();
                             break;
                         }
@@ -187,12 +201,11 @@ public class ChatFragment extends Fragment implements MessageReceiver {
     }
 
     @Override
-    public Set<ChatMessage> getSendingMessages() {
-        Set<ChatMessage> sendingMessages = new HashSet<>();
+    public Set<Message> getSendingMessages() {
+        Set<Message> sendingMessages = new HashSet<>();
         for (Message message : messages) {
-            if (message.getMessageType() == MessageType.SENDING_BROADCAST_MESSAGE
-                    || message.getMessageType() == MessageType.SENDING_PRIVATE_MESSAGE) {
-                sendingMessages.add((ChatMessage) message);
+            if (message.getMessageType().name().contains("SENDING")) {
+                sendingMessages.add(message);
             }
         }
         return sendingMessages;
@@ -206,8 +219,8 @@ public class ChatFragment extends Fragment implements MessageReceiver {
                     .setTitle(R.string.alert_title)
                     .setCancelable(false);
             builder.setPositiveButton(R.string.alert_ok, (dialog, id) -> {
-                Navigation.findNavController(getView()).navigate(R.id.action_ChatFragment_to_LoginFragment);
-                getActivity().recreate();
+                Navigation.findNavController(requireView()).navigate(R.id.action_ChatFragment_to_LoginFragment);
+                requireActivity().recreate();
             });
             AlertDialog dialog = builder.create();
             dialog.show();
@@ -217,7 +230,7 @@ public class ChatFragment extends Fragment implements MessageReceiver {
     private void chatBoxSendButtonClickListener(View view) {
         if (chatBoxMessageEditText.getText().length() > 0) { // Empty message not allowed
             // Create and add message into list
-            ChatMessage chatMessage = createMessage();
+            Message chatMessage = createTextMessage();
             messages.add(chatMessage);
 
             // If hubConnection is active then send message
@@ -230,18 +243,88 @@ public class ChatFragment extends Fragment implements MessageReceiver {
         }
     }
 
-    private ChatMessage createMessage() {
+    private void chatBoxImageButtonClickListener(View view) {
+        Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+        photoPickerIntent.setType("image/*");
+        startActivityForResult(photoPickerIntent, RESULT_LOAD_IMAGE);
+    }
+
+    @Override
+    public void onActivityResult(int reqCode, int resultCode, Intent data) {
+        super.onActivityResult(reqCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            try {
+                final Uri imageUri = data.getData();
+                final InputStream imageStream = requireActivity().getContentResolver().openInputStream(imageUri);
+                final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
+                Message imageMessage = createImageMessage(selectedImage);
+                messages.add(imageMessage);
+                refreshUiThread(1);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                Toast.makeText(getContext(), "Something went wrong", Toast.LENGTH_LONG).show();
+            }
+        } else {
+            Toast.makeText(getContext(), "You haven't picked Image", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void loadImageContent(String messageId, String payload) {
+        Message message = null;
+        for (Message tmp : messages) {
+            if (tmp.getMessageId().equals(messageId)) {
+                message = tmp;
+                break;
+            }
+        }
+
+        if (message != null) {
+            message.setPayload(payload);
+            message.setBmp(MessageFactory.decodeToBitmap(payload));
+            refreshUiThread(0);
+            chatContentAdapter.duringTransmission = false;
+        }
+    }
+
+    private Message createTextMessage() {
         // Receiver field length == 0 -> broadcast message
         boolean isBroadcastMessage = chatBoxReceiverEditText.getText().length() == 0;
         String messageContent = chatBoxMessageEditText.getText().toString();
         chatBoxMessageEditText.getText().clear();
-        ChatMessage chatMessage;
+        Message chatMessage;
         if (isBroadcastMessage) {
-            chatMessage = new ChatMessage(username, "", messageContent, System.currentTimeMillis(), MessageType.SENDING_BROADCAST_MESSAGE);
+            chatMessage = MessageFactory.createSendingTextBroadcastMessage(username, messageContent, System.currentTimeMillis());
         } else {
             String receiver = chatBoxReceiverEditText.getText().toString();
-            chatMessage = new ChatMessage(username, receiver, messageContent, System.currentTimeMillis(), MessageType.SENDING_PRIVATE_MESSAGE);
+            chatMessage = MessageFactory.createSendingTextPrivateMessage(username, receiver, messageContent, System.currentTimeMillis());
         }
+        return chatMessage;
+    }
+
+    private Message createImageMessage(Bitmap bmp) {
+        // Receiver field length == 0 -> broadcast message
+        boolean isBroadcastMessage = chatBoxReceiverEditText.getText().length() == 0;
+        Message chatMessage;
+
+        if (isBroadcastMessage) {
+            chatMessage = MessageFactory
+                    .createSendingImageBroadcastMessage(
+                            username,
+                            bmp,
+                            System.currentTimeMillis(),
+                            m -> {
+                                chatService.sendMessage(m);
+                                return m;
+                            });
+        } else {
+            String receiver = chatBoxReceiverEditText.getText().toString();
+            chatMessage = MessageFactory.createSendingImagePrivateMessage(username, receiver, bmp, System.currentTimeMillis(), m -> {
+                chatService.sendMessage(m);
+                return m;
+            });
+        }
+
         return chatMessage;
     }
 
@@ -265,7 +348,7 @@ public class ChatFragment extends Fragment implements MessageReceiver {
             chatContentAdapter.notifyDataSetChanged();
             switch (direction) {
                 case 1:
-                    Log.d(TAG, "Scrolling to position "+ (messages.size() - 1) );
+                    Log.d(TAG, "Scrolling to position " + (messages.size() - 1));
                     chatContentRecyclerView.scrollToPosition(messages.size() - 1);
                     break;
                 case -1:
@@ -279,34 +362,49 @@ public class ChatFragment extends Fragment implements MessageReceiver {
     }
 
     static class ChatContentViewHolder extends RecyclerView.ViewHolder {
-        // For ChatMessage
+        // For all non-system message
         private final TextView messageSender;
-        private final TextView messageContent;
         private final TextView messageTime;
 
-        // For EnterLeaveMessage
-        private final TextView enterLeaveContent;
+        // For Text Message
+        private final TextView messageTextContent;
+
+        // For Image Message
+        private final ImageView messageImageContent;
+
+
+        // For System Message
+        private final TextView systemMessageContent;
 
         ChatContentViewHolder(View view) {
             super(view);
             this.messageSender = view.findViewById(R.id.textview_message_sender);
-            this.messageContent = view.findViewById(R.id.textview_message_content);
             this.messageTime = view.findViewById(R.id.textview_message_time);
-            this.enterLeaveContent = view.findViewById(R.id.textview_enter_leave_content);
+            this.messageTextContent = view.findViewById(R.id.textview_message_content);
+            this.messageImageContent = view.findViewById(R.id.imageview_message_content);
+            this.systemMessageContent = view.findViewById(R.id.textview_enter_leave_content);
         }
     }
 
-    static class ChatContentAdapter extends RecyclerView.Adapter<ChatContentViewHolder> {
+    class ChatContentAdapter extends RecyclerView.Adapter<ChatContentViewHolder> {
         private static final int SYSTEM_MESSAGE_VIEW = 0;
-        private static final int SENDING_BROADCAST_MESSAGE_VIEW = 1;
-        private static final int SENDING_PRIVATE_MESSAGE_VIEW = 2;
-        private static final int SENT_BROADCAST_MESSAGE_VIEW = 3;
-        private static final int SENT_PRIVATE_MESSAGE_VIEW = 4;
-        private static final int RECEIVED_BROADCAST_MESSAGE_VIEW = 5;
-        private static final int RECEIVED_PRIVATE_MESSAGE_VIEW = 6;
+        private static final int SENDING_TEXT_BROADCAST_MESSAGE_VIEW = 1;
+        private static final int SENDING_TEXT_PRIVATE_MESSAGE_VIEW = 2;
+        private static final int SENT_TEXT_BROADCAST_MESSAGE_VIEW = 3;
+        private static final int SENT_TEXT_PRIVATE_MESSAGE_VIEW = 4;
+        private static final int RECEIVED_TEXT_BROADCAST_MESSAGE_VIEW = 5;
+        private static final int RECEIVED_TEXT_PRIVATE_MESSAGE_VIEW = 6;
+        private static final int SENDING_IMAGE_BROADCAST_MESSAGE_VIEW = 7;
+        private static final int SENDING_IMAGE_PRIVATE_MESSAGE_VIEW = 8;
+        private static final int SENT_IMAGE_BROADCAST_MESSAGE_VIEW = 9;
+        private static final int SENT_IMAGE_PRIVATE_MESSAGE_VIEW = 10;
+        private static final int RECEIVED_IMAGE_BROADCAST_MESSAGE_VIEW = 11;
+        private static final int RECEIVED_IMAGE_PRIVATE_MESSAGE_VIEW = 12;
 
         private final Context context;
         private final List<Message> messages;
+
+        private boolean duringTransmission = false;
 
         // Used for datetime formatting
         private final SimpleDateFormat sdf = new SimpleDateFormat("MM/dd hh:mm:ss", Locale.US);
@@ -322,27 +420,45 @@ public class ChatFragment extends Fragment implements MessageReceiver {
             View view;
 
             switch (viewType) {
-                case SENDING_BROADCAST_MESSAGE_VIEW:
-                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sending_broadcast_message, parent, false);
+                case SENDING_TEXT_BROADCAST_MESSAGE_VIEW:
+                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sending_text_broadcast_message, parent, false);
                     break;
-                case SENDING_PRIVATE_MESSAGE_VIEW:
-                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sending_private_message, parent, false);
+                case SENDING_TEXT_PRIVATE_MESSAGE_VIEW:
+                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sending_text_private_message, parent, false);
                     break;
-                case SENT_BROADCAST_MESSAGE_VIEW:
-                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sent_broadcast_message, parent, false);
+                case SENT_TEXT_BROADCAST_MESSAGE_VIEW:
+                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sent_text_broadcast_message, parent, false);
                     break;
-                case SENT_PRIVATE_MESSAGE_VIEW:
-                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sent_private_message, parent, false);
+                case SENT_TEXT_PRIVATE_MESSAGE_VIEW:
+                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sent_text_private_message, parent, false);
                     break;
-                case RECEIVED_BROADCAST_MESSAGE_VIEW:
-                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_received_broadcast_message, parent, false);
+                case RECEIVED_TEXT_BROADCAST_MESSAGE_VIEW:
+                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_received_text_broadcast_message, parent, false);
                     break;
-                case RECEIVED_PRIVATE_MESSAGE_VIEW:
-                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_received_private_message, parent, false);
+                case RECEIVED_TEXT_PRIVATE_MESSAGE_VIEW:
+                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_received_text_private_message, parent, false);
+                    break;
+                case SENDING_IMAGE_BROADCAST_MESSAGE_VIEW:
+                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sending_image_broadcast_message, parent, false);
+                    break;
+                case SENDING_IMAGE_PRIVATE_MESSAGE_VIEW:
+                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sending_image_private_message, parent, false);
+                    break;
+                case SENT_IMAGE_BROADCAST_MESSAGE_VIEW:
+                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sent_image_broadcast_message, parent, false);
+                    break;
+                case SENT_IMAGE_PRIVATE_MESSAGE_VIEW:
+                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sent_image_private_message, parent, false);
+                    break;
+                case RECEIVED_IMAGE_BROADCAST_MESSAGE_VIEW:
+                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_received_image_broadcast_message, parent, false);
+                    break;
+                case RECEIVED_IMAGE_PRIVATE_MESSAGE_VIEW:
+                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_received_image_private_message, parent, false);
                     break;
                 case SYSTEM_MESSAGE_VIEW:
                 default:
-                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_enter_leave_message, parent, false);
+                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_system_message, parent, false);
                     break;
             }
 
@@ -352,22 +468,27 @@ public class ChatFragment extends Fragment implements MessageReceiver {
         @Override
         public void onBindViewHolder(@NonNull ChatContentViewHolder viewHolder, int position) {
             Message message = messages.get(position);
-            switch (message.getMessageType()) {
-                case SYSTEM_MESSAGE:
-                    SystemMessage systemMessage = (SystemMessage) message;
-                    viewHolder.enterLeaveContent.setText(systemMessage.getText());
-                    break;
-                case SENDING_BROADCAST_MESSAGE:
-                case SENDING_PRIVATE_MESSAGE:
-                case SENT_BROADCAST_MESSAGE:
-                case SENT_PRIVATE_MESSAGE:
-                case RECEIVED_BROADCAST_MESSAGE:
-                case RECEIVED_PRIVATE_MESSAGE:
-                default:
-                    ChatMessage chatMessage = (ChatMessage) message;
-                    viewHolder.messageSender.setText(chatMessage.getSender());
-                    viewHolder.messageTime.setText(sdf.format(new Date(chatMessage.getTime())));
-                    viewHolder.messageContent.setText(chatMessage.getText());
+            if (message.getMessageType() == MessageTypeEnum.SYSTEM_MESSAGE) {
+                viewHolder.systemMessageContent.setText(message.getPayload());
+            } else if (message.getMessageType().name().contains("TEXT")) {
+                viewHolder.messageSender.setText(message.getSender());
+                viewHolder.messageTime.setText(sdf.format(new Date(message.getTime())));
+                viewHolder.messageTextContent.setText(message.getPayload());
+            } else if (message.getMessageType().name().contains("IMAGE") && message.getBmp() != null) {
+                viewHolder.messageSender.setText(message.getSender());
+                viewHolder.messageTime.setText(sdf.format(new Date(message.getTime())));
+                int height = 100;
+                int width = 100;
+                viewHolder.messageImageContent.setImageBitmap(Bitmap.createScaledBitmap(message.getBmp(), width, height, false));
+            } else if (message.getMessageType().name().contains("IMAGE") && !message.isImageLoaded()) {
+                viewHolder.messageSender.setText(message.getSender());
+                viewHolder.messageTime.setText(sdf.format(new Date(message.getTime())));
+                viewHolder.messageImageContent.setOnClickListener(v -> {
+                    if (!duringTransmission) {
+                        duringTransmission = true;
+                        chatService.pullImageMessage(message.getMessageId());
+                    }
+                });
             }
         }
 
@@ -378,31 +499,7 @@ public class ChatFragment extends Fragment implements MessageReceiver {
 
         @Override
         public int getItemViewType(int position) {
-            int viewType;
-            switch (messages.get(position).getMessageType()) {
-                case SYSTEM_MESSAGE:
-                    viewType = SYSTEM_MESSAGE_VIEW;
-                    break;
-                case SENDING_BROADCAST_MESSAGE:
-                    viewType = SENDING_BROADCAST_MESSAGE_VIEW;
-                    break;
-                case SENDING_PRIVATE_MESSAGE:
-                    viewType = SENDING_PRIVATE_MESSAGE_VIEW;
-                    break;
-                case SENT_BROADCAST_MESSAGE:
-                    viewType = SENT_BROADCAST_MESSAGE_VIEW;
-                    break;
-                case SENT_PRIVATE_MESSAGE:
-                    viewType = SENT_PRIVATE_MESSAGE_VIEW;
-                    break;
-                case RECEIVED_PRIVATE_MESSAGE:
-                    viewType = RECEIVED_PRIVATE_MESSAGE_VIEW;
-                    break;
-                case RECEIVED_BROADCAST_MESSAGE:
-                default:
-                    viewType = RECEIVED_BROADCAST_MESSAGE_VIEW;
-            }
-            return viewType;
+            return messages.get(position).getMessageType().getValue();
         }
     }
 }

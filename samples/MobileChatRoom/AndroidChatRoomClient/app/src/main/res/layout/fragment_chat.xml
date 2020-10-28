@@ -45,6 +45,18 @@
             android:layout_height="wrap_content"
             android:maxLines="6"/>
 
+        <Button
+            android:id="@+id/button_chatbox_image"
+            android:text="@string/chatbox_imagebutton"
+            android:textSize="14sp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_width="64dp"
+            android:layout_height="48dp"
+            android:gravity="center"
+            android:layout_gravity="bottom"/>
+
     </LinearLayout>
 
     <LinearLayout

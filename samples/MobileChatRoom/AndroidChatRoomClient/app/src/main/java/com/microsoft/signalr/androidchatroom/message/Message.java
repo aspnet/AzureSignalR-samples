@@ -1,39 +1,83 @@
 package com.microsoft.signalr.androidchatroom.message;
 
+import android.graphics.Bitmap;
+
 import java.util.UUID;
 
-public abstract class Message {
-    private MessageType messageType;
-    private String text;
+public class Message {
+    public final static String BROADCAST_RECEIVER = "BCAST";
+    public final static String SYSTEM_SENDER = "SYS";
+
     private String messageId;
+    private MessageTypeEnum messageType;
+    private String sender;
+    private String receiver;
+    private boolean isImageLoaded;
+    private String payload;
     private long time;
 
-    public Message() {
-        this.messageId = UUID.randomUUID().toString();
-    }
+    private Bitmap bmp;
 
-    public MessageType getMessageType() {
-        return messageType;
-    }
-
-    public void setMessageType(MessageType messageType) {
+    public Message(String messageId, MessageTypeEnum messageType) {
+        this.messageId = messageId;
         this.messageType = messageType;
     }
 
-    protected void setMessageId(String messageId) {
-        this.messageId = messageId;
+    public Message(MessageTypeEnum messageType) {
+        this.messageId = UUID.randomUUID().toString();
+        this.messageType = messageType;
     }
 
     public String getMessageId() {
         return messageId;
     }
 
-    public String getText() {
-        return text;
+    public void setMessageId(String messageId) {
+        this.messageId = messageId;
     }
 
-    public void setText(String text) {
-        this.text = text;
+    public MessageTypeEnum getMessageType() {
+        return messageType;
+    }
+
+    public void setMessageType(MessageTypeEnum messageType) {
+        this.messageType = messageType;
+    }
+
+    public String getSender() {
+        return sender;
+    }
+
+    public void setSender(String sender) {
+        this.sender = sender;
+    }
+
+    public String getReceiver() {
+        return receiver;
+    }
+
+    public void setReceiver(String receiver) {
+        this.receiver = receiver;
+    }
+
+    public boolean isImage() {
+        return this.messageType.name().contains("IMAGE");
+    }
+
+    public boolean isImageLoaded() {
+        return isImageLoaded;
+    }
+
+    public void setImageLoaded(boolean imageLoaded) {
+        isImageLoaded = imageLoaded;
+    }
+
+    public String getPayload() {
+        return payload;
+    }
+
+    public void setPayload(String payload) {
+        this.payload = payload;
     }
 
     public long getTime() {
@@ -44,13 +88,27 @@ public abstract class Message {
         this.time = time;
     }
 
+    public Bitmap getBmp() {
+        return bmp;
+    }
+
+    public void setBmp(Bitmap bmp) {
+        this.bmp = bmp;
+    }
+
     public void ack(long receivedTimeInLong) {
         switch (messageType) {
-            case SENDING_BROADCAST_MESSAGE:
-                messageType = MessageType.SENT_BROADCAST_MESSAGE;
+            case SENDING_TEXT_BROADCAST_MESSAGE:
+                messageType = MessageTypeEnum.SENT_TEXT_BROADCAST_MESSAGE;
                 break;
-            case SENDING_PRIVATE_MESSAGE:
-                messageType = MessageType.SENT_PRIVATE_MESSAGE;
+            case SENDING_TEXT_PRIVATE_MESSAGE:
+                messageType = MessageTypeEnum.SENT_TEXT_PRIVATE_MESSAGE;
+                break;
+            case SENDING_IMAGE_BROADCAST_MESSAGE:
+                messageType = MessageTypeEnum.SENT_IMAGE_BROADCAST_MESSAGE;
+                break;
+            case SENDING_IMAGE_PRIVATE_MESSAGE:
+                messageType = MessageTypeEnum.SENT_IMAGE_PRIVATE_MESSAGE;
                 break;
             default:
         }
