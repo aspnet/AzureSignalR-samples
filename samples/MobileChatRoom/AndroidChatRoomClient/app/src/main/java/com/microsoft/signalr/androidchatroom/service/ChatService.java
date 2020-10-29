@@ -16,5 +16,5 @@ public interface ChatService {
 
     //// Pulling methods
     void pullHistoryMessages(long untilTimeInLong);
-    void pullImageMessage(String messageId);
+    void pullImageContent(String messageId);
 }

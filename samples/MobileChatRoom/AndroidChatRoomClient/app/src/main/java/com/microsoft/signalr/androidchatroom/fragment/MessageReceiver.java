@@ -7,7 +7,7 @@ import java.util.Set;
 
 public interface MessageReceiver {
 
-    void activate();
+    void activateClickEvent();
 
     void tryAddMessage(Message message, int direction);
 
@@ -15,9 +15,9 @@ public interface MessageReceiver {
 
     void setMessageAck(String messageId, long receivedTimeInLong);
 
-    Set<Message> getSendingMessages();
+    void loadImageContent(String messageId, String payload);
 
     void showSessionExpiredDialog();
 
-    void loadImageContent(String messageId, String payload);
+
 }

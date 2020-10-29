@@ -8,9 +8,6 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.microsoft.signalr.HubConnection;
 import com.microsoft.signalr.HubConnectionBuilder;
 import com.microsoft.signalr.HubConnectionState;
@@ -42,19 +39,12 @@ public class SignalRChatService extends Service implements ChatService {
     private String deviceUuid;
 
     // Reconnect timer
-    private Boolean firstPull = true;
+    private boolean firstPull = true;
+    private boolean activePull = false;
     private AtomicBoolean sessionStarted = new AtomicBoolean(false);
     private int reconnectDelay = 0; // immediate connect to server when enter the chat room
     private int reconnectInterval = 5000;
     private Timer reconnectTimer;
-
-    // Resend timer
-    private int resendChatMessageDelay = 5000;
-    private int resendChatMessageInterval = 5000;
-    private Timer resendChatMessageTimer;
-
-    // Gson object for deserialization
-    private final Gson gson = new Gson();
 
     // Service binder
     private final IBinder chatServiceBinder = new ChatServiceBinder();
@@ -71,7 +61,8 @@ public class SignalRChatService extends Service implements ChatService {
         return chatServiceBinder;
     }
 
-    //// Register methods
+    ///////// Session managers
+
     @Override
     public void register(String username, String deviceUuid, MessageReceiver messageReceiver) {
         this.username = username;
@@ -79,7 +70,6 @@ public class SignalRChatService extends Service implements ChatService {
         this.messageReceiver = messageReceiver;
     }
 
-    //// Session management methods
     @Override
     public void startSession() {
         // Create, register, and start hub connection
@@ -92,29 +82,26 @@ public class SignalRChatService extends Service implements ChatService {
                 connectToServer();
             }
         }, reconnectDelay, reconnectInterval);
-
-        // Set resend chat message timer
-//        resendChatMessageTimer = new Timer();
-//        resendChatMessageTimer.scheduleAtFixedRate(new TimerTask() {
-//            @Override
-//            public void run() {
-//                resendChatMessageHandler();
-//            }
-//        }, resendChatMessageDelay, resendChatMessageInterval);
     }
 
     private void onSessionStart() {
         // Register the method handlers called by the server
-        hubConnection.on("broadcastSystemMessage", this::broadcastSystemMessage,
+
+        /// Message receivers
+        hubConnection.on("receiveSystemMessage", this::receiveSystemMessage,
                 String.class, String.class, Long.class);
-        hubConnection.on("displayBroadcastMessage", this::displayBroadcastMessage,
+        hubConnection.on("receiveBroadcastMessage", this::receiveBroadcastMessage,
                 String.class, String.class, String.class, String.class, Boolean.class, Long.class, String.class);
-        hubConnection.on("displayPrivateMessage", this::displayPrivateMessage,
+        hubConnection.on("receivePrivateMessage", this::receivePrivateMessage,
                 String.class, String.class, String.class, String.class, Boolean.class, Long.class, String.class);
+
+        /// Rich content receivers
+        hubConnection.on("receiveHistoryMessages", this::receiveHistoryMessages, String.class);
+        hubConnection.on("receiveImageContent", this::receiveImageContent, String.class, String.class);
+
+        /// Operation receivers
         hubConnection.on("serverAck", this::serverAck, String.class, Long.class);
         hubConnection.on("expireSession", this::expireSession, Boolean.class);
-        hubConnection.on("addHistoryMessages", this::addHistoryMessages, String.class);
-        hubConnection.on("receiveImageContent", this::receiveImageContent, String.class, String.class);
     }
 
     @Override
@@ -130,9 +117,11 @@ public class SignalRChatService extends Service implements ChatService {
     }
 
 
-    //// Message methods called by server
-    public void broadcastSystemMessage(String messageId, String payload, long sendTime) {
-        Log.d("broadcastSystemMessage", payload);
+    ///////// Receivers
+
+    /// Message receivers
+    public void receiveSystemMessage(String messageId, String payload, long sendTime) {
+        Log.d("receiveSystemMessage", payload);
 
         // Create message
         Message systemMessage = MessageFactory.createReceivedSystemMessage(messageId, payload, sendTime);
@@ -141,8 +130,8 @@ public class SignalRChatService extends Service implements ChatService {
         messageReceiver.tryAddMessage(systemMessage, 1);
     }
 
-    public void displayBroadcastMessage(String messageId, String sender, String receiver, String payload, boolean isImage, long sendTime, String ackId) {
-        Log.d("displayBroadcastMessage", sender);
+    public void receiveBroadcastMessage(String messageId, String sender, String receiver, String payload, boolean isImage, long sendTime, String ackId) {
+        Log.d("receiveBroadcastMessage", sender);
 
         // Send back ack
         hubConnection.send("OnAckResponseReceived", ackId, username);
@@ -159,8 +148,8 @@ public class SignalRChatService extends Service implements ChatService {
         messageReceiver.tryAddMessage(chatMessage, 1);
     }
 
-    public void displayPrivateMessage(String messageId, String sender, String receiver, String payload, boolean isImage, long sendTime, String ackId) {
-        Log.d("displayPrivateMessage", sender);
+    public void receivePrivateMessage(String messageId, String sender, String receiver, String payload, boolean isImage, long sendTime, String ackId) {
+        Log.d("receivePrivateMessage", sender);
 
         // Send back ack
         hubConnection.send("OnAckResponseReceived", ackId, username);
@@ -177,41 +166,39 @@ public class SignalRChatService extends Service implements ChatService {
         messageReceiver.tryAddMessage(chatMessage, 1);
     }
 
-    public void serverAck(String messageId, long receivedTimeInLong) {
-        Log.d("serverAck", messageId);
-        messageReceiver.setMessageAck(messageId, receivedTimeInLong);
-    }
-
-    public void addHistoryMessages(String serializedString) {
-        Log.d("addHistoryMessages", serializedString);
-        List<Message> historyMessages = new ArrayList<>();
-        JsonArray jsonArray = gson.fromJson(serializedString, JsonArray.class);
-        for (JsonElement jsonElement : jsonArray) {
-            Message chatMessage = MessageFactory.fromJsonObject(jsonElement.getAsJsonObject(), username);
-            historyMessages.add(chatMessage);
-        }
-        Log.d("addHistoryMessages", historyMessages.toString());
-        if (firstPull) {
-            synchronized (firstPull) {
-                if (firstPull) {
-                    messageReceiver.tryAddAllMessages(historyMessages, 1);
-                    firstPull = false;
-                }
-            }
-        } else {
-            messageReceiver.tryAddAllMessages(historyMessages, 0);
-        }
-
-    }
+    /// Rich content receivers
 
     public void receiveImageContent(String messageId, String payload) {
         messageReceiver.loadImageContent(messageId, payload);
     }
 
-    //// Message sending methods
+    public void receiveHistoryMessages(String serializedString) {
+        Log.d("receiveHistoryMessages", serializedString);
+        List<Message> historyMessages = MessageFactory.parseHistoryMessages(serializedString, username);
+
+        if (firstPull) {
+            messageReceiver.tryAddAllMessages(historyMessages, 1);
+            firstPull = false;
+        } else {
+            messageReceiver.tryAddAllMessages(historyMessages, 0);
+        }
+
+        activePull = false;
+    }
+
+    public void serverAck(String messageId, long receivedTimeInLong) {
+        Log.d("serverAck", messageId);
+        messageReceiver.setMessageAck(messageId, receivedTimeInLong);
+    }
+
+    ///////// Senders
+
+    /// Message sending methods
     @Override
     public void sendMessage(Message chatMessage) {
         synchronized (chatMessage) {
+            chatMessage.setTime(System.currentTimeMillis());
+            chatMessage.startSendMessageTimer();
             switch (chatMessage.getMessageType()) {
                 case SENDING_TEXT_BROADCAST_MESSAGE:
                 case SENDING_IMAGE_BROADCAST_MESSAGE:
@@ -229,7 +216,7 @@ public class SignalRChatService extends Service implements ChatService {
     private void sendBroadcastMessage(Message broadcastMessage) {
         Log.d("SEND BCAST MESSAGE", broadcastMessage.toString());
         if (hubConnection.getConnectionState() == HubConnectionState.CONNECTED) {
-            if (broadcastMessage.isImage() && broadcastMessage.isImageLoaded() ||
+            if (broadcastMessage.isImage() && broadcastMessage.getBmp()!=null ||
                 !broadcastMessage.isImage()) {
                 hubConnection.send("OnBroadcastMessageReceived",
                         broadcastMessage.getMessageId(),
@@ -243,7 +230,7 @@ public class SignalRChatService extends Service implements ChatService {
     private void sendPrivateMessage(Message privateMessage) {
         Log.d("SEND PRIVATE MESSAGE", privateMessage.toString());
         if (hubConnection.getConnectionState() == HubConnectionState.CONNECTED) {
-            if (privateMessage.isImage() && privateMessage.isImageLoaded() ||
+            if (privateMessage.isImage() && privateMessage.getBmp()!=null ||
                     !privateMessage.isImage()) {
                 hubConnection.send("OnPrivateMessageReceived",
                         privateMessage.getMessageId(),
@@ -258,39 +245,22 @@ public class SignalRChatService extends Service implements ChatService {
     //// Pulling message methods
     @Override
     public void pullHistoryMessages(long untilTimeInLong) {
-        if (hubConnection.getConnectionState() == HubConnectionState.CONNECTED) {
+        if (hubConnection.getConnectionState() == HubConnectionState.CONNECTED && !activePull) {
+            activePull = true;
             Log.d("pullHistoryMessages", "Called with long time: " + untilTimeInLong);
             hubConnection.send("OnPullHistoryMessagesReceived", username, untilTimeInLong);
         }
     }
 
     @Override
-    public void pullImageMessage(String messageId) {
+    public void pullImageContent(String messageId) {
         if (hubConnection.getConnectionState() == HubConnectionState.CONNECTED) {
-            Log.d("pullImageMessage", "message id=" + messageId);
-            hubConnection.send("OnImageMessagesReceived", username, messageId);
+            Log.d("pullImageContent", "message id=" + messageId);
+            hubConnection.send("OnPullImageContentReceived", username, messageId);
         }
     }
 
-    //// Resend and reconnect methods
-    private void resendChatMessageHandler() {
-        // Calculate chat messages to resend
-        Set<Message> sendingMessages = messageReceiver.getSendingMessages();
-
-        if (sendingMessages.size() > 0 && hubConnection.getConnectionState() == HubConnectionState.CONNECTED) {
-            resendChatMessages(sendingMessages);
-        }
-    }
-
-    private void resendChatMessages(Set<Message> messagesToSend) {
-        for (Message message : messagesToSend) {
-            synchronized (message) {
-                if (message.getMessageType().name().contains("SENDING")) {
-                    sendMessage(message);
-                }
-            }
-        }
-    }
+    ///////// Connection Guarders
 
     private void connectToServer() {
         if (hubConnection.getConnectionState() != HubConnectionState.CONNECTED) {
@@ -305,7 +275,7 @@ public class SignalRChatService extends Service implements ChatService {
                     if (!sessionStarted.get()) { // very first start of connection
                         onSessionStart();
                         hubConnection.send("EnterChatRoom", deviceUuid, username);
-                        messageReceiver.activate();
+                        messageReceiver.activateClickEvent();
                         sessionStarted.set(true);
                     }
                     Log.d("Reconnection", "touch server after reconnection");

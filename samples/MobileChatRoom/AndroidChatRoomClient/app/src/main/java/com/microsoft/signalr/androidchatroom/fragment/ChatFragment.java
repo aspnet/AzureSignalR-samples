@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -137,7 +138,7 @@ public class ChatFragment extends Fragment implements MessageReceiver {
     }
 
     @Override
-    public void activate() {
+    public void activateClickEvent() {
         chatBoxSendButton.setOnClickListener(this::chatBoxSendButtonClickListener);
         chatBoxImageButton.setOnClickListener(this::chatBoxImageButtonClickListener);
         chatContentRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -178,6 +179,7 @@ public class ChatFragment extends Fragment implements MessageReceiver {
         for (Message message : messages) {
             if (!existedMessageIds.contains(message.getMessageId())) {
                 this.messages.add(message);
+                Log.d("Image message", String.format("id=%s\ttime=%s", message.getMessageId(), message.getTime()));
                 existedMessageIds.add(message.getMessageId());
             }
         }
@@ -198,17 +200,6 @@ public class ChatFragment extends Fragment implements MessageReceiver {
         }
 
         refreshUiThread(0);
-    }
-
-    @Override
-    public Set<Message> getSendingMessages() {
-        Set<Message> sendingMessages = new HashSet<>();
-        for (Message message : messages) {
-            if (message.getMessageType().name().contains("SENDING")) {
-                sendingMessages.add(message);
-            }
-        }
-        return sendingMessages;
     }
 
     @Override
@@ -283,7 +274,6 @@ public class ChatFragment extends Fragment implements MessageReceiver {
             message.setPayload(payload);
             message.setBmp(MessageFactory.decodeToBitmap(payload));
             refreshUiThread(0);
-            chatContentAdapter.duringTransmission = false;
         }
     }
 
@@ -361,10 +351,15 @@ public class ChatFragment extends Fragment implements MessageReceiver {
         });
     }
 
+    interface ItemClickListener {
+        void onClickItem(int position);
+    }
+
     static class ChatContentViewHolder extends RecyclerView.ViewHolder {
         // For all non-system message
         private final TextView messageSender;
         private final TextView messageTime;
+        private final TextView statusTextView;
 
         // For Text Message
         private final TextView messageTextContent;
@@ -372,14 +367,16 @@ public class ChatFragment extends Fragment implements MessageReceiver {
         // For Image Message
         private final ImageView messageImageContent;
 
-
         // For System Message
         private final TextView systemMessageContent;
+
+        private int position;
 
         ChatContentViewHolder(View view) {
             super(view);
             this.messageSender = view.findViewById(R.id.textview_message_sender);
             this.messageTime = view.findViewById(R.id.textview_message_time);
+            this.statusTextView = view.findViewById(R.id.textview_message_status);
             this.messageTextContent = view.findViewById(R.id.textview_message_content);
             this.messageImageContent = view.findViewById(R.id.imageview_message_content);
             this.systemMessageContent = view.findViewById(R.id.textview_enter_leave_content);
@@ -404,7 +401,6 @@ public class ChatFragment extends Fragment implements MessageReceiver {
         private final Context context;
         private final List<Message> messages;
 
-        private boolean duringTransmission = false;
 
         // Used for datetime formatting
         private final SimpleDateFormat sdf = new SimpleDateFormat("MM/dd hh:mm:ss", Locale.US);
@@ -468,6 +464,7 @@ public class ChatFragment extends Fragment implements MessageReceiver {
         @Override
         public void onBindViewHolder(@NonNull ChatContentViewHolder viewHolder, int position) {
             Message message = messages.get(position);
+            viewHolder.position = position;
             if (message.getMessageType() == MessageTypeEnum.SYSTEM_MESSAGE) {
                 viewHolder.systemMessageContent.setText(message.getPayload());
             } else if (message.getMessageType().name().contains("TEXT")) {
@@ -477,20 +474,39 @@ public class ChatFragment extends Fragment implements MessageReceiver {
             } else if (message.getMessageType().name().contains("IMAGE") && message.getBmp() != null) {
                 viewHolder.messageSender.setText(message.getSender());
                 viewHolder.messageTime.setText(sdf.format(new Date(message.getTime())));
-                int height = 100;
-                int width = 100;
-                viewHolder.messageImageContent.setImageBitmap(Bitmap.createScaledBitmap(message.getBmp(), width, height, false));
-            } else if (message.getMessageType().name().contains("IMAGE") && !message.isImageLoaded()) {
+                Bitmap bmp = message.getBmp();
+                int[] resized = resizeImage(bmp.getWidth(), bmp.getHeight(), 400);
+                viewHolder.messageImageContent.setImageBitmap(Bitmap.createScaledBitmap(bmp, resized[0], resized[1], false));
+            } else if (message.getMessageType().name().contains("IMAGE") && message.getBmp() == null) {
                 viewHolder.messageSender.setText(message.getSender());
                 viewHolder.messageTime.setText(sdf.format(new Date(message.getTime())));
                 viewHolder.messageImageContent.setOnClickListener(v -> {
-                    if (!duringTransmission) {
-                        duringTransmission = true;
-                        chatService.pullImageMessage(message.getMessageId());
+                    Log.d("Clicking image id=", message.getMessageId());
+                    if (message.getBmp() == null) {
+                        viewHolder.messageImageContent.setImageResource(R.drawable.ic_pulling);
+                        refreshUiThread(0);
+                        chatService.pullImageContent(message.getMessageId());
                     }
                 });
             }
+
+            if (message.getMessageType().name().contains("SENDING")) {
+                if (message.isSendMessageTimeOut()) {
+                    viewHolder.statusTextView.setText(R.string.message_resend);
+                    viewHolder.statusTextView.setOnClickListener(v -> {
+                        if (message.isSendMessageTimeOut()) {
+                            viewHolder.statusTextView.setText(R.string.message_sending);
+                            chatService.sendMessage(message);
+                        }
+                    });
+                } else {
+                    viewHolder.statusTextView.setText(R.string.message_sending);
+                    viewHolder.statusTextView.setOnClickListener(null);
+                }
+            }
         }
+
+
 
         @Override
         public int getItemCount() {
@@ -500,6 +516,17 @@ public class ChatFragment extends Fragment implements MessageReceiver {
         @Override
         public int getItemViewType(int position) {
             return messages.get(position).getMessageType().getValue();
+        }
+
+        private int[] resizeImage(int width, int height, int maxValue) {
+            if (width > height && width > maxValue) {
+                height = height * maxValue / width;
+                width = maxValue;
+            } else if (width < height && height > maxValue) {
+                width = width * maxValue / height;
+                height = maxValue;
+            }
+            return new int[]{width, height};
         }
     }
 }

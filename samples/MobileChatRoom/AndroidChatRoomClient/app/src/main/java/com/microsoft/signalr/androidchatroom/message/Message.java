@@ -2,6 +2,8 @@ package com.microsoft.signalr.androidchatroom.message;
 
 import android.graphics.Bitmap;
 
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 
 public class Message {
@@ -12,11 +14,16 @@ public class Message {
     private MessageTypeEnum messageType;
     private String sender;
     private String receiver;
-    private boolean isImageLoaded;
     private String payload;
     private long time;
 
     private Bitmap bmp;
+
+    private Timer sendMessageTimer;
+    private boolean sendMessageTimeOut;
+
+    private Timer pullImageTimer;
+    private boolean pullImageTimeOut;
 
     public Message(String messageId, MessageTypeEnum messageType) {
         this.messageId = messageId;
@@ -64,14 +71,6 @@ public class Message {
         return this.messageType.name().contains("IMAGE");
     }
 
-    public boolean isImageLoaded() {
-        return isImageLoaded;
-    }
-
-    public void setImageLoaded(boolean imageLoaded) {
-        isImageLoaded = imageLoaded;
-    }
-
     public String getPayload() {
         return payload;
     }
@@ -96,22 +95,73 @@ public class Message {
         this.bmp = bmp;
     }
 
-    public void ack(long receivedTimeInLong) {
-        switch (messageType) {
-            case SENDING_TEXT_BROADCAST_MESSAGE:
-                messageType = MessageTypeEnum.SENT_TEXT_BROADCAST_MESSAGE;
-                break;
-            case SENDING_TEXT_PRIVATE_MESSAGE:
-                messageType = MessageTypeEnum.SENT_TEXT_PRIVATE_MESSAGE;
-                break;
-            case SENDING_IMAGE_BROADCAST_MESSAGE:
-                messageType = MessageTypeEnum.SENT_IMAGE_BROADCAST_MESSAGE;
-                break;
-            case SENDING_IMAGE_PRIVATE_MESSAGE:
-                messageType = MessageTypeEnum.SENT_IMAGE_PRIVATE_MESSAGE;
-                break;
-            default:
+    public boolean isPullImageTimeOut() {
+        return this.isPullImageTimeOut();
+    }
+
+    public void startPullImageTimer() {
+        this.pullImageTimer = new Timer();
+        this.pullImageTimeOut = false;
+        long localPullTime = System.currentTimeMillis();
+        pullImageTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                if (!pullImageTimeOut && System.currentTimeMillis() - localPullTime > 5000) {
+                    pullImageTimeOut = true;
+                    cancel();
+                }
+            }
+        }, 0, 200);
+    }
+
+    public void ackPullImage(long receivedTimeInLong) {
+        if (!pullImageTimeOut) {
+            if (pullImageTimer != null) {
+                pullImageTimer.cancel();
+            }
         }
-        setTime(receivedTimeInLong);
+    }
+
+    public boolean isSendMessageTimeOut() {
+        return this.sendMessageTimeOut;
+    }
+
+    public void startSendMessageTimer() {
+        this.sendMessageTimer = new Timer();
+        this.sendMessageTimeOut = false;
+        long localSendTime = this.time;
+        sendMessageTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                if (!sendMessageTimeOut && System.currentTimeMillis() - localSendTime > 5000) {
+                    sendMessageTimeOut = true;
+                    cancel();
+                }
+            }
+        }, 0, 200);
+    }
+
+    public void ack(long receivedTimeInLong) {
+        if (!sendMessageTimeOut) {
+            if (sendMessageTimer != null) {
+                sendMessageTimer.cancel();
+            }
+            switch (messageType) {
+                case SENDING_TEXT_BROADCAST_MESSAGE:
+                    messageType = MessageTypeEnum.SENT_TEXT_BROADCAST_MESSAGE;
+                    break;
+                case SENDING_TEXT_PRIVATE_MESSAGE:
+                    messageType = MessageTypeEnum.SENT_TEXT_PRIVATE_MESSAGE;
+                    break;
+                case SENDING_IMAGE_BROADCAST_MESSAGE:
+                    messageType = MessageTypeEnum.SENT_IMAGE_BROADCAST_MESSAGE;
+                    break;
+                case SENDING_IMAGE_PRIVATE_MESSAGE:
+                    messageType = MessageTypeEnum.SENT_IMAGE_PRIVATE_MESSAGE;
+                    break;
+                default:
+            }
+            setTime(receivedTimeInLong);
+        }
     }
 }

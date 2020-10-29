@@ -4,26 +4,30 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 import java.util.Locale;
 import java.util.function.UnaryOperator;
 
 public class MessageFactory {
     private final static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSS'Z'", Locale.US);
     private final static long utcOffset = 1000 * 3600 * 8;
-
+    private final static Gson gson = new Gson();
 
     public static Message createReceivedTextBroadcastMessage(String messageId, String sender, String payload, long time) {
         Message message = new Message(messageId, MessageTypeEnum.RECEIVED_TEXT_BROADCAST_MESSAGE);
         message.setSender(sender);
         message.setReceiver(Message.BROADCAST_RECEIVER);
         message.setPayload(payload);
-        message.setImageLoaded(false);
         message.setTime(time);
         return message;
     }
@@ -33,7 +37,6 @@ public class MessageFactory {
         message.setSender(sender);
         message.setReceiver(Message.BROADCAST_RECEIVER);
         message.setPayload(payload);
-        message.setImageLoaded(false);
         message.setTime(time);
         return message;
     }
@@ -43,7 +46,6 @@ public class MessageFactory {
         message.setSender(sender);
         message.setReceiver(Message.BROADCAST_RECEIVER);
         message.setPayload(payload);
-        message.setImageLoaded(false);
         message.setTime(time);
         return message;
     }
@@ -56,7 +58,6 @@ public class MessageFactory {
         new Thread(() -> {
             String payload = encodeToBase64(bmp);
             message.setPayload(payload);
-            message.setImageLoaded(true);
             callback.apply(message);
         }).start();
         message.setTime(time);
@@ -68,7 +69,6 @@ public class MessageFactory {
         message.setSender(sender);
         message.setReceiver(receiver);
         message.setPayload(payload);
-        message.setImageLoaded(false);
         message.setTime(time);
         return message;
     }
@@ -78,7 +78,6 @@ public class MessageFactory {
         message.setSender(sender);
         message.setReceiver(receiver);
         message.setPayload(payload);
-        message.setImageLoaded(false);
         message.setTime(time);
         return message;
     }
@@ -88,7 +87,6 @@ public class MessageFactory {
         message.setSender(sender);
         message.setReceiver(receiver);
         message.setPayload(payload);
-        message.setImageLoaded(false);
         message.setTime(time);
         return message;
     }
@@ -101,7 +99,6 @@ public class MessageFactory {
         new Thread(() -> {
             String payload = encodeToBase64(bmp);
             message.setPayload(payload);
-            message.setImageLoaded(true);
             callback.apply(message);
         }).start();
         message.setTime(time);
@@ -113,7 +110,6 @@ public class MessageFactory {
         message.setSender(Message.SYSTEM_SENDER);
         message.setReceiver(Message.BROADCAST_RECEIVER);
         message.setPayload(payload);
-        message.setImageLoaded(false);
         message.setTime(time);
         return message;
     }
@@ -165,9 +161,18 @@ public class MessageFactory {
         message.setSender(sender);
         message.setReceiver(receiver);
         message.setPayload(payload);
-        message.setImageLoaded(false);
         message.setTime(time);
         return message;
+    }
+
+    public static List<Message> parseHistoryMessages(String serializedString, String username) {
+        List<Message> historyMessages = new ArrayList<>();
+        JsonArray jsonArray = gson.fromJson(serializedString, JsonArray.class);
+        for (JsonElement jsonElement : jsonArray) {
+            Message chatMessage = fromJsonObject(jsonElement.getAsJsonObject(), username);
+            historyMessages.add(chatMessage);
+        }
+        return historyMessages;
     }
 
     public static String encodeToBase64(Bitmap bmp) {

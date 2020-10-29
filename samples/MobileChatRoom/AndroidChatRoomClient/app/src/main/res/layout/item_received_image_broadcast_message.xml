@@ -21,7 +21,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/received_broadcast_message_bubble"
-        android:src="@drawable/ic_microsoft_logo"
+        android:src="@drawable/ic_ready_to_pull"
         android:paddingLeft="20dp"
         android:paddingStart="20dp"
         android:paddingRight="20dp"
