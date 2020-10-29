@@ -208,7 +208,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         /// <param name="username"></param>
         /// <param name="messageId"></param>
         /// <returns></returns>
-        public async Task OnImageMessagesReceived(string username, string messageId)
+        public async Task OnPullImageContentReceived(string username, string messageId)
         {
             string imagePayload = await _messageStorage.TryFetchImageContent(messageId);
             await Clients.Client(_userHandler.GetUserSession(username).ConnectionId).SendAsync("receiveImageContent", messageId, imagePayload);
@@ -222,7 +222,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         private async Task SendSystemMessage(Message systemMessage)
         {
             //  Broadcast to all other users
-            await Clients.All.SendAsync("broadcastSystemMessage",
+            await Clients.All.SendAsync("receiveSystemMessage",
                     systemMessage.MessageId,
                     systemMessage.Payload,
                     CSharpDateTimeToJavaLong(systemMessage.SendTime));
@@ -249,7 +249,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
             try
             {
                 await Clients.AllExcept(_userHandler.GetUserSession(broadcastMessage.Sender).ConnectionId)
-                    .SendAsync("displayBroadcastMessage",
+                    .SendAsync("receiveBroadcastMessage",
                                 broadcastMessage.MessageId,
                                 broadcastMessage.Sender,
                                 broadcastMessage.Receiver,
@@ -288,7 +288,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
             {
                 //  Send to receiver then
                 await Clients.Client(_userHandler.GetUserSession(privateMessage.Receiver).ConnectionId)
-                        .SendAsync("displayPrivateMessage",
+                        .SendAsync("receivePrivateMessage",
                                     privateMessage.MessageId,
                                     privateMessage.Sender,
                                     privateMessage.Receiver,
@@ -321,7 +321,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
                 //  Convert list of history messages to jsonString, then send to the client.
                 Console.WriteLine("SendHistoryMessages");
                 await Clients.Client(Context.ConnectionId)
-                    .SendAsync("addHistoryMessages", _messageFactory.ToListJsonString(historyMessages));
+                    .SendAsync("receiveHistoryMessages", _messageFactory.ToListJsonString(historyMessages));
             } catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
