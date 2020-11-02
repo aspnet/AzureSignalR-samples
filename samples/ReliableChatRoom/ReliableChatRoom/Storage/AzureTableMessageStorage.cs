@@ -96,7 +96,8 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
             var query = (from message in messageQuery
                          where message.RowKey.CompareTo(endDateTimeString) < 0 &&
                          (message.Sender.CompareTo(username) == 0 ||
-                         message.Receiver.CompareTo(username) == 0)
+                         message.Receiver.CompareTo(username) == 0 ||
+                         message.Receiver.CompareTo(Message.BROADCAST_RECEIVER) == 0)
                          select message).AsTableQuery();
 
             List<MessageEntity> messageEntities;

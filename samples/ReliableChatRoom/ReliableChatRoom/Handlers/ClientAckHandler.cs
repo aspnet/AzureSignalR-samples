@@ -147,7 +147,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
             string senderConnectionId = _userHandler.GetUserSession(broadcastMessage.Sender).ConnectionId;
             Console.WriteLine(string.Format("ResendBroadcastMessage: sender connectionid: {0}", senderConnectionId));
             _hubContext.Clients.AllExcept(senderConnectionId)
-                    .SendAsync("displayBroadcastMessage",
+                    .SendAsync("receiveBroadcastMessage",
                                 broadcastMessage.MessageId,
                                 broadcastMessage.Sender,
                                 broadcastMessage.Receiver,
@@ -161,7 +161,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
             string receiverConnectionId = _userHandler.GetUserSession(privateMessage.Receiver).ConnectionId;
             Console.WriteLine(string.Format("ResendPrivateMessage: receiver connectionid: {0}", receiverConnectionId));
             _hubContext.Clients.Client(receiverConnectionId)
-                    .SendAsync("displayPrivateMessage",
+                    .SendAsync("receivePrivateMessage",
                                 privateMessage.MessageId,
                                 privateMessage.Sender,
                                 privateMessage.Receiver,
