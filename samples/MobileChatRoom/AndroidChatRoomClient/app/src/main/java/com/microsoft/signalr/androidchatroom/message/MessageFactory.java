@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
-import java.util.function.UnaryOperator;
 
 public class MessageFactory {
     private final static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSS'Z'", Locale.US);
@@ -50,7 +49,7 @@ public class MessageFactory {
         return message;
     }
 
-    public static Message createSendingImageBroadcastMessage(String sender, Bitmap bmp, long time, UnaryOperator<Message> callback) {
+    public static Message createSendingImageBroadcastMessage(String sender, Bitmap bmp, long time, SimpleCallback<Message> callback) {
         Message message = new Message(MessageTypeEnum.SENDING_IMAGE_BROADCAST_MESSAGE);
         message.setSender(sender);
         message.setReceiver(Message.BROADCAST_RECEIVER);
@@ -58,7 +57,7 @@ public class MessageFactory {
         new Thread(() -> {
             String payload = encodeToBase64(bmp);
             message.setPayload(payload);
-            callback.apply(message);
+            callback.run(message);
         }).start();
         message.setTime(time);
         return message;
@@ -91,7 +90,7 @@ public class MessageFactory {
         return message;
     }
 
-    public static Message createSendingImagePrivateMessage(String sender, String receiver, Bitmap bmp, long time, UnaryOperator<Message> callback) {
+    public static Message createSendingImagePrivateMessage(String sender, String receiver, Bitmap bmp, long time, SimpleCallback<Message> callback) {
         Message message = new Message(MessageTypeEnum.SENDING_IMAGE_PRIVATE_MESSAGE);
         message.setSender(sender);
         message.setReceiver(receiver);
@@ -99,7 +98,7 @@ public class MessageFactory {
         new Thread(() -> {
             String payload = encodeToBase64(bmp);
             message.setPayload(payload);
-            callback.apply(message);
+            callback.run(message);
         }).start();
         message.setTime(time);
         return message;

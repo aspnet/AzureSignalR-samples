@@ -2,6 +2,8 @@ package com.microsoft.signalr.androidchatroom.message;
 
 import android.graphics.Bitmap;
 
+import com.microsoft.signalr.androidchatroom.fragment.MessageReceiver;
+
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
@@ -20,10 +22,10 @@ public class Message {
     private Bitmap bmp;
 
     private Timer sendMessageTimer;
-    private boolean sendMessageTimeOut;
+    private boolean sendMessageTimeOut = false;
 
     private Timer pullImageTimer;
-    private boolean pullImageTimeOut;
+    private boolean pullImageTimeOut = true;
 
     public Message(String messageId, MessageTypeEnum messageType) {
         this.messageId = messageId;
@@ -92,14 +94,15 @@ public class Message {
     }
 
     public void setBmp(Bitmap bmp) {
+        this.pullImageTimeOut = false;
         this.bmp = bmp;
     }
 
     public boolean isPullImageTimeOut() {
-        return this.isPullImageTimeOut();
+        return this.pullImageTimeOut;
     }
 
-    public void startPullImageTimer() {
+    public void startPullImageTimer(MessageReceiver messageReceiver, SimpleCallback<MessageReceiver> callback) {
         this.pullImageTimer = new Timer();
         this.pullImageTimeOut = false;
         long localPullTime = System.currentTimeMillis();
@@ -109,12 +112,13 @@ public class Message {
                 if (!pullImageTimeOut && System.currentTimeMillis() - localPullTime > 5000) {
                     pullImageTimeOut = true;
                     cancel();
+                    callback.run(messageReceiver);
                 }
             }
         }, 0, 200);
     }
 
-    public void ackPullImage(long receivedTimeInLong) {
+    public void ackPullImage() {
         if (!pullImageTimeOut) {
             if (pullImageTimer != null) {
                 pullImageTimer.cancel();
@@ -126,7 +130,7 @@ public class Message {
         return this.sendMessageTimeOut;
     }
 
-    public void startSendMessageTimer() {
+    public void startSendMessageTimer(MessageReceiver messageReceiver, SimpleCallback<MessageReceiver> callback) {
         this.sendMessageTimer = new Timer();
         this.sendMessageTimeOut = false;
         long localSendTime = this.time;
@@ -136,6 +140,7 @@ public class Message {
                 if (!sendMessageTimeOut && System.currentTimeMillis() - localSendTime > 5000) {
                     sendMessageTimeOut = true;
                     cancel();
+                    callback.run(messageReceiver);
                 }
             }
         }, 0, 200);

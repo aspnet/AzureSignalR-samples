@@ -19,5 +19,5 @@ public interface MessageReceiver {
 
     void showSessionExpiredDialog();
 
-
+    void refreshUiThread(boolean sort, int direction);
 }

@@ -187,7 +187,6 @@ public class SignalRChatService extends Service implements ChatService {
     }
 
     public void serverAck(String messageId, long receivedTimeInLong) {
-        Log.d("serverAck", messageId);
         messageReceiver.setMessageAck(messageId, receivedTimeInLong);
     }
 
@@ -197,8 +196,6 @@ public class SignalRChatService extends Service implements ChatService {
     @Override
     public void sendMessage(Message chatMessage) {
         synchronized (chatMessage) {
-            chatMessage.setTime(System.currentTimeMillis());
-            chatMessage.startSendMessageTimer();
             switch (chatMessage.getMessageType()) {
                 case SENDING_TEXT_BROADCAST_MESSAGE:
                 case SENDING_IMAGE_BROADCAST_MESSAGE:
