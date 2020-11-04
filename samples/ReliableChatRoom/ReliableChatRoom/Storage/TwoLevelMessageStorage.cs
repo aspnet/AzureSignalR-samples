@@ -131,5 +131,20 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
             await Task.Delay(1000);
             return "";
         }
+
+        public Task<string> TryFetchImageContentAsync(string messageId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Message> TryFetchMessageById(string messageId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> TryUpdateMessageAsync(Message message)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

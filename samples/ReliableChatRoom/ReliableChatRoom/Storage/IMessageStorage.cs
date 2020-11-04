@@ -20,6 +20,17 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
         Task<bool> TryStoreMessageAsync(Message message);
 
         /// <summary>
+        /// Try to update a <see cref="Message"/> into message storage.
+        /// </summary>
+        /// <param name="message">Message to store</param>
+        /// <returns>
+        /// An Async Task of bool result.
+        /// true - Storage and callback were success
+        /// false - Any of above two was a failure
+        /// </returns>
+        Task<bool> TryUpdateMessageAsync(Message message);
+
+        /// <summary>
         /// Try to fetch a list of history messages according to the username, endDateTime provided by a client
         /// </summary>
         /// <param name="username">Client's username</param>
@@ -37,6 +48,13 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
         /// </summary>
         /// <param name="messageId"></param>
         /// <returns></returns>
-        Task<string> TryFetchImageContent(string messageId);
+        Task<string> TryFetchImageContentAsync(string messageId);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="messageId"></param>
+        /// <returns></returns>
+        Task<Message> TryFetchMessageById(string messageId);
     }
 }

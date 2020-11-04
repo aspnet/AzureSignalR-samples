@@ -173,9 +173,18 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         public async Task OnReadResponseReceived(string messageId, string username)
         {
             Console.WriteLine(string.Format("OnReadResponseReceived messageId: {0}; username: {1}", messageId, username));
-            
-            //  Broadcast message read by user
-            await Clients.All.SendAsync("setMessageRead", messageId, username);
+
+            //  Try to set read and store the message
+            Message message = await _messageStorage.TryFetchMessageById(messageId);
+            message.IsRead = true;
+            bool success = await _messageStorage.TryUpdateMessageAsync(message);
+
+            if (success)
+            {
+                //  Broadcast message read by user
+                await Clients.Client(_userHandler.GetUserSession(message.Sender).ConnectionId)
+                    .SendAsync("clientRead", messageId, username);
+            }
         }
 
         /// <summary>
@@ -210,7 +219,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         /// <returns></returns>
         public async Task OnPullImageContentReceived(string username, string messageId)
         {
-            string imagePayload = await _messageStorage.TryFetchImageContent(messageId);
+            string imagePayload = await _messageStorage.TryFetchImageContentAsync(messageId);
             await Clients.Client(_userHandler.GetUserSession(username).ConnectionId).SendAsync("receiveImageContent", messageId, imagePayload);
         }
 

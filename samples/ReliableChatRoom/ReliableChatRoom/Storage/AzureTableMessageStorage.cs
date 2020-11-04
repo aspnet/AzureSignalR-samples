@@ -65,6 +65,22 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
             return true;
         }
 
+        public async Task<bool> TryUpdateMessageAsync(Message message)
+        {
+            try
+            {
+                MessageEntity messageEntity = CreateMessageEntity(message);
+                await _cloudTable.ExecuteAsync(TableOperation.InsertOrReplace(messageEntity));
+            }
+            catch (Exception ex) // Any failure in ExecuteAsync will appear as exception
+            {
+                Console.WriteLine(ex);
+                return false;
+            }
+
+            return true;
+        }
+
         private async Task<bool> TryStoreImageAsync(string messageId, string imagePayload)
         {
             using (var stream = GenerateStreamFromString(imagePayload))
@@ -127,7 +143,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
             return true;
         }
 
-        public async Task<string> TryFetchImageContent(string messageId)
+        public async Task<string> TryFetchImageContentAsync(string messageId)
         {
             var blobClient = _blobContainerClient.GetBlobClient(messageId);
 
@@ -139,6 +155,40 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
             string imagePayload = streamReader.ReadToEnd();
 
             return imagePayload;
+        }
+
+        public async Task<Message> TryFetchMessageById(string messageId)
+        {
+            // Define Linq query
+            TableQuery<MessageEntity> messageQuery = _cloudTable.CreateQuery<MessageEntity>();
+            var query = (from message in messageQuery
+                         where message.PartitionKey.Equals(messageId)
+                         select message).AsTableQuery();
+
+            List<MessageEntity> messageEntities;
+            try
+            {
+                // Execute query
+                TableQuerySegment<MessageEntity> messageEntitiesQuerySegment;
+                messageEntitiesQuerySegment = await query.ExecuteSegmentedAsync(new TableContinuationToken());
+                messageEntities = messageEntitiesQuerySegment.ToList();
+
+            }
+            catch (Exception ex) // Any failure in ExecuteSegmentedAsync will appear as exception
+            {
+                Console.WriteLine(ex.Message);
+
+                // Load failed
+                return null;
+            }
+
+            // Process query result with a limit of 
+            foreach (var messageEntity in messageEntities)
+            {
+                return _messageFactory.FromSingleJsonString(messageEntity.MessageJsonString);
+            }
+
+            return null;
         }
 
         private MessageEntity CreateMessageEntity(Message message)

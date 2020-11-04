@@ -27,7 +27,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
 
         public ClientAckHandler(IHubContext<ReliableChatRoomHub> hubContext, IUserHandler userHandler)
                     : this(
-                           checkAckThreshold: TimeSpan.FromMilliseconds(10000),
+                           checkAckThreshold: TimeSpan.FromMilliseconds(5000),
                            checkAckInterval: TimeSpan.FromMilliseconds(500),
                            resendMessageThreshold: 3,
                            resendMessageInterval: TimeSpan.FromMilliseconds(1000))
@@ -152,6 +152,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
                                 broadcastMessage.Sender,
                                 broadcastMessage.Receiver,
                                 broadcastMessage.Payload,
+                                broadcastMessage.IsImage,
                                 (broadcastMessage.SendTime - _javaEpoch).Ticks / TimeSpan.TicksPerMillisecond,
                                 ackId);
         }
@@ -166,6 +167,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
                                 privateMessage.Sender,
                                 privateMessage.Receiver,
                                 privateMessage.Payload,
+                                privateMessage.IsImage,
                                 (privateMessage.SendTime - _javaEpoch).Ticks / TimeSpan.TicksPerMillisecond,
                                 ackId);
         }

@@ -17,6 +17,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Factory
                 Message.SYSTEM_SENDER, Message.BROADCAST_RECEIVER,
                 string.Format("{0} has {1} the chat", username, action),
                 false,
+                true,
                 MessageTypeEnum.System,
                 sendTime);
         }
@@ -28,6 +29,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Factory
                 sender, Message.BROADCAST_RECEIVER,
                 payload,
                 isImage,
+                true,
                 MessageTypeEnum.Broadcast,
                 sendTime);
         }
@@ -39,6 +41,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Factory
                 sender, receiver,
                 payload,
                 isImage,
+                false,
                 MessageTypeEnum.Private,
                 sendTime);
         }

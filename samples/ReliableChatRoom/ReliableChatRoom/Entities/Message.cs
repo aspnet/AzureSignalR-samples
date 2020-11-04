@@ -34,11 +34,14 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities
         // Indicate whether it is an image message
         public bool IsImage { get; set; }
 
+        // Indicate whether a private message is read
+        public bool IsRead { get; set; }
+
         // The time when the broadcast message reaches the server are labeled as sendTime
         public DateTime SendTime { get; set; }
 
         // Constructor
-        public Message(string messageId, string sender, string receiver, string payload, bool isImage, MessageTypeEnum type, DateTime sendTime)
+        public Message(string messageId, string sender, string receiver, string payload, bool isImage, bool isRead, MessageTypeEnum type, DateTime sendTime)
         {
             this.MessageId = messageId;
             this.Type = type;
@@ -52,6 +55,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities
             {
                 this.Payload = payload;
             }
+            this.IsRead = isRead;
             this.IsImage = isImage;
             this.SendTime = sendTime;
         }
