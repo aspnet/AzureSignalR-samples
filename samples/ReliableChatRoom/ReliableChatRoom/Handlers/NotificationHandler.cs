@@ -30,7 +30,9 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
             if (senderSession != null)  //  Though sender session is very unlikely to be null
             {
                 string jsonPayload = string.Format(_formatString, broadcastMessage.Sender, broadcastMessage.Payload);
+                // TagExpression of "not USER_TAG", meaning sending to everyone but USER_TAG
                 string targetTagExpression = string.Format("! {0}", _userHandler.GetUserSession(broadcastMessage.Sender).DeviceUuid);
+                
                 Console.WriteLine("Send broadcast notification from {0}", broadcastMessage.Sender);
                 await _notificationHub.SendFcmNativeNotificationAsync(jsonPayload, targetTagExpression);
             }
@@ -39,10 +41,11 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
         public async Task SendPrivateNotification(Message privateMessage)
         {
             Session receiverSession = _userHandler.GetUserSession(privateMessage.Receiver);
-            if (receiverSession != null) //  This happens when send to a non-existing receiver
+            if (receiverSession != null) //  Only happens when send to a non-existing receiver
             {
                 string jsonPayload = string.Format(_formatString, privateMessage.Sender, privateMessage.Payload);
                 string targetTagExpression = string.Format("{0}", receiverSession.DeviceUuid);
+                
                 Console.WriteLine("Send private notification from {0} to {1}", privateMessage.Sender, privateMessage.Receiver);
                 await _notificationHub.SendFcmNativeNotificationAsync(jsonPayload, targetTagExpression);
             }            

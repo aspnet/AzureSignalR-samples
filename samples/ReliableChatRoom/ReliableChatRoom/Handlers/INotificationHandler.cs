@@ -16,7 +16,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
         /// Only send to receiver.
         /// </summary>
         /// <param name="privateMessage">The message that cause the notification pushing</param>
-        /// <returns>An Async Task</returns>
+        /// <returns></returns>
         Task SendPrivateNotification(Message privateMessage);
 
         /// <summary>
@@ -24,7 +24,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
         /// Send to everybody with an active session but the sender.
         /// </summary>
         /// <param name="broadcastMessage">The message that cause the notification pushing</param>
-        /// <returns>An Async Task</returns>
+        /// <returns></returns>
         Task SendBroadcastNotification(Message broadcastMessage);
     }
 }

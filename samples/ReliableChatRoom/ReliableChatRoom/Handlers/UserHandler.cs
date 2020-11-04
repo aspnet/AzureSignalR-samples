@@ -1,4 +1,5 @@
 ﻿using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities;
+using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -10,14 +11,22 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
 {
     public class UserHandler : IUserHandler, IDisposable
     {
+        /// In memory storage of user <see cref="Session"/> 
         private readonly ConcurrentDictionary<string, Session> _sessionTable =
             new ConcurrentDictionary<string, Session>();
+        
+        // UNIX origin of time
         private readonly DateTime _defaultDateTime = new DateTime(1970, 1, 1);
 
-        private readonly Timer _sessionCheckingTimer;
+        /// Max time a user can keep his session alive without calling <see cref="ReliableChatRoomHub.TouchServer(string, string)"/>
         private readonly TimeSpan _sessionExpireThreshold = TimeSpan.FromSeconds(100);
+
+        // Period of Timer checking the session
         private readonly TimeSpan _sessionCheckingInterval = TimeSpan.FromSeconds(100);
-        
+
+        // Timer checking the session
+        private readonly Timer _sessionCheckingTimer;
+
         public UserHandler()
         {
             this._sessionCheckingTimer = new Timer(_ => CheckSession(), state: null, dueTime: TimeSpan.FromMilliseconds(0), period: _sessionCheckingInterval);
@@ -56,10 +65,12 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
             bool isStoredSession = _sessionTable.TryGetValue(username, out Session storedSession);
             if (isStoredSession)
             {
+                // If session exists update the connectionId and deviceUuid
                 storedSession.Revive(connectionId, deviceUuid);
                 return storedSession;
             } else
             {
+                // Otherwise, create a new Session instance
                 Session session = new Session(username, connectionId, deviceUuid);
                 return _sessionTable.AddOrUpdate(username, session, (k, v) => session);
             }
@@ -110,6 +121,9 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
             return null;
         }
 
+        /// <summary>
+        /// Called by Timer to check sessions.
+        /// </summary>
         private void CheckSession()
         {
             foreach (var pair in _sessionTable) {

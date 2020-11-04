@@ -11,18 +11,32 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
 {
     public class ClientAckHandler : IClientAckHandler, IDisposable
     {
+        // HubContext used to send timed-out messages
         private readonly IHubContext<ReliableChatRoomHub> _hubContext;
+
+        // UserHandler used to query user information
         private readonly IUserHandler _userHandler;
 
+        /// In memory storage of <see cref="ClientAck"/> 
         private readonly ConcurrentDictionary<string, ClientAck> _clientAcks = new ConcurrentDictionary<string, ClientAck>();
 
+        /// Max timespan a ClientAck can be Waiting without being called with <see cref="IClientAckHandler.Ack(string, string)"/>
         private readonly TimeSpan _checkAckThreshold;
+
+        // Period of Timer checking the status of ClientAcks
         private readonly TimeSpan _checkAckInterval;
+
+        // Max time to resend a un-acknowledged message
         private readonly int _resendMessageThreshold;
+
+        // Period of Timer resending the timed-out messages 
         private readonly TimeSpan _resendMessageInterval;
+
+        // Timers for checking ClientAcks and resending messages
         private readonly Timer _checkAckTimer;
         private readonly Timer _resendMessageTimer;
 
+        // UNIX origin of time
         private readonly DateTime _javaEpoch = new DateTime(1970, 1, 1);
 
         public ClientAckHandler(IHubContext<ReliableChatRoomHub> hubContext, IUserHandler userHandler)
@@ -48,18 +62,22 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
 
         public ClientAck CreateClientAck(Message message)
         {
+            // Receivers involved in the ClientAck
             List<string> receivers;
             if (message.Type == MessageTypeEnum.Broadcast)
             {
+                // Everyone except the sender
                 receivers = new List<string>(_userHandler.GetActiveSessions().Select<Session, string>(sess => sess.Username));
                 receivers.Remove(message.Sender);
             } else
             {
+                // Only the receiver
                 receivers = new List<string>() { message.Receiver };
             }
 
             ClientAck clientAck = new ClientAck(Guid.NewGuid().ToString(), DateTime.UtcNow, message, receivers);
             _clientAcks.TryAdd(clientAck.ClientAckId, clientAck);
+            
             return clientAck;
         }
 

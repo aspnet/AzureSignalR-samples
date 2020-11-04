@@ -44,16 +44,16 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
         Task<bool> TryFetchHistoryMessageAsync(string username, DateTime endDateTime, List<Message> historyMessages);
 
         /// <summary>
-        /// 
+        /// Try to fetch the content of an image with given messageId
         /// </summary>
-        /// <param name="messageId"></param>
+        /// <param name="messageId">This messageId identifies uniquely the stored image blob</param>
         /// <returns></returns>
         Task<string> TryFetchImageContentAsync(string messageId);
 
         /// <summary>
-        /// 
+        /// Try to fetch content of a Message with give messageId
         /// </summary>
-        /// <param name="messageId"></param>
+        /// <param name="messageId">This messageId identifies uniquely the stored Message record</param>
         /// <returns></returns>
         Task<Message> TryFetchMessageById(string messageId);
     }
