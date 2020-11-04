@@ -1,7 +1,6 @@
 package com.microsoft.signalr.androidchatroom.fragment;
 
 import android.app.AlertDialog;
-import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -12,7 +11,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -33,21 +31,18 @@ import com.microsoft.signalr.androidchatroom.message.Message;
 import com.microsoft.signalr.androidchatroom.service.ChatService;
 import com.microsoft.signalr.androidchatroom.service.NotificationService;
 
-import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static android.app.Activity.RESULT_OK;
+import static android.view.View.INVISIBLE;
 
 public class ChatFragment extends Fragment implements MessageReceiver {
     private static final String TAG = "ChatFragment";
@@ -169,6 +164,7 @@ public class ChatFragment extends Fragment implements MessageReceiver {
         // If not duplicated, create ChatMessage according to parameters
         if (!isDuplicateMessage) {
             messages.add(message);
+            setRead(message);
         }
 
         refreshUiThread(true, direction);
@@ -180,12 +176,20 @@ public class ChatFragment extends Fragment implements MessageReceiver {
         for (Message message : messages) {
             if (!existedMessageIds.contains(message.getMessageId())) {
                 this.messages.add(message);
-                Log.d("Image message", String.format("id=%s\ttime=%s", message.getMessageId(), message.getTime()));
                 existedMessageIds.add(message.getMessageId());
+                setRead(message);
             }
         }
-
         refreshUiThread(true, direction);
+    }
+
+    private void setRead(Message message) {
+        if (!message.isRead()
+                && message.getMessageType().name().contains("RECEIVED")
+                && message.getMessageType().name().contains("PRIVATE")) {
+            message.read();
+            chatService.sendMessageRead(message.getMessageId());
+        }
     }
 
     @Override
@@ -194,6 +198,18 @@ public class ChatFragment extends Fragment implements MessageReceiver {
             if (message.getMessageId().equals(messageId)) {
                 message.ack(receivedTimeInLong);
                 Log.d("setMessageAck", messageId);
+                break;
+            }
+        }
+        refreshUiThread(true, 0);
+    }
+
+    @Override
+    public void setMessageRead(String messageId) {
+        for (Message message : messages) {
+            if (message.getMessageId().equals(messageId)) {
+                message.read();
+                Log.d("setMessageRead", messageId);
                 break;
             }
         }
@@ -390,19 +406,21 @@ public class ChatFragment extends Fragment implements MessageReceiver {
     }
 
     class ChatContentAdapter extends RecyclerView.Adapter<ChatContentViewHolder> {
-        private static final int SYSTEM_MESSAGE_VIEW = 0;
-        private static final int SENDING_TEXT_BROADCAST_MESSAGE_VIEW = 1;
-        private static final int SENDING_TEXT_PRIVATE_MESSAGE_VIEW = 2;
-        private static final int SENT_TEXT_BROADCAST_MESSAGE_VIEW = 3;
-        private static final int SENT_TEXT_PRIVATE_MESSAGE_VIEW = 4;
-        private static final int RECEIVED_TEXT_BROADCAST_MESSAGE_VIEW = 5;
-        private static final int RECEIVED_TEXT_PRIVATE_MESSAGE_VIEW = 6;
+        private static final int READ_IMAGE_PRIVATE_MESSAGE_VIEW = 0;
+        private static final int READ_TEXT_PRIVATE_MESSAGE_VIEW = 1;
+        private static final int RECEIVED_IMAGE_BROADCAST_MESSAGE_VIEW = 2;
+        private static final int RECEIVED_IMAGE_PRIVATE_MESSAGE_VIEW = 3;
+        private static final int RECEIVED_TEXT_BROADCAST_MESSAGE_VIEW = 4;
+        private static final int RECEIVED_TEXT_PRIVATE_MESSAGE_VIEW = 5;
+        private static final int SYSTEM_MESSAGE_VIEW = 6;
         private static final int SENDING_IMAGE_BROADCAST_MESSAGE_VIEW = 7;
         private static final int SENDING_IMAGE_PRIVATE_MESSAGE_VIEW = 8;
-        private static final int SENT_IMAGE_BROADCAST_MESSAGE_VIEW = 9;
-        private static final int SENT_IMAGE_PRIVATE_MESSAGE_VIEW = 10;
-        private static final int RECEIVED_IMAGE_BROADCAST_MESSAGE_VIEW = 11;
-        private static final int RECEIVED_IMAGE_PRIVATE_MESSAGE_VIEW = 12;
+        private static final int SENDING_TEXT_BROADCAST_MESSAGE_VIEW = 9;
+        private static final int SENDING_TEXT_PRIVATE_MESSAGE_VIEW = 10;
+        private static final int SENT_IMAGE_BROADCAST_MESSAGE_VIEW = 11;
+        private static final int SENT_IMAGE_PRIVATE_MESSAGE_VIEW = 12;
+        private static final int SENT_TEXT_BROADCAST_MESSAGE_VIEW = 13;
+        private static final int SENT_TEXT_PRIVATE_MESSAGE_VIEW = 14;
 
         private final Context context;
         private final List<Message> messages;
@@ -424,34 +442,28 @@ public class ChatFragment extends Fragment implements MessageReceiver {
 
             switch (viewType) {
                 case SENDING_TEXT_BROADCAST_MESSAGE_VIEW:
-                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sending_text_broadcast_message, parent, false);
+                case SENT_TEXT_BROADCAST_MESSAGE_VIEW:
+                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_self_text_broadcast_message, parent, false);
                     break;
                 case SENDING_TEXT_PRIVATE_MESSAGE_VIEW:
-                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sending_text_private_message, parent, false);
-                    break;
-                case SENT_TEXT_BROADCAST_MESSAGE_VIEW:
-                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sent_text_broadcast_message, parent, false);
-                    break;
                 case SENT_TEXT_PRIVATE_MESSAGE_VIEW:
-                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sent_text_private_message, parent, false);
+                case READ_TEXT_PRIVATE_MESSAGE_VIEW:
+                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_self_text_private_message, parent, false);
+                    break;
+                case SENDING_IMAGE_BROADCAST_MESSAGE_VIEW:
+                case SENT_IMAGE_BROADCAST_MESSAGE_VIEW:
+                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_self_image_broadcast_message, parent, false);
+                    break;
+                case SENDING_IMAGE_PRIVATE_MESSAGE_VIEW:
+                case SENT_IMAGE_PRIVATE_MESSAGE_VIEW:
+                case READ_IMAGE_PRIVATE_MESSAGE_VIEW:
+                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_self_image_private_message, parent, false);
                     break;
                 case RECEIVED_TEXT_BROADCAST_MESSAGE_VIEW:
                     view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_received_text_broadcast_message, parent, false);
                     break;
                 case RECEIVED_TEXT_PRIVATE_MESSAGE_VIEW:
                     view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_received_text_private_message, parent, false);
-                    break;
-                case SENDING_IMAGE_BROADCAST_MESSAGE_VIEW:
-                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sending_image_broadcast_message, parent, false);
-                    break;
-                case SENDING_IMAGE_PRIVATE_MESSAGE_VIEW:
-                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sending_image_private_message, parent, false);
-                    break;
-                case SENT_IMAGE_BROADCAST_MESSAGE_VIEW:
-                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sent_image_broadcast_message, parent, false);
-                    break;
-                case SENT_IMAGE_PRIVATE_MESSAGE_VIEW:
-                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_sent_image_private_message, parent, false);
                     break;
                 case RECEIVED_IMAGE_BROADCAST_MESSAGE_VIEW:
                     view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_received_image_broadcast_message, parent, false);
@@ -482,7 +494,7 @@ public class ChatFragment extends Fragment implements MessageReceiver {
             viewHolder.messageSender.setText(message.getSender());
             viewHolder.messageTime.setText(sdf.format(new Date(message.getTime())));
 
-            // Special cases
+            // Different types of message content
             if (message.getMessageType().name().contains("TEXT")) {
                 // Normal text content
                 viewHolder.messageTextContent.setText(message.getPayload());
@@ -506,6 +518,7 @@ public class ChatFragment extends Fragment implements MessageReceiver {
                 }
             }
 
+            // Different types of message status
             if (message.getMessageType().name().contains("SENDING")) {
                 if (message.isSendMessageTimeOut()) {
                     viewHolder.statusTextView.setText(R.string.message_resend);
@@ -521,7 +534,30 @@ public class ChatFragment extends Fragment implements MessageReceiver {
                     viewHolder.statusTextView.setText(R.string.message_sending);
                     viewHolder.statusTextView.setOnClickListener(null);
                 }
+            } else if (message.getMessageType().name().contains("SENT")) {
+                if (message.getMessageType().name().contains("PRIVATE") && !message.isRead()) {
+                    Log.d("unread sent private message:", message.getPayload());
+                    viewHolder.statusTextView.setText(R.string.message_sent);
+                } else {
+                    viewHolder.statusTextView.setText("");
+                }
+            } else if ( message.getMessageType().name().contains("READ") &&
+                        message.isRead()) {
+                if (isLastSelfMessage(message)) {
+                    viewHolder.statusTextView.setText(R.string.message_read);
+                } else {
+                    viewHolder.statusTextView.setText(R.string.message_empty);
+                }
             }
+        }
+
+        private boolean isLastSelfMessage(Message message) {
+            for (int index=messages.size() - 1; index>=0; index --) {
+                if (messages.get(index).getMessageType().name().contains("READ")) {
+                    return messages.get(index).getMessageId().equals(message.getMessageId());
+                }
+            }
+            return false;
         }
 
 

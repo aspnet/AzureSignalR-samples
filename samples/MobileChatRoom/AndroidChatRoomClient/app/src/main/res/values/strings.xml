@@ -14,8 +14,12 @@
     <string name="chatbox_sendbutton">Send</string>
     <string name="chatbox_imagebutton">Choose Image</string>
     <string name="message_time">Oct.1st 2020</string>
+
     <string name="message_sending">Sending</string>
     <string name="message_resend">Resend</string>
+    <string name="message_sent">Sent</string>
+    <string name="message_read">Read</string>
+    <string name="message_empty" />
 
     <string name="channel_name">Message Notification Channel</string>
     <string name="channel_description">Message Notification Channel Description</string>

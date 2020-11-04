@@ -51,7 +51,6 @@
             android:text="@string/message_time"
             android:textSize="6pt"
             android:textColor="@android:color/darker_gray"
-            android:paddingLeft="50dp"
             android:paddingStart="50dp" />
     </LinearLayout>
 

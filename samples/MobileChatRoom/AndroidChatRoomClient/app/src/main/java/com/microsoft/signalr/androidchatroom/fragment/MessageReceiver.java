@@ -15,6 +15,8 @@ public interface MessageReceiver {
 
     void setMessageAck(String messageId, long receivedTimeInLong);
 
+    void setMessageRead(String messageId);
+
     void loadImageContent(String messageId, String payload);
 
     void showSessionExpiredDialog();

@@ -119,6 +119,7 @@ public class MessageFactory {
         String receiver = jsonObject.get("Receiver").getAsString();
         String payload = jsonObject.get("Payload").getAsString();
         boolean isImage = jsonObject.get("IsImage").getAsBoolean();
+        boolean isRead = jsonObject.get("IsRead").getAsBoolean();
         long time;
         try {
             time = sdf.parse(jsonObject.get("SendTime").getAsString()).getTime() + utcOffset;
@@ -161,6 +162,7 @@ public class MessageFactory {
         message.setReceiver(receiver);
         message.setPayload(payload);
         message.setTime(time);
+        message.setRead(isRead);
         return message;
     }
 

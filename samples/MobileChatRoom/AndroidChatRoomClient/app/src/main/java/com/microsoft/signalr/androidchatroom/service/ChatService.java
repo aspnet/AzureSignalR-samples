@@ -6,6 +6,7 @@ import com.microsoft.signalr.androidchatroom.message.Message;
 public interface ChatService {
     //// Message sending methods
     void sendMessage(Message chatMessage);
+    void sendMessageRead(String messageId);
 
     //// Session management methods
     void startSession();

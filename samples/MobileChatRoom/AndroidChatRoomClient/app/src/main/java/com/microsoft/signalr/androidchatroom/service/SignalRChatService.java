@@ -101,6 +101,7 @@ public class SignalRChatService extends Service implements ChatService {
 
         /// Operation receivers
         hubConnection.on("serverAck", this::serverAck, String.class, Long.class);
+        hubConnection.on("clientRead", this::clientRead, String.class, String.class);
         hubConnection.on("expireSession", this::expireSession, Boolean.class);
     }
 
@@ -166,8 +167,12 @@ public class SignalRChatService extends Service implements ChatService {
         messageReceiver.tryAddMessage(chatMessage, 1);
     }
 
-    /// Rich content receivers
+    @Override
+    public void sendMessageRead(String messageId) {
+        hubConnection.send("OnReadResponseReceived", messageId, username);
+    }
 
+    /// Rich content receivers
     public void receiveImageContent(String messageId, String payload) {
         messageReceiver.loadImageContent(messageId, payload);
     }
@@ -188,6 +193,10 @@ public class SignalRChatService extends Service implements ChatService {
 
     public void serverAck(String messageId, long receivedTimeInLong) {
         messageReceiver.setMessageAck(messageId, receivedTimeInLong);
+    }
+
+    public void clientRead(String messageId, String username) {
+        messageReceiver.setMessageRead(messageId);
     }
 
     ///////// Senders

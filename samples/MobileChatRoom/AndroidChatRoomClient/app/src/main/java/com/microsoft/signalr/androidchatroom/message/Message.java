@@ -1,6 +1,7 @@
 package com.microsoft.signalr.androidchatroom.message;
 
 import android.graphics.Bitmap;
+import android.util.Log;
 
 import com.microsoft.signalr.androidchatroom.fragment.MessageReceiver;
 
@@ -18,6 +19,8 @@ public class Message {
     private String receiver;
     private String payload;
     private long time;
+
+    private boolean isRead = false;
 
     private Bitmap bmp;
 
@@ -98,6 +101,14 @@ public class Message {
         this.bmp = bmp;
     }
 
+    public boolean isRead() {
+        return isRead;
+    }
+
+    public void setRead(boolean read) {
+        isRead = read;
+    }
+
     public boolean isPullImageTimeOut() {
         return this.pullImageTimeOut;
     }
@@ -167,6 +178,20 @@ public class Message {
                 default:
             }
             setTime(receivedTimeInLong);
+        }
+    }
+
+    public void read() {
+        switch (messageType) {
+            case SENT_TEXT_PRIVATE_MESSAGE:
+                isRead = true;
+                messageType = MessageTypeEnum.READ_TEXT_PRIVATE_MESSAGE;
+                break;
+            case SENT_IMAGE_PRIVATE_MESSAGE:
+                isRead = true;
+                messageType = MessageTypeEnum.READ_IMAGE_PRIVATE_MESSAGE;
+                break;
+            default:
         }
     }
 }
