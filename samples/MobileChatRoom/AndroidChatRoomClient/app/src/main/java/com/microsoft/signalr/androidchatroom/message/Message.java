@@ -1,9 +1,8 @@
 package com.microsoft.signalr.androidchatroom.message;
 
 import android.graphics.Bitmap;
-import android.util.Log;
 
-import com.microsoft.signalr.androidchatroom.fragment.MessageReceiver;
+import com.microsoft.signalr.androidchatroom.fragment.ChatUserInterface;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -113,7 +112,7 @@ public class Message {
         return this.pullImageTimeOut;
     }
 
-    public void startPullImageTimer(MessageReceiver messageReceiver, SimpleCallback<MessageReceiver> callback) {
+    public void startPullImageTimer(ChatUserInterface chatUserInterface, SimpleCallback<ChatUserInterface> callback) {
         this.pullImageTimer = new Timer();
         this.pullImageTimeOut = false;
         long localPullTime = System.currentTimeMillis();
@@ -123,7 +122,7 @@ public class Message {
                 if (!pullImageTimeOut && System.currentTimeMillis() - localPullTime > 5000) {
                     pullImageTimeOut = true;
                     cancel();
-                    callback.run(messageReceiver);
+                    callback.run(chatUserInterface);
                 }
             }
         }, 0, 200);
@@ -141,7 +140,7 @@ public class Message {
         return this.sendMessageTimeOut;
     }
 
-    public void startSendMessageTimer(MessageReceiver messageReceiver, SimpleCallback<MessageReceiver> callback) {
+    public void startSendMessageTimer(ChatUserInterface chatUserInterface, SimpleCallback<ChatUserInterface> callback) {
         this.sendMessageTimer = new Timer();
         this.sendMessageTimeOut = false;
         long localSendTime = this.time;
@@ -151,7 +150,7 @@ public class Message {
                 if (!sendMessageTimeOut && System.currentTimeMillis() - localSendTime > 5000) {
                     sendMessageTimeOut = true;
                     cancel();
-                    callback.run(messageReceiver);
+                    callback.run(chatUserInterface);
                 }
             }
         }, 0, 200);

@@ -12,16 +12,13 @@ import com.microsoft.signalr.HubConnection;
 import com.microsoft.signalr.HubConnectionBuilder;
 import com.microsoft.signalr.HubConnectionState;
 import com.microsoft.signalr.androidchatroom.R;
-import com.microsoft.signalr.androidchatroom.fragment.MessageReceiver;
+import com.microsoft.signalr.androidchatroom.fragment.ChatUserInterface;
 import com.microsoft.signalr.androidchatroom.message.Message;
 import com.microsoft.signalr.androidchatroom.message.MessageFactory;
-import com.microsoft.signalr.androidchatroom.message.MessageTypeEnum;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -32,7 +29,7 @@ import io.reactivex.disposables.Disposable;
 public class SignalRChatService extends Service implements ChatService {
     // SignalR HubConnection
     private HubConnection hubConnection;
-    private MessageReceiver messageReceiver;
+    private ChatUserInterface chatUserInterface;
 
     // User info
     private String username;
@@ -64,10 +61,10 @@ public class SignalRChatService extends Service implements ChatService {
     ///////// Session managers
 
     @Override
-    public void register(String username, String deviceUuid, MessageReceiver messageReceiver) {
+    public void register(String username, String deviceUuid, ChatUserInterface chatUserInterface) {
         this.username = username;
         this.deviceUuid = deviceUuid;
-        this.messageReceiver = messageReceiver;
+        this.chatUserInterface = chatUserInterface;
     }
 
     @Override
@@ -113,7 +110,7 @@ public class SignalRChatService extends Service implements ChatService {
         // resendChatMessageTimer.cancel();
         sessionStarted.set(false);
         if (showAlert) {
-            messageReceiver.showSessionExpiredDialog();
+            chatUserInterface.showSessionExpiredDialog();
         }
     }
 
@@ -128,7 +125,7 @@ public class SignalRChatService extends Service implements ChatService {
         Message systemMessage = MessageFactory.createReceivedSystemMessage(messageId, payload, sendTime);
 
         // Try to add message to fragment
-        messageReceiver.tryAddMessage(systemMessage, 1);
+        chatUserInterface.tryAddMessage(systemMessage, 1);
     }
 
     public void receiveBroadcastMessage(String messageId, String sender, String receiver, String payload, boolean isImage, long sendTime, String ackId) {
@@ -146,7 +143,7 @@ public class SignalRChatService extends Service implements ChatService {
         }
 
         // Try to add message to fragment
-        messageReceiver.tryAddMessage(chatMessage, 1);
+        chatUserInterface.tryAddMessage(chatMessage, 1);
     }
 
     public void receivePrivateMessage(String messageId, String sender, String receiver, String payload, boolean isImage, long sendTime, String ackId) {
@@ -164,7 +161,7 @@ public class SignalRChatService extends Service implements ChatService {
         }
 
         // Try to add message to fragment
-        messageReceiver.tryAddMessage(chatMessage, 1);
+        chatUserInterface.tryAddMessage(chatMessage, 1);
     }
 
     @Override
@@ -174,7 +171,7 @@ public class SignalRChatService extends Service implements ChatService {
 
     /// Rich content receivers
     public void receiveImageContent(String messageId, String payload) {
-        messageReceiver.loadImageContent(messageId, payload);
+        chatUserInterface.setImageContent(messageId, payload);
     }
 
     public void receiveHistoryMessages(String serializedString) {
@@ -182,21 +179,21 @@ public class SignalRChatService extends Service implements ChatService {
         List<Message> historyMessages = MessageFactory.parseHistoryMessages(serializedString, username);
 
         if (firstPull) {
-            messageReceiver.tryAddAllMessages(historyMessages, 1);
+            chatUserInterface.tryAddAllMessages(historyMessages, 1);
             firstPull = false;
         } else {
-            messageReceiver.tryAddAllMessages(historyMessages, 0);
+            chatUserInterface.tryAddAllMessages(historyMessages, 0);
         }
 
         activePull = false;
     }
 
     public void serverAck(String messageId, long receivedTimeInLong) {
-        messageReceiver.setMessageAck(messageId, receivedTimeInLong);
+        chatUserInterface.setSentMessageAck(messageId, receivedTimeInLong);
     }
 
     public void clientRead(String messageId, String username) {
-        messageReceiver.setMessageRead(messageId);
+        chatUserInterface.setSentMessageRead(messageId);
     }
 
     ///////// Senders
@@ -281,7 +278,7 @@ public class SignalRChatService extends Service implements ChatService {
                     if (!sessionStarted.get()) { // very first start of connection
                         onSessionStart();
                         hubConnection.send("EnterChatRoom", deviceUuid, username);
-                        messageReceiver.activateClickEvent();
+                        chatUserInterface.activateClickEvent();
                         sessionStarted.set(true);
                     }
                     Log.d("Reconnection", "touch server after reconnection");

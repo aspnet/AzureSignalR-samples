@@ -1,6 +1,6 @@
 package com.microsoft.signalr.androidchatroom.service;
 
-import com.microsoft.signalr.androidchatroom.fragment.MessageReceiver;
+import com.microsoft.signalr.androidchatroom.fragment.ChatUserInterface;
 import com.microsoft.signalr.androidchatroom.message.Message;
 
 public interface ChatService {
@@ -13,7 +13,7 @@ public interface ChatService {
     void expireSession(boolean showAlert);
 
     //// register methods
-    void register(String username, String deviceUuid, MessageReceiver messageReceiver);
+    void register(String username, String deviceUuid, ChatUserInterface chatUserInterface);
 
     //// Pulling methods
     void pullHistoryMessages(long untilTimeInLong);
