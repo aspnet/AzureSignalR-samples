@@ -79,17 +79,18 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         /// <summary>
         /// Hub method. Called when client explicitly quits the chat room.
         /// </summary>
-        /// <param name="connectionId">The client's current connectionId</param>
+        /// <param name="deviceUuid">A random id of client device, used for notification service (may be a new id)</param>
+        /// <param name="username">The username of client</param>
         /// <returns></returns>
-        public async Task LeaveChatRoom(string connectionId)
+        public async Task LeaveChatRoom(string deviceUuid, string username)
         {
-            Console.WriteLine("LeaveChatRoom connectionId: {0}", connectionId);
+            Console.WriteLine("LeaveChatRoom username: {0}", username);
 
             //  Do not care about logout result.
-            Session session = _userHandler.Logout(connectionId);
+            Session session = _userHandler.Logout(username);
 
             //  Broadcast the system message.
-            Message logoutMessage = _messageFactory.CreateSystemMessage(session.Username, "left", DateTime.UtcNow);
+            Message logoutMessage = _messageFactory.CreateSystemMessage(username, "left", DateTime.UtcNow);
             
             //  Do not store system messages. Directly send them out.
             await SendSystemMessage(logoutMessage);

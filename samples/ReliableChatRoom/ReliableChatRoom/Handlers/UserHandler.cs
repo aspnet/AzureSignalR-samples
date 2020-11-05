@@ -102,17 +102,8 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
             return storedSession.LastTouchedDateTime;
         }
 
-        public Session Logout(string connectionId)
+        public Session Logout(string username)
         {
-            string username = "";
-            foreach (var pair in _sessionTable)
-            {
-                username = pair.Key;
-                if (pair.Value.ConnectionId.Equals(connectionId))
-                {
-                    break;
-                }
-            }
             bool removalSucceeded = _sessionTable.TryRemove(username, out Session removedSession);
             if (removalSucceeded)
             {

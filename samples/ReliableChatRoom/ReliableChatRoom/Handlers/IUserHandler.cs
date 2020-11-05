@@ -34,9 +34,9 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
         /// <summary>
         /// Unregisters a client
         /// </summary>
-        /// <param name="connectionId">Client's connetion id in the current context</param>
+        /// <param name="username">Client's username</param>
         /// <returns>A user session <see cref="Session"/></returns>
-        Session Logout(string connectionId);
+        Session Logout(string username);
 
         /// <summary>
         /// Returns a session of the provided username
