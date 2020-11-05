@@ -177,17 +177,23 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
 
         private void ResendPrivateMessage(Message privateMessage, string ackId)
         {
-            string receiverConnectionId = _userHandler.GetUserSession(privateMessage.Receiver).ConnectionId;
-            Console.WriteLine(string.Format("ResendPrivateMessage: receiver connectionid: {0}", receiverConnectionId));
-            _hubContext.Clients.Client(receiverConnectionId)
-                    .SendAsync("receivePrivateMessage",
-                                privateMessage.MessageId,
-                                privateMessage.Sender,
-                                privateMessage.Receiver,
-                                privateMessage.Payload,
-                                privateMessage.IsImage,
-                                (privateMessage.SendTime - _javaEpoch).Ticks / TimeSpan.TicksPerMillisecond,
-                                ackId);
+            Session receiverSession = _userHandler.GetUserSession(privateMessage.Receiver);
+
+            if (receiverSession != null)
+            {
+                string receiverConnectionId = receiverSession.ConnectionId;
+
+                Console.WriteLine(string.Format("ResendPrivateMessage: receiver connectionid: {0}", receiverConnectionId));
+                _hubContext.Clients.Client(receiverConnectionId)
+                        .SendAsync("receivePrivateMessage",
+                                    privateMessage.MessageId,
+                                    privateMessage.Sender,
+                                    privateMessage.Receiver,
+                                    privateMessage.Payload,
+                                    privateMessage.IsImage,
+                                    (privateMessage.SendTime - _javaEpoch).Ticks / TimeSpan.TicksPerMillisecond,
+                                    ackId);
+            }
         }
     }
 }
