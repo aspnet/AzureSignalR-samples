@@ -23,11 +23,15 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.microsoft.signalr.androidchatroom.R;
 import com.microsoft.signalr.androidchatroom.activity.MainActivity;
+import com.microsoft.signalr.androidchatroom.fragment.buttonhandler.ImageButtonHandler;
+import com.microsoft.signalr.androidchatroom.fragment.buttonhandler.SendButtonHandler;
 import com.microsoft.signalr.androidchatroom.fragment.chatrecyclerview.ChatContentAdapter;
 import com.microsoft.signalr.androidchatroom.message.MessageFactory;
 import com.microsoft.signalr.androidchatroom.message.Message;
 import com.microsoft.signalr.androidchatroom.service.ChatService;
 import com.microsoft.signalr.androidchatroom.service.NotificationService;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -77,7 +81,7 @@ public class ChatFragment extends Fragment implements ChatUserInterface {
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NotNull Context context) {
         super.onAttach(context);
         try {
             chatService = ((MainActivity) context).getChatService();

@@ -1,9 +1,10 @@
-package com.microsoft.signalr.androidchatroom.fragment;
+package com.microsoft.signalr.androidchatroom.fragment.buttonhandler;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.view.View;
 
+import com.microsoft.signalr.androidchatroom.fragment.ChatFragment;
 import com.microsoft.signalr.androidchatroom.message.Message;
 import com.microsoft.signalr.androidchatroom.message.MessageFactory;
 import com.microsoft.signalr.androidchatroom.service.ChatService;

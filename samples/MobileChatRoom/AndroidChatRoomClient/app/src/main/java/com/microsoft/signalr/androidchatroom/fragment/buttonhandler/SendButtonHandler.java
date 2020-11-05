@@ -1,8 +1,8 @@
-package com.microsoft.signalr.androidchatroom.fragment;
+package com.microsoft.signalr.androidchatroom.fragment.buttonhandler;
 
 import android.view.View;
-import android.widget.EditText;
 
+import com.microsoft.signalr.androidchatroom.fragment.ChatFragment;
 import com.microsoft.signalr.androidchatroom.message.Message;
 import com.microsoft.signalr.androidchatroom.message.MessageFactory;
 import com.microsoft.signalr.androidchatroom.service.ChatService;
@@ -20,20 +20,18 @@ public class SendButtonHandler implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         if (chatFragment.getChatBoxMessageEditText().getText().length() > 0) { // Empty message not allowed
-            // Create and add message into list
-            Message chatMessage = createTextMessage();
-            chatFragment.tryAddMessage(chatMessage, 0);
+            // Create and send message
+            Message chatMessage = createAndSendTextMessage();
 
-            // If hubConnection is active then send message
-            chatMessage.startSendMessageTimer(chatFragment, r -> r.refreshUiThread(false,0));
-            chatService.sendMessage(chatMessage);
+            // Add message into list
+            chatFragment.tryAddMessage(chatMessage, 0);
 
             // Refresh ui
             chatFragment.refreshUiThread(false,1);
         }
     }
 
-    private Message createTextMessage() {
+    private Message createAndSendTextMessage() {
         // Receiver
         String receiver = chatFragment.getChatBoxReceiverEditText().getText().toString();
 
@@ -50,6 +48,11 @@ public class SendButtonHandler implements View.OnClickListener {
         } else {
             chatMessage = MessageFactory.createSendingTextPrivateMessage(chatFragment.getUsername(), receiver, messageContent, System.currentTimeMillis());
         }
+
+        // If hubConnection is active then send message
+        chatMessage.startSendMessageTimer(chatFragment, r -> r.refreshUiThread(false,0));
+        chatService.sendMessage(chatMessage);
+
         return chatMessage;
     }
 }

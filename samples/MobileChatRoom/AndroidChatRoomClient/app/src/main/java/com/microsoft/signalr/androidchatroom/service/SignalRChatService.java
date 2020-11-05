@@ -24,6 +24,7 @@ import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.reactivex.CompletableObserver;
+import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
 
 public class SignalRChatService extends Service implements ChatService {
@@ -38,7 +39,7 @@ public class SignalRChatService extends Service implements ChatService {
     // Reconnect timer
     private boolean firstPull = true;
     private boolean activePull = false;
-    private AtomicBoolean sessionStarted = new AtomicBoolean(false);
+    private final AtomicBoolean sessionStarted = new AtomicBoolean(false);
     private int reconnectDelay = 0; // immediate connect to server when enter the chat room
     private int reconnectInterval = 5000;
     private Timer reconnectTimer;
@@ -69,22 +70,40 @@ public class SignalRChatService extends Service implements ChatService {
 
     @Override
     public void startSession() {
-        // Create, register, and start hub connection
-        this.hubConnection = HubConnectionBuilder.create(getString(R.string.app_server_url)).build();
-        // Set reconnect timer
-        reconnectTimer = new Timer();
-        reconnectTimer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                connectToServer();
+        if (!sessionStarted.get()) {
+            synchronized (sessionStarted) {
+                if (!sessionStarted.get()) {
+                    // Create hub connection
+                    this.hubConnection = HubConnectionBuilder.create(getString(R.string.app_server_url)).build();
+
+                    // Start hub connection
+                    this.hubConnection.start().subscribe(new CompletableObserver() {
+                        @Override
+                        public void onSubscribe(@NonNull Disposable d) {
+
+                        }
+
+                        @Override
+                        public void onComplete() {
+                            // When completed start process, register methods and start guard thread
+                            onSessionStart();
+                        }
+
+                        @Override
+                        public void onError(@NonNull Throwable e) {
+
+                        }
+                    });
+                }
             }
-        }, reconnectDelay, reconnectInterval);
+        }
     }
 
     private void onSessionStart() {
-        // Register the method handlers called by the server
+        // Set atomic boolean status
+        sessionStarted.set(true);
 
-        /// Message receivers
+        // Register message receivers
         hubConnection.on("receiveSystemMessage", this::receiveSystemMessage,
                 String.class, String.class, Long.class);
         hubConnection.on("receiveBroadcastMessage", this::receiveBroadcastMessage,
@@ -92,33 +111,73 @@ public class SignalRChatService extends Service implements ChatService {
         hubConnection.on("receivePrivateMessage", this::receivePrivateMessage,
                 String.class, String.class, String.class, String.class, Boolean.class, Long.class, String.class);
 
-        /// Rich content receivers
+        // Register rich content receivers
         hubConnection.on("receiveHistoryMessages", this::receiveHistoryMessages, String.class);
         hubConnection.on("receiveImageContent", this::receiveImageContent, String.class, String.class);
 
-        /// Operation receivers
+        // Register operation receivers
         hubConnection.on("serverAck", this::serverAck, String.class, Long.class);
         hubConnection.on("clientRead", this::clientRead, String.class, String.class);
         hubConnection.on("expireSession", this::expireSession, Boolean.class);
+
+        // Activate UI click listeners
+        chatUserInterface.activateClickEvent();
+
+        // Broadcast enter chat room
+        hubConnection.send("EnterChatRoom", deviceUuid, username);
+
+        // start guard thread for reconnecting
+        reconnectTimer = new Timer();
+        reconnectTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                connectToServer();
+            }
+        }, reconnectDelay, reconnectInterval);
+
     }
 
     @Override
     public void expireSession(boolean showAlert) {
-        Log.d("expireSession", "Server expired the session");
-        hubConnection.stop();
-        reconnectTimer.cancel();
-        // resendChatMessageTimer.cancel();
-        sessionStarted.set(false);
+        if (sessionStarted.get()) {
+            synchronized (sessionStarted) {
+                if (sessionStarted.get() && hubConnection.getConnectionState() == HubConnectionState.CONNECTED) {
+                    reconnectTimer.cancel();
+
+                    hubConnection.invoke("LeaveChatRoom", deviceUuid, username).subscribe(new CompletableObserver() {
+                        @Override
+                        public void onSubscribe(@NonNull Disposable d) {
+
+                        }
+
+                        @Override
+                        public void onComplete() {
+                            hubConnection.stop();
+                            sessionStarted.set(false);
+                        }
+
+                        @Override
+                        public void onError(@NonNull Throwable e) {
+                            Log.e("HubConnection", e.toString());
+                            hubConnection.stop();
+                            sessionStarted.set(false);
+                        }
+                    });
+                }
+            }
+        }
         if (showAlert) {
+            Log.d("expireSession", "Server expired the session");
             chatUserInterface.showSessionExpiredDialog();
+        } else {
+            Log.d("expireSession", "Manually quited the session");
         }
     }
-
 
     ///////// Receivers
 
     /// Message receivers
-    public void receiveSystemMessage(String messageId, String payload, long sendTime) {
+    private void receiveSystemMessage(String messageId, String payload, long sendTime) {
         Log.d("receiveSystemMessage", payload);
 
         // Create message
@@ -128,7 +187,7 @@ public class SignalRChatService extends Service implements ChatService {
         chatUserInterface.tryAddMessage(systemMessage, 1);
     }
 
-    public void receiveBroadcastMessage(String messageId, String sender, String receiver, String payload, boolean isImage, long sendTime, String ackId) {
+    private void receiveBroadcastMessage(String messageId, String sender, String receiver, String payload, boolean isImage, long sendTime, String ackId) {
         Log.d("receiveBroadcastMessage", sender);
 
         // Send back ack
@@ -146,7 +205,7 @@ public class SignalRChatService extends Service implements ChatService {
         chatUserInterface.tryAddMessage(chatMessage, 1);
     }
 
-    public void receivePrivateMessage(String messageId, String sender, String receiver, String payload, boolean isImage, long sendTime, String ackId) {
+    private void receivePrivateMessage(String messageId, String sender, String receiver, String payload, boolean isImage, long sendTime, String ackId) {
         Log.d("receivePrivateMessage", sender);
 
         // Send back ack
@@ -164,17 +223,12 @@ public class SignalRChatService extends Service implements ChatService {
         chatUserInterface.tryAddMessage(chatMessage, 1);
     }
 
-    @Override
-    public void sendMessageRead(String messageId) {
-        hubConnection.send("OnReadResponseReceived", messageId, username);
-    }
-
     /// Rich content receivers
-    public void receiveImageContent(String messageId, String payload) {
+    private void receiveImageContent(String messageId, String payload) {
         chatUserInterface.setImageContent(messageId, payload);
     }
 
-    public void receiveHistoryMessages(String serializedString) {
+    private void receiveHistoryMessages(String serializedString) {
         Log.d("receiveHistoryMessages", serializedString);
         List<Message> historyMessages = MessageFactory.parseHistoryMessages(serializedString, username);
 
@@ -188,11 +242,11 @@ public class SignalRChatService extends Service implements ChatService {
         activePull = false;
     }
 
-    public void serverAck(String messageId, long receivedTimeInLong) {
+    private void serverAck(String messageId, long receivedTimeInLong) {
         chatUserInterface.setSentMessageAck(messageId, receivedTimeInLong);
     }
 
-    public void clientRead(String messageId, String username) {
+    private void clientRead(String messageId, String username) {
         chatUserInterface.setSentMessageRead(messageId);
     }
 
@@ -214,6 +268,11 @@ public class SignalRChatService extends Service implements ChatService {
                 default:
             }
         }
+    }
+
+    @Override
+    public void sendMessageRead(String messageId) {
+        hubConnection.send("OnReadResponseReceived", messageId, username);
     }
 
     private void sendBroadcastMessage(Message broadcastMessage) {
@@ -263,8 +322,7 @@ public class SignalRChatService extends Service implements ChatService {
         }
     }
 
-    ///////// Connection Guarders
-
+    // Guard thread method
     private void connectToServer() {
         if (hubConnection.getConnectionState() != HubConnectionState.CONNECTED) {
             hubConnection.start().subscribe(new CompletableObserver() {
@@ -275,13 +333,6 @@ public class SignalRChatService extends Service implements ChatService {
 
                 @Override
                 public void onComplete() {
-                    if (!sessionStarted.get()) { // very first start of connection
-                        onSessionStart();
-                        hubConnection.send("EnterChatRoom", deviceUuid, username);
-                        chatUserInterface.activateClickEvent();
-                        sessionStarted.set(true);
-                    }
-                    Log.d("Reconnection", "touch server after reconnection");
                     hubConnection.send("TouchServer", deviceUuid, username);
                 }
 
@@ -291,6 +342,7 @@ public class SignalRChatService extends Service implements ChatService {
                 }
             });
         } else {
+            // If connected, must be in an active session. Directly call TouchServer
             hubConnection.send("TouchServer", deviceUuid, username);
         }
     }
