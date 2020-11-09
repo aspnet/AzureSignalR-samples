@@ -19,10 +19,10 @@ This tutorial shows you how to build a reliable mobile chat room server with Sig
 ## Abstract
 
 There are four main conponents in a reliable chat room server-side system: 
-1. Local .NET chat room server
-2. Azure SignalR Service as message delievery service
-3. Azure Storage as message storage service
-4. Azure Notification Hub (and Google Firebase behind it) as notification service
+1. Local **.NET chat room server**
+2. **Azure SignalR Service** as message delievery service
+3. **Azure Storage** as message storage service
+4. **Azure Notification Hub** (and Google Firebase behind it) as notification service
 
 ![serverapp-component](./assets/component.png)
 
@@ -37,7 +37,7 @@ See Google [reference](https://firebase.google.com/docs/cloud-messaging/android/
 
 Get the server key we need to build the chat room server:
 
-1. Goto [Firebase Console](https://console.firebase.google.com/) and select your client app name
+1. Goto [Firebase Console](https://console.firebase.google.com/) and select your client app
 
 ![firebase-console-project-selection](./assets/firebase-console-1.png)
 
@@ -93,20 +93,28 @@ We will need connection string for chat room server:
 
 ## Congifure Your Reliable Chat Room Server
 
-Clone/download the source code from repo. 
-
 See [reference](https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-3.1&tabs=windows) about *Safe storage of app secrets in development in .NET Core*.
+
+0. Clone/download the source code from repo. 
+
+```dotnet cli
+git clone https://github.com/uncooleben/AzureSignalR-samples.git
+```
 
 1. Change your directory to the project directory
 
-Run cmd
+```dotnet cli
+cd ./samples/ReliableChatRoom/ReliableChatRoom/
+```
+
+2. Initialize user-secrets
+
 ```dotnetcli
 dotnet user-secrets init
 ```
 
-2. Add user secrets
+3. Add user secrets
 
-Run cmd
 ```dotnetcli
 dotnet user-secrets set "Azure:SignalR:ConnectionString" $YOUR_SIGNALR_CONNECTION_STRING
 dotnet user-secrets set "Azure:Storage:ConnectionString" $YOUR_STORAGE_ACCOUNT_CONNECTION_STRING
@@ -115,9 +123,7 @@ dotnet user-secrets set "Azure:NotificationHub:ConnectionString" $YOUR_NOTIFICAT
 ```
 
 ## Run Your Reliable Chat Room Server
-Change your directory to the project directory.
 
-Run cmd
 ```dotnet cli
 dotnet run
 ```
@@ -134,19 +140,25 @@ Application started. Press Ctrl+C to shut down.
 ## How Does Reliable Chat Protocol Work?
 
 1. Client enters the chat room
+
 ![1-EnterChatRoom](./assets/1-EnterChatRoom.png)
 
 2. Client broadcasts a message to all other clients
+
 ![2-BroadcastMessage](./assets/2-BroadcastMessage.png)
 
 3. Client sends a private message to another client
+
 ![3-PrivateMessage](./assets/3-PrivateMessage.png)
 
 4. Client pulls history messages from serverr
+
 ![4-PullHistoryMessages](./assets/4-PullHistoryMessages.png)
 
 5. Client pull image content from server
+
 ![5-LoadImageContent](./assets/5-LoadImageContent.png)
 
 6. Client leaves the chat room
+
 ![6-LeaveChatRoom](./assets/6-LeaveChatRoom.png)
