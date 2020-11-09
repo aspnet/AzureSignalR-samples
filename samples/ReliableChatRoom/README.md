@@ -151,7 +151,7 @@ Application started. Press Ctrl+C to shut down.
 
 ![3-PrivateMessage](./assets/3-PrivateMessage.png)
 
-4. Client pulls history messages from serverr
+4. Client pulls history messages from server
 
 ![4-PullHistoryMessages](./assets/4-PullHistoryMessages.png)
 
