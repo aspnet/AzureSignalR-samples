@@ -33,7 +33,7 @@ This repo will focus on **.NET Chat Room Server** and its interaction with those
 
 ## Create and Setup Your Google Firebase Service For Notificaiton
 
-See Google [reference](https://firebase.google.com/docs/cloud-messaging/android/client) on *Set up a Firebase Cloud Messaging client app on Android*.
+See Google [reference](https://firebase.google.com/docs/cloud-messaging/android/client) of *Set up a Firebase Cloud Messaging client app on Android*.
 
 Get the server key we need to build the chat room server:
 
@@ -64,7 +64,7 @@ One core thing to do is adding your Firebase Server Key into your Notification H
 
 ## Create Your Azure Storage Account
 
-See [reference](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) about *Create a storage account*.
+See [reference](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) of *Create a storage account*.
 
 We will need connection string for chat room server:
 
@@ -93,7 +93,7 @@ We will need connection string for chat room server:
 
 ## Congifure Your Reliable Chat Room Server
 
-Clone/download the source code. 
+Clone/download the source code from repo. 
 
 See [reference](https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-3.1&tabs=windows) about *Safe storage of app secrets in development in .NET Core*.
 
@@ -130,3 +130,23 @@ Now listening on: http://localhost:5000
 Now listening on: https://localhost:5001
 Application started. Press Ctrl+C to shut down.
 ```
+
+## How Does Reliable Chat Protocol Work?
+
+1. Client enters the chat room
+![1-EnterChatRoom](./assets/1-EnterChatRoom.png)
+
+2. Client broadcasts a message to all other clients
+![2-BroadcastMessage](./assets/2-BroadcastMessage.png)
+
+3. Client sends a private message to another client
+![3-PrivateMessage](./assets/3-PrivateMessage.png)
+
+4. Client pulls history messages from serverr
+![4-PullHistoryMessages](./assets/4-PullHistoryMessages.png)
+
+5. Client pull image content from server
+![5-LoadImageContent](./assets/5-LoadImageContent.png)
+
+6. Client leaves the chat room
+![6-LeaveChatRoom](./assets/6-LeaveChatRoom.png)
