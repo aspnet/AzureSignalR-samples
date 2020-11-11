@@ -40,8 +40,8 @@ public class SignalRChatService extends Service implements ChatService {
     private boolean firstPull = true;
     private boolean activePull = false;
     private final AtomicBoolean sessionStarted = new AtomicBoolean(false);
-    private int reconnectDelay = 0; // immediate connect to server when enter the chat room
-    private int reconnectInterval = 5000;
+    private final int reconnectDelay = 0; // immediate connect to server when enter the chat room
+    private final int reconnectInterval = 5000;
     private Timer reconnectTimer;
 
     // Service binder
