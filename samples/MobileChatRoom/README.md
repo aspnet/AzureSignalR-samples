@@ -160,3 +160,22 @@ This tutorial shows you how to build and modify a BSignalR-based Android Chattin
     ![sending-private](./assets/sending-private.png)
     ![sent-private](./assets/sent-private.png)
     ![read-private](./assets/read-private.png)
+
+## Client-side Interface Specification
+
+Overview:
+
+![overview-interface](./assets/overview-interface.png)
+
+Table view:
+
+| Interface Method Signature                                                                                                                                | Return Value | Function                                                              |
+|-----------------------------------------------------------------------------------------------------------------------------------------------------------|--------------|-----------------------------------------------------------------------|
+| void   receiveSystemMessage (String messageId ,  String payload , long sendTime)                                                                          | N/A          | Client receives the system message from server                        |
+| void  receiveBroadcastMessage (String messageId ,  String sender ,  String receiver ,  String payload , boolean  isImage , long  sendTime , String ackId) | N/A          | Client receives the broadcast message from server                     |
+| void  receivePrivateMessage (String messageId ,  String sender ,  String receiver ,  String payload , boolean  isImage , long  sendTime , String ackId)   | N/A          | Client receives the private message from server                       |
+| void  receiveImageContent (String messageId , String payload)                                                                                             | N/A          | Client receives the image content from server                         |
+| void  receiveHistoryMessages(String serializedString)                                                                                                     | N/A          | Client receives the history messages from server                      |
+| void  serverAck (String messageId , long receivedTimeInLong)                                                                                              | N/A          | Client receives the server ack from server                            |
+| void  clientRead (String messageId , String username)                                                                                                     | N/A          | Client receives the read status update from the receiver (via server) |
+| void  expireSession ( boolean showAlert)                                                                                                                  | N/A          | Client receives the force expire session message from server.         |
