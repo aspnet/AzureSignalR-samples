@@ -4,7 +4,7 @@ This tutorial shows you how to build and modify a BSignalR-based Android Chattin
 
 > **&#x2713;** Build a mobile chat room client with SignalR client and Android Studio.
 >
-> **&#x2713;** Integrate the chat room app with [ReliableChatRoom Server](https://github.com/UncooleBen/AzureSignalR-samples/tree/master/samples/ReliableChatRoom)
+> **&#x2713;** Integrate the chat room app with [ReliableChatRoom Server](../ReliableChatRoom/.)
 >
 > **&#x2713;** Chat with the mobile app.
 
@@ -19,7 +19,7 @@ This tutorial shows you how to build and modify a BSignalR-based Android Chattin
 0. Download or clone the Android Studio project
    
    ```cmd
-   git clone https://github.com/uncooleben/AzureSignalR-samples.git
+   git clone https://github.com/$USERNAME/AzureSignalR-samples.git
    ```
 
 1. Open the directory as project in Android Studio
@@ -48,7 +48,7 @@ This tutorial shows you how to build and modify a BSignalR-based Android Chattin
 
 1. Build and run your app server
 
-    See [reference](https://github.com/UncooleBen/AzureSignalR-samples/blob/master/samples/ReliableChatRoom/README.md) of *Build A SignalR-based Reliable Mobile Chat Room Server*.
+    See [reference](../ReliableChatRoom/README.md) of *Build A SignalR-based Reliable Mobile Chat Room Server*.
     
     In your chat room server project directory
     ```cmd 

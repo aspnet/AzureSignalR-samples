@@ -98,7 +98,7 @@ See [reference](https://docs.microsoft.com/en-us/aspnet/core/security/app-secret
 0. Clone/download the source code from repo. 
 
 ```dotnet cli
-git clone https://github.com/uncooleben/AzureSignalR-samples.git
+git clone https://github.com/$USERNAME/AzureSignalR-samples.git
 ```
 
 1. Change your directory to the project directory
@@ -162,3 +162,7 @@ Application started. Press Ctrl+C to shut down.
 6. Client leaves the chat room
 
 ![6-LeaveChatRoom](./assets/6-LeaveChatRoom.png)
+
+## How Can I Integrate the Reliable Chat Room Server with Clients
+
+We provide a sample Android mobile chat room app which works with the `Reliable Chat Room Server`. Please see [reference](../MobileChatRoom/.)
