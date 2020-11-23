@@ -2,48 +2,41 @@ package com.microsoft.signalr.androidchatroom.activity;
 
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import com.microsoft.signalr.androidchatroom.R;
-import com.microsoft.signalr.androidchatroom.service.ChatService;
-import com.microsoft.signalr.androidchatroom.service.NotificationService;
-import com.microsoft.signalr.androidchatroom.service.SignalRChatService;
-import com.microsoft.signalr.androidchatroom.service.FirebaseService;
 
-import android.content.Intent;
-import android.os.IBinder;
-import android.widget.Toast;
+import com.microsoft.signalr.androidchatroom.R;
+import com.microsoft.signalr.androidchatroom.service.FirebaseService;
+import com.microsoft.signalr.androidchatroom.service.NotificationService;
+import com.microsoft.signalr.androidchatroom.view.ChatFragment;
+import com.microsoft.signalr.androidchatroom.view.LoginFragment;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
     public static MainActivity mainActivity;
+    
+    // Used for notification display
+    // Display notification when MainActivity is not visible
     public static Boolean isVisible = false;
 
+    // View components
+    private LoginFragment mLoginFragment;
+    private ChatFragment mChatFragment;
 
-    private ChatService chatService;
-    private final ServiceConnection chatServiceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            SignalRChatService.ChatServiceBinder chatServiceBinder = (SignalRChatService.ChatServiceBinder) service;
-            chatService = chatServiceBinder.getService();
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            chatService = null;
-        }
-    };
-
+    // Notification service and service connection
     private NotificationService notificationService;
     private final ServiceConnection notificationServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             NotificationService.NotificationServiceBinder notificationServiceBinder = (NotificationService.NotificationServiceBinder) service;
             notificationService = notificationServiceBinder.getService();
+            mLoginFragment.setDeviceUuid(notificationService.getDeviceUuid());
         }
 
         @Override
@@ -51,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
             notificationService = null;
         }
     };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,22 +54,12 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        bindChatService();
         bindNotificationService();
-        FirebaseService.createChannelAndHandleNotifications(getApplicationContext());
-    }
-
-    public ChatService getChatService() {
-        return chatService;
+        FirebaseService.createNotificationChannel(getApplicationContext());
     }
 
     public NotificationService getNotificationService() {
         return notificationService;
-    }
-
-    public void bindChatService() {
-        Intent intent = new Intent(this, SignalRChatService.class);
-        bindService(intent, chatServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
     public void bindNotificationService() {
@@ -85,7 +69,11 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        chatService.expireSession(false);
+        // If back pressed, manually logout user
+        if (mChatFragment != null) {
+            mChatFragment.onBackPressed();
+            mChatFragment = null;
+        }
         super.onBackPressed();
     }
 
@@ -113,12 +101,11 @@ public class MainActivity extends AppCompatActivity {
         isVisible = false;
     }
 
-    public void ToastNotify(final String notificationMessage) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(MainActivity.this, notificationMessage, Toast.LENGTH_LONG).show();
-            }
-        });
+    public void setLoginFragment(LoginFragment loginFragment) {
+        this.mLoginFragment = loginFragment;
+    }
+
+    public void setChatFragment(ChatFragment chatFragment) {
+        this.mChatFragment = chatFragment;
     }
 }

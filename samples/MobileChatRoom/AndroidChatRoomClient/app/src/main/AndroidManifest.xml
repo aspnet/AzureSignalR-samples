@@ -21,9 +21,6 @@
             android:name="com.microsoft.signalr.androidchatroom.service.NotificationService"
             android:exported="false">
         </service>
-        <service android:name="com.microsoft.signalr.androidchatroom.service.SignalRChatService"
-                android:exported="false">
-        </service>
         <service
             android:name="com.microsoft.signalr.androidchatroom.service.FirebaseService"
             android:exported="false">

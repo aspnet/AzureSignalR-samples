@@ -7,6 +7,7 @@
     <string name="login_fragment_label">Login Page</string>
     <string name="chat_fragment_label">ChatRoom</string>
     <string name="login">Let\'s Chat!</string>
+    <string name="connecting">Connecting</string>
     <string name="name">User</string>
 
     <string name="chatbox_receiver_hint">Receiver. Blank for broadcast.</string>
@@ -30,4 +31,11 @@
 
     <string name="azure_notification_hub_connection_string">Endpoint=sb://com-microsoft-signalr-androidchatroom.servicebus.windows.net/;SharedAccessKeyName=DefaultListenSharedAccessSignature;SharedAccessKey=Mh7i1Z9n4euLov7vGdmZDwJ2pay3m/4t60JXWm4j3IM=</string>
     <string name="azure_notification_hub_name">AndroidChatRoomNotificationHub</string>
+
+    <string name="empty_message_not_allowed">Empty message is not allowed.</string>
+
+    <string name="image_picking_failed">Image picking failed.</string>
+    <string name="no_image_picked">You haven\'t picked Image.</string>
+
+    <string name="saved_messages_key">saved_messages</string>
 </resources>
