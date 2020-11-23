@@ -18,7 +18,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities
         // A Uuid generated and sent by client. Server-side do not generate messageIds
         public string MessageId { get; set; }
 
-        /// <see cref="MessageTypeEnum"/> 
+        /// <see cref="MessageTypeEnum"/>
         public MessageTypeEnum Type { get; set; }
 
         // Sender and Receiver of a message

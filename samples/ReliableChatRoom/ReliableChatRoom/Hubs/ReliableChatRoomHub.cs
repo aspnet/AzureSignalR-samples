@@ -44,7 +44,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         /// <param name="deviceUuid">A random id of client device, used for notification service</param>
         /// <param name="username">The username of client</param>
         /// <returns></returns>
-        public async Task EnterChatRoom(string deviceUuid, string username)
+        public async Task<string> EnterChatRoom(string deviceUuid, string username)
         {
             Console.WriteLine("EnterChatRoom device: {0} username: {1}", deviceUuid, username);
             
@@ -57,6 +57,10 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
                 Message loginMessage = _messageFactory.CreateSystemMessage(username, "joined", DateTime.UtcNow);
                 //  Do not store system messages. Directly send them out.
                 await SendSystemMessage(loginMessage);
+                return "success";
+            } else
+            {
+                return "failure";
             }
         }
 
@@ -82,7 +86,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         /// <param name="deviceUuid">A random id of client device, used for notification service (may be a new id)</param>
         /// <param name="username">The username of client</param>
         /// <returns></returns>
-        public async Task LeaveChatRoom(string deviceUuid, string username)
+        public async Task<string> LeaveChatRoom(string deviceUuid, string username)
         {
             Console.WriteLine("LeaveChatRoom username: {0}", username);
 
@@ -94,6 +98,8 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
             
             //  Do not store system messages. Directly send them out.
             await SendSystemMessage(logoutMessage);
+
+            return "success";
         }
 
         /// <summary>
@@ -227,7 +233,10 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         /// <returns></returns>
         public async Task OnPullImageContentReceived(string username, string messageId)
         {
+            Console.WriteLine(string.Format("OnPullImageContentReceived username: {0}; messageId: {1}", username, messageId));
+
             string imagePayload = await _messageStorage.TryFetchImageContentAsync(messageId);
+
             await Clients.Client(_userHandler.GetUserSession(username).ConnectionId).SendAsync("receiveImageContent", messageId, imagePayload);
         }
 

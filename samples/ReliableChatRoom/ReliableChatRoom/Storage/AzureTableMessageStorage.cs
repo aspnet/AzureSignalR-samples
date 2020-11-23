@@ -27,7 +27,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
         private readonly string _containerName = "mobilechatroom";
 
         private readonly string _dateFormatString = "yyyy'-'MM'-'dd'T'HH':'mm':'ss.ffff";
-        private readonly int _messageCountPerFetch = 5;
+        private readonly int _messageCountPerFetch = 10;
 
         public AzureTableMessageStorage(IMessageFactory messageFactory, string connectionString)
         {
