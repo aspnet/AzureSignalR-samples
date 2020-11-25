@@ -23,7 +23,9 @@ import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
-
+/**
+ * SignalR layer that directly communicates with remote SignalR service
+ */
 public class SignalRService {
     private static final String TAG = "SignalRService";
 
@@ -36,6 +38,9 @@ public class SignalRService {
     private static Timer reconnectTimer = null;
 
     public static void startHubConnection(SimpleCallback<String> callback) {
+        /* Double-if synchronized block to ensure only one thread can create the singleton
+         * HubConnection.
+         */
         if (hubConnection == null) {
             synchronized (SignalRService.class) {
                 if (hubConnection == null) {
@@ -43,6 +48,7 @@ public class SignalRService {
                 }
             }
         }
+        /* After creating HubConnection, start it if it's not CONNECTED. */
         if (hubConnection.getConnectionState() != HubConnectionState.CONNECTED) {
             hubConnection.start().subscribeOn(Schedulers.io())
                     .subscribe(new CompletableObserver() {
@@ -62,6 +68,7 @@ public class SignalRService {
                         }
                     });
         } else {
+            /* Directly call onSuccess callback if HubConnection is already CONNECTED */
             callback.onSuccess("");
         }
     }
@@ -85,7 +92,11 @@ public class SignalRService {
                 }
             });
         } else {
-            // If connected, must be in an active session. Directly call TouchServer
+            /* If connected, must be in an active session. Directly call TouchServer
+             * TouchServer method has two purpose:
+             * 1. A stay alive message
+             * 2. Update deviceUuid in realtime in case it has changed since last method call
+             */
             hubConnection.send("TouchServer", deviceUuid, username);
         }
     }

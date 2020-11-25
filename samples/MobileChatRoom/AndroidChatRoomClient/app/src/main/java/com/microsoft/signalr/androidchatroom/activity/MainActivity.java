@@ -16,25 +16,31 @@ import com.microsoft.signalr.androidchatroom.service.NotificationService;
 import com.microsoft.signalr.androidchatroom.view.ChatFragment;
 import com.microsoft.signalr.androidchatroom.view.LoginFragment;
 
+/*
+ * Main entrance of the application.
+ */
 public class MainActivity extends AppCompatActivity {
-    private static final String TAG = "MainActivity";
+    private static final String TAG = MainActivity.class.getSimpleName();
 
-    public static MainActivity mainActivity;
-    
-    // Used for notification display
-    // Display notification when MainActivity is not visible
-    public static Boolean isVisible = false;
+    /*
+     * Used for notification display
+     * Display notification when MainActivity is not visible
+     */
+    private static MainActivity sMainActivity;
+    private boolean mIsVisible = false;
 
-    // View components
+    /* View components */
     private LoginFragment mLoginFragment;
     private ChatFragment mChatFragment;
 
-    // Notification service and service connection
+    /* Instance of NotificationService */
     private NotificationService notificationService;
+    /* Service connection that get the ref of NotificationService object */
     private final ServiceConnection notificationServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            NotificationService.NotificationServiceBinder notificationServiceBinder = (NotificationService.NotificationServiceBinder) service;
+            NotificationService.NotificationServiceBinder notificationServiceBinder =
+                    (NotificationService.NotificationServiceBinder) service;
             notificationService = notificationServiceBinder.getService();
             mLoginFragment.setDeviceUuid(notificationService.getDeviceUuid());
         }
@@ -49,17 +55,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mainActivity = this;
+        sMainActivity = this;
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         bindNotificationService();
         FirebaseService.createNotificationChannel(getApplicationContext());
-    }
-
-    public NotificationService getNotificationService() {
-        return notificationService;
     }
 
     public void bindNotificationService() {
@@ -80,25 +82,25 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        isVisible = true;
+        mIsVisible = true;
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        isVisible = false;
+        mIsVisible = false;
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        isVisible = true;
+        mIsVisible = true;
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        isVisible = false;
+        mIsVisible = false;
     }
 
     public void setLoginFragment(LoginFragment loginFragment) {
@@ -107,5 +109,17 @@ public class MainActivity extends AppCompatActivity {
 
     public void setChatFragment(ChatFragment chatFragment) {
         this.mChatFragment = chatFragment;
+    }
+
+    public static MainActivity getActiveInstance() {
+        return sMainActivity;
+    }
+
+    public NotificationService getNotificationService() {
+        return notificationService;
+    }
+
+    public boolean isVisible() {
+        return mIsVisible;
     }
 }

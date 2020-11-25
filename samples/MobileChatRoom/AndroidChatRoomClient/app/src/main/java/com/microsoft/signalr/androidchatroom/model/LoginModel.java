@@ -13,7 +13,7 @@ import io.reactivex.schedulers.Schedulers;
 
 public class LoginModel extends BaseModel implements LoginContract.Model {
 
-    private final LoginPresenter mLoginPresenter;
+    private LoginPresenter mLoginPresenter;
 
     public LoginModel(LoginPresenter loginPresenter) {
         mLoginPresenter = loginPresenter;
@@ -33,7 +33,10 @@ public class LoginModel extends BaseModel implements LoginContract.Model {
 
                     @Override
                     public void onSuccess(@NonNull String s) {
-                        // Callback on presenter
+                        /* Once server confirms the log in request,
+                         * call onSuccess callback and then start
+                         * the reconnect timer.
+                         */
                         callback.onSuccess(s);
 
                         // Start timer in service
@@ -42,8 +45,17 @@ public class LoginModel extends BaseModel implements LoginContract.Model {
 
                     @Override
                     public void onError(@NonNull Throwable e) {
+                        /* If server fails to confirm the log in
+                         * request, call onError callback.
+                         */
                         callback.onError(e.getMessage());
                     }
                 });
+    }
+
+    @Override
+    public void detach() {
+        mLoginPresenter.detach();
+        mLoginPresenter = null;
     }
 }

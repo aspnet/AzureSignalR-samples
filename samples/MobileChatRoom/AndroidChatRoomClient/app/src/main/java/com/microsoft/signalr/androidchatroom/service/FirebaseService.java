@@ -17,9 +17,10 @@ import com.microsoft.signalr.androidchatroom.activity.MainActivity;
 
 import java.util.Iterator;
 
-
-//  See https://docs.microsoft.com/en-us/azure/notification-hubs/notification-hubs-android-push-notification-google-fcm-get-started#test-send-notification-from-the-notification-hub
-
+/**
+ * FirebaseService class
+ * See https://docs.microsoft.com/en-us/azure/notification-hubs/notification-hubs-android-push-notification-google-fcm-get-started#test-send-notification-from-the-notification-hub
+ */
 public class FirebaseService extends FirebaseMessagingService {
 
     public static final String NOTIFICATION_CHANNEL_ID = "id_chatroom";
@@ -52,7 +53,7 @@ public class FirebaseService extends FirebaseMessagingService {
     public void onMessageReceived(RemoteMessage remoteMessage) {
         Log.d(TAG, "From: " + remoteMessage.getFrom());
 
-        // Check if message contains a notification payload.
+        /* Check if message contains a notification payload */
         String notificationTitle = null, notificationBody = null;
         if (remoteMessage.getNotification() != null) {
             Log.d(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
@@ -63,8 +64,8 @@ public class FirebaseService extends FirebaseMessagingService {
             notificationBody = dataPayloadIterator.next();
         }
 
-        // When MainActivity is invisible, show notification
-        if (!MainActivity.isVisible) {
+        /* When MainActivity is invisible, show notification */
+        if (!MainActivity.getActiveInstance().isVisible()) {
             showNotification(notificationTitle, notificationBody);
         }
 

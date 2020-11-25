@@ -6,6 +6,9 @@ import com.microsoft.signalr.androidchatroom.util.MessageTypeUtils;
 
 import java.util.UUID;
 
+/**
+ * Entity class for a chat message
+ */
 public class Message {
     public final static String BROADCAST_RECEIVER = "BCAST";
     public final static String SYSTEM_SENDER = "SYS";

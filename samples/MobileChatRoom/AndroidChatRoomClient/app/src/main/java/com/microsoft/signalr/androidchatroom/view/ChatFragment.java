@@ -185,7 +185,7 @@ public class ChatFragment extends BaseFragment implements ChatContract.View {
 
     public void onBackPressed() {
         mChatPresenter.saveHistoryMessages();
-        mChatPresenter.requestLogout(false);
+        mChatPresenter.requestLogout();
     }
 
     public void updateRecyclerView(List<Message> messages, int direction) {
@@ -206,5 +206,11 @@ public class ChatFragment extends BaseFragment implements ChatContract.View {
         });
 
         chatContentSwipeRefreshLayout.setRefreshing(false);
+    }
+
+    @Override
+    public void detach() {
+        super.detach();
+        mChatPresenter = null;
     }
 }

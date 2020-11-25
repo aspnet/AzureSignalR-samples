@@ -4,6 +4,7 @@ package com.microsoft.signalr.androidchatroom.presenter;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Path;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -16,6 +17,7 @@ import com.microsoft.signalr.androidchatroom.model.entity.MessageTypeConstant;
 import com.microsoft.signalr.androidchatroom.util.MessageTypeUtils;
 import com.microsoft.signalr.androidchatroom.util.SimpleCallback;
 import com.microsoft.signalr.androidchatroom.view.ChatFragment;
+import com.microsoft.signalr.androidchatroom.view.ScrollDirection;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -26,43 +28,56 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.stream.Collectors;
 
+/**
+ * Presenter component responsible for chatting.
+ */
 public class ChatPresenter extends BasePresenter<ChatFragment, ChatModel> implements ChatContract.Presenter {
     private static final String TAG = "ChatPresenter";
+    private static final long SENDING_TIMEOUT_THRESHOLD = 5000;
+    private static final long NO_DELAY = 0;
 
-    private final List<Message> messages = new ArrayList<>();
-    private final List<Message> sendingMessages = new ArrayList<>();
+    /* User session information */
     private final String username;
     private final String deviceUuid;
-    private int callbackDirection = 1;
 
-    private final Timer timeoutTimer;
+    /* List of local messages */
+    private final List<Message> messages = new ArrayList<>();
+
+    /* State variable for pull history message callback direction */
+    private int callbackDirection = ScrollDirection.FINGER_UP;
+
+    /* Timer thread for timing out messages */
+    private final Timer timeOutSendingMessagesTimer;
 
     public ChatPresenter(ChatFragment chatFragment, String username, String deviceUuid) {
         super(chatFragment);
-
         this.username = username;
         this.deviceUuid = deviceUuid;
 
         mBaseFragment.activateListeners();
-
         mBaseFragment.configureRecyclerView(messages, this);
 
-        timeoutTimer = new Timer();
-        timeoutTimer.scheduleAtFixedRate(new TimerTask() {
+        timeOutSendingMessagesTimer = new Timer();
+        timeOutSendingMessagesTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                timeout();
+                timeOutSendingMessages();
             }
-        }, 0, 10000);
+        }, NO_DELAY, SENDING_TIMEOUT_THRESHOLD);
 
         restoreOrPullHistoryMessages();
     }
 
-    private void timeout() {
+    private void timeOutSendingMessages() {
         boolean needUpdate = false;
         for (Message message : messages) {
-            if ((message.getMessageType() & MessageTypeConstant.MESSAGE_STATUS_MASK) == MessageTypeConstant.SENDING) {
-                if (System.currentTimeMillis() - message.getTime() > 10000) {
+            if ((message.getMessageType() & MessageTypeConstant.MESSAGE_STATUS_MASK)
+                    == MessageTypeConstant.SENDING) {
+                /* If a message is sending and its sending time is
+                 * greater than SENDING_TIMEOUT_THRESHOLD, set it
+                 * as a timed out message
+                 */
+                if (System.currentTimeMillis() - message.getTime() > SENDING_TIMEOUT_THRESHOLD) {
                     message.timeout();
                     needUpdate = true;
                 }
@@ -71,54 +86,64 @@ public class ChatPresenter extends BasePresenter<ChatFragment, ChatModel> implem
         }
 
         if (needUpdate) {
-            // Set view messages
-            mBaseFragment.setMessages(messages, 0);
+            /* Set view messages */
+            mBaseFragment.setMessages(messages, ScrollDirection.FINGER_UP);
         }
     }
 
+    /**
+     * Restore history messages from SharedPreference or pull from server
+     */
     private void restoreOrPullHistoryMessages() {
         Context context = mBaseFragment.getContext();
-        SharedPreferences sharedPreferences = context.getSharedPreferences(context.getString(R.string.saved_messages_key), Context.MODE_PRIVATE);
-        String storedJsonMessages = sharedPreferences.getString(context.getString(R.string.saved_messages_key), null);
+        String storedJsonMessages = context
+                .getSharedPreferences(context.getString(R.string.saved_messages_key), Context.MODE_PRIVATE)
+                .getString(context.getString(R.string.saved_messages_key), null);
+
         if (storedJsonMessages == null || "[]".equals(storedJsonMessages)) {
-            // Pull History Messages
+            /* Pull History Messages */
             Log.d(TAG, "First Login: Pulling History messages.");
             mBaseModel.pullHistoryMessages(calculateUntilTime());
         } else {
-            // Restore History Messages
+            /* Restore History Messages */
             Log.d(TAG, "First Login: Restoring history messages.");
             List<Message> historyMessages = MessageFactory.parseHistoryMessages(storedJsonMessages, username);
-            mBaseFragment.setMessages(historyMessages, 1);
+            mBaseFragment.setMessages(historyMessages, ScrollDirection.FINGER_UP);
         }
     }
 
     @Override
     public void saveHistoryMessages() {
         Context context = mBaseFragment.getContext();
-        SharedPreferences sharedPreferences = context.getSharedPreferences(context.getString(R.string.saved_messages_key), Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(context.getString(R.string.saved_messages_key), MessageFactory.serializeHistoryMessages(messages)).apply();
+        SharedPreferences.Editor editor = context
+                .getSharedPreferences(context.getString(R.string.saved_messages_key), Context.MODE_PRIVATE)
+                .edit();
+
+        editor.putString(context.getString(R.string.saved_messages_key), MessageFactory.serializeHistoryMessages(messages))
+                .apply();
     }
 
     @Override
     public void sendTextMessage(String sender, String receiver, String payload) {
         Message message;
         if (receiver.length() == 0) {
-            message = MessageFactory.createSendingTextBroadcastMessage(sender, payload, System.currentTimeMillis());
+            message = MessageFactory
+                    .createSendingTextBroadcastMessage(sender, payload, System.currentTimeMillis());
         } else {
-            message = MessageFactory.createSendingTextPrivateMessage(sender, receiver, payload, System.currentTimeMillis());
+            message = MessageFactory
+                    .createSendingTextPrivateMessage(sender, receiver, payload, System.currentTimeMillis());
         }
 
         messages.add(message);
-        if ((message.getMessageType() & MessageTypeConstant.MESSAGE_TYPE_MASK) == MessageTypeConstant.PRIVATE) {
+        if ((message.getMessageType() & MessageTypeConstant.MESSAGE_TYPE_MASK)
+                == MessageTypeConstant.PRIVATE) {
             mBaseModel.sendPrivateMessage(message);
-        } else if ((message.getMessageType() & MessageTypeConstant.MESSAGE_TYPE_MASK) == MessageTypeConstant.BROADCAST) {
+        } else if ((message.getMessageType() & MessageTypeConstant.MESSAGE_TYPE_MASK)
+                == MessageTypeConstant.BROADCAST) {
             mBaseModel.sendBroadcastMessage(message);
         }
 
-        mBaseFragment.setMessages(messages, 1);
-
-        startAckWaiting(message);
+        mBaseFragment.setMessages(messages, ScrollDirection.FINGER_UP);
     }
 
     @Override
@@ -127,12 +152,13 @@ public class ChatPresenter extends BasePresenter<ChatFragment, ChatModel> implem
             @Override
             public void onSuccess(Message message) {
                 messages.add(message);
-                if ((message.getMessageType() & MessageTypeConstant.MESSAGE_TYPE_MASK) == MessageTypeConstant.PRIVATE) {
+                if ((message.getMessageType() & MessageTypeConstant.MESSAGE_TYPE_MASK)
+                        == MessageTypeConstant.PRIVATE) {
                     mBaseModel.sendPrivateMessage(message);
-                } else if ((message.getMessageType() & MessageTypeConstant.MESSAGE_TYPE_MASK) == MessageTypeConstant.BROADCAST) {
+                } else if ((message.getMessageType() & MessageTypeConstant.MESSAGE_TYPE_MASK)
+                        == MessageTypeConstant.BROADCAST) {
                     mBaseModel.sendBroadcastMessage(message);
                 }
-                startAckWaiting(message);
             }
 
             @Override
@@ -142,9 +168,11 @@ public class ChatPresenter extends BasePresenter<ChatFragment, ChatModel> implem
         };
 
         if (receiver.length() == 0) {
-            MessageFactory.createSendingImageBroadcastMessage(sender, image, System.currentTimeMillis(), callback);
+            MessageFactory
+                    .createSendingImageBroadcastMessage(sender, image, System.currentTimeMillis(), callback);
         } else {
-            MessageFactory.createSendingImagePrivateMessage(sender, receiver, image, System.currentTimeMillis(), callback);
+            MessageFactory
+                    .createSendingImagePrivateMessage(sender, receiver, image, System.currentTimeMillis(), callback);
         }
 
     }
@@ -157,19 +185,16 @@ public class ChatPresenter extends BasePresenter<ChatFragment, ChatModel> implem
         }
 
         message.setTime(System.currentTimeMillis());
-        message.setMessageType(MessageTypeUtils.setStatus(message.getMessageType(), MessageTypeConstant.SENDING));
+        message.setMessageType(MessageTypeUtils
+                .setStatus(message.getMessageType(), MessageTypeConstant.SENDING));
 
-        if ((message.getMessageType() & MessageTypeConstant.MESSAGE_TYPE_MASK) == MessageTypeConstant.BROADCAST) {
+        if ((message.getMessageType() & MessageTypeConstant.MESSAGE_TYPE_MASK)
+                == MessageTypeConstant.BROADCAST) {
             mBaseModel.sendBroadcastMessage(message);
-        } else if ((message.getMessageType() & MessageTypeConstant.MESSAGE_TYPE_MASK) == MessageTypeConstant.PRIVATE) {
+        } else if ((message.getMessageType() & MessageTypeConstant.MESSAGE_TYPE_MASK)
+                == MessageTypeConstant.PRIVATE) {
             mBaseModel.sendPrivateMessage(message);
         }
-
-        startAckWaiting(message);
-    }
-
-    private void startAckWaiting(Message message) {
-        sendingMessages.add(message);
     }
 
     @Override
@@ -181,8 +206,6 @@ public class ChatPresenter extends BasePresenter<ChatFragment, ChatModel> implem
     @Override
     public void receiveMessageAck(String messageId, long receivedTimeInLong) {
         Message message = getMessageWithId(messageId);
-        sendingMessages.remove(message);
-
         message.ack(receivedTimeInLong);
         mBaseFragment.setMessages(messages, 0);
     }
@@ -195,7 +218,7 @@ public class ChatPresenter extends BasePresenter<ChatFragment, ChatModel> implem
                 break;
             }
         }
-        // Set view messages
+        /* Set view messages */
         mBaseFragment.setMessages(messages, 0);
     }
 
@@ -205,7 +228,7 @@ public class ChatPresenter extends BasePresenter<ChatFragment, ChatModel> implem
         if (message != null) {
             message.setPayload("");
             message.setBmp(bmp);
-            // Set view messages
+            /* Set view messages */
             mBaseFragment.setMessages(messages, 0);
         }
     }
@@ -219,7 +242,8 @@ public class ChatPresenter extends BasePresenter<ChatFragment, ChatModel> implem
     private long calculateUntilTime() {
         long untilTime = System.currentTimeMillis();
         for (Message message : messages) {
-            if ((message.getMessageType() & MessageTypeConstant.MESSAGE_TYPE_MASK) != MessageTypeConstant.SYSTEM) {
+            if ((message.getMessageType() & MessageTypeConstant.MESSAGE_TYPE_MASK)
+                    != MessageTypeConstant.SYSTEM) {
                 untilTime = message.getTime();
                 break;
             }
@@ -233,7 +257,7 @@ public class ChatPresenter extends BasePresenter<ChatFragment, ChatModel> implem
     }
 
     @Override
-    public void requestLogout(boolean isForced) {
+    public void requestLogout() {
         mBaseModel.logout();
     }
 
@@ -245,27 +269,27 @@ public class ChatPresenter extends BasePresenter<ChatFragment, ChatModel> implem
 
     @Override
     public void addMessage(@NotNull Message message) {
-        // Check for duplicated message
+        /* Check for duplicated message */
         boolean isDuplicateMessage = checkForDuplicatedMessage(message.getMessageId());
 
-        // If not duplicated, create ChatMessage according to parameters
+        /* If not duplicated, create ChatMessage according to parameters */
         if (!isDuplicateMessage) {
             messages.add(message);
 
-            // Tell the server the message was read
+            /* Tell the server the message was read */
             sendMessageRead(message);
         }
 
-        // Sort messages by send time
+        /* Sort messages by send time */
         messages.sort((m1, m2) -> (int) (m1.getTime() - m2.getTime()));
 
-        // Set view messages
-        mBaseFragment.setMessages(messages, 1);
+        /* Set view messages */
+        mBaseFragment.setMessages(messages, ScrollDirection.FINGER_UP);
     }
 
     @Override
     public void addMessage(Message message, String ackId) {
-        // Send back ack
+        /* Send back ack */
         mBaseModel.sendAck(ackId);
 
         addMessage(message);
@@ -273,25 +297,25 @@ public class ChatPresenter extends BasePresenter<ChatFragment, ChatModel> implem
 
     @Override
     public void addAllMessages(List<Message> receivedMessages) {
-        // Record all messages for now
+        /* Record all messages for now */
         Set<String> existedMessageIds = this.messages.stream().map(Message::getMessageId).collect(Collectors.toSet());
 
-        // Iterate through message list
+        /* Iterate through message list */
         for (Message message : receivedMessages) {
             if (!existedMessageIds.contains(message.getMessageId())) {
-                // If found a new message, add it to message list
+                /* If found a new message, add it to message list */
                 this.messages.add(message);
                 existedMessageIds.add(message.getMessageId());
 
-                // Tell the server the message was read
+                /* Tell the server the message was read */
                 sendMessageRead(message);
             }
         }
 
-        // Sort messages by send time
+        /* Sort messages by send time */
         messages.sort((m1, m2) -> (int) (m1.getTime() - m2.getTime()));
 
-        // Set view messages
+        /* Set view messages */
         mBaseFragment.setMessages(messages, callbackDirection);
     }
 

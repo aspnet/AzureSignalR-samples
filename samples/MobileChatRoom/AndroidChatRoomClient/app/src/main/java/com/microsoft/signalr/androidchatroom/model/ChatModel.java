@@ -18,17 +18,34 @@ import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
+/**
+ * Model component responsible for chatting.
+ */
 public class ChatModel extends BaseModel implements ChatContract.Model, ServerContract {
-
     private static final String TAG = "ChatModel";
 
-    private ChatPresenter mChatPresenter = null;
+    private ChatPresenter mChatPresenter;
 
     public ChatModel(ChatPresenter chatPresenter) {
         mChatPresenter = chatPresenter;
         registerServerCallbacks();
     }
 
+    private void registerServerCallbacks() {
+        SignalRService.registerServerCallback("receiveSystemMessage", this::receiveSystemMessage,
+                String.class, String.class, Long.class);
+        SignalRService.registerServerCallback("receiveBroadcastMessage", this::receiveBroadcastMessage,
+                String.class, String.class, String.class, String.class, Boolean.class, Long.class, String.class);
+        SignalRService.registerServerCallback("receivePrivateMessage", this::receivePrivateMessage,
+                String.class, String.class, String.class, String.class, Boolean.class, Long.class, String.class);
+
+        SignalRService.registerServerCallback("receiveHistoryMessages", this::receiveHistoryMessages, String.class);
+        SignalRService.registerServerCallback("receiveImageContent", this::receiveImageContent, String.class, String.class);
+
+        SignalRService.registerServerCallback("serverAck", this::serverAck, String.class, Long.class);
+        SignalRService.registerServerCallback("clientRead", this::clientRead, String.class, String.class);
+        SignalRService.registerServerCallback("expireSession", this::expireSession, Boolean.class);
+    }
 
     @Override
     public void sendPrivateMessage(Message privateMessage) {
@@ -62,53 +79,48 @@ public class ChatModel extends BaseModel implements ChatContract.Model, ServerCo
 
     @Override
     public void logout() {
-        SignalRService.logout()
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(Schedulers.io())
-                        .subscribe(new SingleObserver<String>() {
-                            @Override
-                            public void onSubscribe(@NonNull Disposable d) {
+        SignalRService
+                .logout()
+                .subscribeOn(Schedulers.io()) /* Use io-oriented thread scheduler */
+                .observeOn(Schedulers.io())
+                .subscribe(new SingleObserver<String>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
 
-                            }
+                    }
 
-                            @Override
-                            public void onSuccess(@NonNull String s) {
-                                SignalRService.stopReconnectTimer();
-                                SignalRService.stopHubConnection();
-                            }
+                    @Override
+                    public void onSuccess(@NonNull String s) {
+                        /* Once server confirms the log out request
+                         * stop the reconnect timer thread
+                         * and then stop the hub connection.
+                         */
+                        SignalRService.stopReconnectTimer();
+                        SignalRService.stopHubConnection();
+                    }
 
-                            @Override
-                            public void onError(@NonNull Throwable e) {
-                                SignalRService.stopReconnectTimer();
-                                SignalRService.stopHubConnection();
-                            }
-                        });
-    }
-
-    private void registerServerCallbacks() {
-        SignalRService.registerServerCallback("receiveSystemMessage", this::receiveSystemMessage,
-                String.class, String.class, Long.class);
-        SignalRService.registerServerCallback("receiveBroadcastMessage", this::receiveBroadcastMessage,
-                String.class, String.class, String.class, String.class, Boolean.class, Long.class, String.class);
-        SignalRService.registerServerCallback("receivePrivateMessage", this::receivePrivateMessage,
-                String.class, String.class, String.class, String.class, Boolean.class, Long.class, String.class);
-
-        SignalRService.registerServerCallback("receiveHistoryMessages", this::receiveHistoryMessages, String.class);
-        SignalRService.registerServerCallback("receiveImageContent", this::receiveImageContent, String.class, String.class);
-
-        SignalRService.registerServerCallback("serverAck", this::serverAck, String.class, Long.class);
-        SignalRService.registerServerCallback("clientRead", this::clientRead, String.class, String.class);
-        SignalRService.registerServerCallback("expireSession", this::expireSession, Boolean.class);
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        /* Once server fails to confirm log out request,
+                         * log out anyway (Server will expire the client's
+                         * session after a period of inactive time).
+                         * Stop the reconnect timer thread and then stop
+                         * the hub connection.
+                         */
+                        SignalRService.stopReconnectTimer();
+                        SignalRService.stopHubConnection();
+                    }
+                });
     }
 
     @Override
     public void receiveSystemMessage(String messageId, String payload, long sendTime) {
         Log.d(TAG, "receiveSystemMessage: " + payload);
 
-        // Create message
+        /* Create message */
         Message systemMessage = MessageFactory.createReceivedSystemMessage(messageId, payload, sendTime);
 
-        // Try to add message to fragment
+        /* Try to add message to chat presenter */
         mChatPresenter.addMessage(systemMessage);
     }
 
@@ -116,7 +128,7 @@ public class ChatModel extends BaseModel implements ChatContract.Model, ServerCo
     public void receiveBroadcastMessage(String messageId, String sender, String receiver, String payload, boolean isImage, long sendTime, String ackId) {
         Log.d(TAG, "receiveBroadcastMessage from: " + sender);
 
-        // Create message
+        /* Create message */
         Message chatMessage;
         if (isImage) {
             chatMessage = MessageFactory.createReceivedImageBroadcastMessage(messageId, sender, payload, sendTime);
@@ -124,7 +136,7 @@ public class ChatModel extends BaseModel implements ChatContract.Model, ServerCo
             chatMessage = MessageFactory.createReceivedTextBroadcastMessage(messageId, sender, payload, sendTime);
         }
 
-        // Try to add message to fragment
+        /* Try to add message to chat presenter */
         mChatPresenter.addMessage(chatMessage, ackId);
     }
 
@@ -132,7 +144,7 @@ public class ChatModel extends BaseModel implements ChatContract.Model, ServerCo
     public void receivePrivateMessage(String messageId, String sender, String receiver, String payload, boolean isImage, long sendTime, String ackId) {
         Log.d(TAG, "receivePrivateMessage from: " + sender);
 
-        // Create message
+        /* Create message */
         Message chatMessage;
         if (isImage) {
             chatMessage = MessageFactory.createReceivedImagePrivateMessage(messageId, sender, receiver, payload, sendTime);
@@ -140,21 +152,29 @@ public class ChatModel extends BaseModel implements ChatContract.Model, ServerCo
             chatMessage = MessageFactory.createReceivedTextPrivateMessage(messageId, sender, receiver, payload, sendTime);
         }
 
-        // Try to add message to fragment
+        /* Try to add message to chat presenter */
         mChatPresenter.addMessage(chatMessage, ackId);
     }
 
     @Override
     public void receiveImageContent(String messageId, String payload) {
         Log.d(TAG, "receiveImageContent");
+
+        /* Decode base64 string to bitmap object */
         Bitmap bmp = MessageFactory.decodeToBitmap(payload);
+
+        /* Send bitmap to chat presenter */
         mChatPresenter.receiveImageContent(messageId, bmp);
     }
 
     @Override
     public void receiveHistoryMessages(String serializedString) {
         Log.d(TAG, "receiveHistoryMessages");
+
+        /* Parse JSON array string to list of messages */
         List<Message> historyMessages = MessageFactory.parseHistoryMessages(serializedString, SignalRService.getUsername());
+
+        /* Add history messages to chat presenter */
         mChatPresenter.addAllMessages(historyMessages);
     }
 
@@ -169,7 +189,14 @@ public class ChatModel extends BaseModel implements ChatContract.Model, ServerCo
     }
 
     @Override
+    public void detach() {
+        mChatPresenter.detach();
+        mChatPresenter = null;
+    }
+
+    @Override
     public void expireSession(boolean isForced) {
         mChatPresenter.confirmLogout(isForced);
+        mChatPresenter.detach();
     }
 }

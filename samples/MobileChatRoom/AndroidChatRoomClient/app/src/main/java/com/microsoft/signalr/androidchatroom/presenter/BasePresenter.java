@@ -3,6 +3,11 @@ package com.microsoft.signalr.androidchatroom.presenter;
 import com.microsoft.signalr.androidchatroom.model.BaseModel;
 import com.microsoft.signalr.androidchatroom.view.BaseFragment;
 
+/**
+ * Base presenter component for Model-View-Presenter design
+ * @param <F> Fragment (View)
+ * @param <M> Model
+ */
 public abstract class BasePresenter<F extends BaseFragment, M extends BaseModel> {
     protected F mBaseFragment;
     protected M mBaseModel;
@@ -20,11 +25,13 @@ public abstract class BasePresenter<F extends BaseFragment, M extends BaseModel>
         mBaseFragment = baseFragment;
     }
 
-    public void detachFragment() {
-        mBaseFragment = null;
-        if (mBaseModel != null) {
-            mBaseModel.detach();
+    public void detach() {
+        if (mBaseFragment != null) {
+            mBaseFragment.detach();
+            mBaseFragment = null;
         }
+
+        mBaseModel = null;
     }
 
     public abstract void createModel();

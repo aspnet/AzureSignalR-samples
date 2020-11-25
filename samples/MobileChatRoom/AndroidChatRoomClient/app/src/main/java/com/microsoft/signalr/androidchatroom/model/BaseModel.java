@@ -1,13 +1,11 @@
 package com.microsoft.signalr.androidchatroom.model;
 
-import com.microsoft.signalr.HubConnection;
-
+/**
+ * Base model component in Model-View-Presenter design.
+ */
 public abstract class BaseModel {
+    private static final String TAG = "BaseModel";
 
-    protected HubConnection mHubConnection;
-
-    public void detach() {
-        mHubConnection = null;
-    }
+    public abstract void detach();
 
 }

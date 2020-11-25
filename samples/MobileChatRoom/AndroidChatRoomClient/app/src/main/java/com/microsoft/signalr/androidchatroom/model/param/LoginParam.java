@@ -1,8 +1,11 @@
 package com.microsoft.signalr.androidchatroom.model.param;
 
+/**
+ * Wrapper class for login parameters.
+ */
 public class LoginParam {
-    private String username;
-    private String deviceUuid;
+    private final String username;
+    private final String deviceUuid;
 
     public LoginParam(String username, String deviceUuid) {
         this.username = username;
@@ -13,15 +16,7 @@ public class LoginParam {
         return username;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
     public String getDeviceUuid() {
         return deviceUuid;
-    }
-
-    public void setDeviceUuid(String deviceUuid) {
-        this.deviceUuid = deviceUuid;
     }
 }

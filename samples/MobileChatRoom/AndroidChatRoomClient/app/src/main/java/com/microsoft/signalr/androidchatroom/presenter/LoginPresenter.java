@@ -6,6 +6,9 @@ import com.microsoft.signalr.androidchatroom.model.param.LoginParam;
 import com.microsoft.signalr.androidchatroom.util.SimpleCallback;
 import com.microsoft.signalr.androidchatroom.view.LoginFragment;
 
+/**
+ * Presenter component responsible for logging in.
+ */
 public class LoginPresenter extends BasePresenter<LoginFragment, LoginModel> implements LoginContract.Presenter {
 
     public LoginPresenter(LoginFragment loginFragment) {

@@ -127,4 +127,10 @@ public class LoginFragment extends BaseFragment implements LoginContract.View {
     public void setDeviceUuid(String deviceUuid) {
         this.deviceUuid = deviceUuid;
     }
+
+    @Override
+    public void detach() {
+        super.detach();
+        mLoginPresenter = null;
+    }
 }

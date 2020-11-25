@@ -1,5 +1,21 @@
 package com.microsoft.signalr.androidchatroom.model.entity;
 
+/**
+ * Defines constants representing message types.
+ * 0000 0000
+ *   ^^ ^^^^
+ * Use lower 6 bits of a int variable to represent complete information about message type.
+ *
+ * 1. Message type: {System, Broadcast, Private}
+ * 0000 0000
+ *        ^^
+ * 2. Message content: {Text, Image}
+ * 0000 0000
+ *       ^
+ * 3. Message status: {Received, Sending, Sent, Timeout, Read}
+ * 0000 0000
+ *   ^^ ^
+ */
 public class MessageTypeConstant {
 
     /* MESSAGE_TYPE_MASK 0000 0011 */

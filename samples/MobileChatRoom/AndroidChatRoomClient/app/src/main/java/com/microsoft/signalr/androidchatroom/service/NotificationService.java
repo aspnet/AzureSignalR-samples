@@ -15,13 +15,16 @@ import com.microsoft.windowsazure.messaging.NotificationHub;
 import java.util.Arrays;
 import java.util.UUID;
 
-
-//  See https://docs.microsoft.com/en-us/azure/notification-hubs/notification-hubs-android-push-notification-google-fcm-get-started#test-send-notification-from-the-notification-hub
+/**
+ * Service that handles Azure Notification Hub interactions
+ * See https://docs.microsoft.com/en-us/azure/notification-hubs/notification-hubs-android-push-notification-google-fcm-get-started#test-send-notification-from-the-notification-hub
+ */
 public class NotificationService extends Service {
-
     private static final String TAG = "NotificationService";
+
     private final String deviceUuid = UUID.randomUUID().toString();
-    // Service binder
+
+    /* Service binder */
     private final IBinder notificationServiceBinder = new NotificationService.NotificationServiceBinder();
     private String deviceToken;
     private String registrationId;
