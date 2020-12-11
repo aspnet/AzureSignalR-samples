@@ -6,7 +6,7 @@ android {
     buildToolsVersion '30.0.2'
 
     defaultConfig {
-        applicationId 'com.microsoft.signalr.androidchatroom'
+        applicationId 'com.signalr.androidchatroom'
         minSdkVersion 26
         targetSdkVersion 30
         versionCode 1
@@ -25,6 +25,9 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    packagingOptions{
+        exclude("META-INF/jersey-module-version")
+    }
 }
 
 dependencies {
@@ -37,6 +40,8 @@ dependencies {
     implementation 'androidx.navigation:navigation-dynamic-features-fragment:2.3.1'
     implementation 'com.microsoft.signalr:signalr:5.0.0'
     implementation 'com.microsoft.azure:notification-hubs-android-sdk:1.1.2@aar'
+    implementation 'com.microsoft.identity.client:msal:2.0.4'
+    implementation 'com.microsoft.graph:microsoft-graph:1.5.0'
     implementation 'com.google.firebase:firebase-messaging:21.0.0'
     implementation 'com.android.volley:volley:1.1.1'
     implementation 'com.google.code.gson:gson:2.8.6'
@@ -51,4 +56,5 @@ repositories {
     maven {
         url "https://dl.bintray.com/microsoftazuremobile/SDK"
     }
+    jcenter()
 }

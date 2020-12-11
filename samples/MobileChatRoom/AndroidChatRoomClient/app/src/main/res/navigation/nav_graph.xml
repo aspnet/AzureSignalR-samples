@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/LoginFragment"
-        android:name="com.microsoft.signalr.androidchatroom.view.LoginFragment"
+        android:name="com.signalr.androidchatroom.view.LoginFragment"
         android:label="@string/login_fragment_label"
         tools:layout="@layout/fragment_login">
         <action
@@ -17,7 +17,7 @@
 
     <fragment
         android:id="@+id/ChatFragment"
-        android:name="com.microsoft.signalr.androidchatroom.view.ChatFragment"
+        android:name="com.signalr.androidchatroom.view.ChatFragment"
         android:label="@string/chat_fragment_label"
         tools:layout="@layout/fragment_chat">
 

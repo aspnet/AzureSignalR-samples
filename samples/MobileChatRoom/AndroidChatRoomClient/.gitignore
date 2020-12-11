@@ -9,6 +9,7 @@
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
 /app/google-services.json
+/app/src/main/res/values/strings_secrets.xml
 .DS_Store
 /build
 /captures

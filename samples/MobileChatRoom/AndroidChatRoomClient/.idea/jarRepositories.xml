@@ -26,5 +26,10 @@
       <option name="name" value="maven" />
       <option name="url" value="https://dl.bintray.com/microsoftazuremobile/SDK" />
     </remote-repository>
+    <remote-repository>
+      <option name="id" value="maven" />
+      <option name="name" value="maven" />
+      <option name="url" value="https://pkgs.dev.azure.com/MicrosoftDeviceSDK/DuoSDK-Public/_packaging/Duo-SDK-Feed/maven/v1" />
+    </remote-repository>
   </component>
 </project>
