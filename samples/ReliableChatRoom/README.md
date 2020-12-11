@@ -2,11 +2,13 @@
 
 This tutorial shows you how to build a reliable mobile chat room server with SignalR. You'll learn how to:
 
-> **&#x2713;** Build a simple reliable chat room with Azure SignalR.
+> **&#x2713;** Build a simple reliable chat room with Azure SignalR Service.
 >
 > **&#x2713;** Integrate chat room server with Firebase Notification.
 > 
 > **&#x2713;** Use Azure Storage table and blob services.
+> 
+> **&#x2713;** Deploy it to Azure App Service.
 
 ## Prerequisites
 * Install [.NET Core 3.1 SDK](https://dotnet.microsoft.com/download/dotnet-core/3.1)
@@ -36,13 +38,13 @@ Get the server key we need to build the chat room server:
 
 1. Goto [Firebase Console](https://console.firebase.google.com/) and select your client app
 
-![firebase-console-project-selection](./assets/firebase-console-1.png)
+    ![firebase-console-project-selection](./assets/firebase-console-1.png)
 
-2. *Goto Settings -> Project Settings -> Cloud Messaging Tab* and then copy your server key
+2. Goto `Settings` -> `Project Settings` -> `Cloud Messaging Tab` and then copy your server key
 
-If there is no server key here, add one. 
-![firebase-console-server-key](./assets/firebase-console-2.png)
-You will need to use the server key in Azure Notification Hub Service.
+    If there is no server key here, add one. 
+    ![firebase-console-server-key](./assets/firebase-console-2.png)
+    You will need to use the server key in Azure Notification Hub Service.
 
 ## Create and Setup Your Azure Notification Hub Service
 
@@ -50,13 +52,13 @@ See [reference](https://docs.microsoft.com/en-us/azure/notification-hubs/notific
 
 One core thing to do is adding your Firebase Server Key into your Notification Hub:
 
-1. Enter your Notification Hub in [Azure Portal](https://ms.portal.azure.com/) and click *Google (GCM/FCM)*
+1. Enter your Notification Hub in [Azure Portal](https://ms.portal.azure.com/) and click `Google (GCM/FCM)`
 
-![notification-hub-1](./assets/notification-hub-1.png)
+    ![notification-hub-1](./assets/notification-hub-1.png)
 
 2. Paste your server key in the server input
 
-![notification-hub-2](./assets/notification-hub-2.png)
+    ![notification-hub-2](./assets/notification-hub-2.png)
 
 
 ## Create Your Azure Storage Account
@@ -65,13 +67,13 @@ See [reference](https://docs.microsoft.com/en-us/azure/storage/common/storage-ac
 
 We will need connection string for chat room server:
 
-1. Enter your Storage Account in [Azure Portal](https://ms.portal.azure.com/) and click *Access Keys*
+1. Enter your Storage Account in [Azure Portal](https://ms.portal.azure.com/) and click `Access Keys`
 
-![storage-1](./assets/storage-1.png)
+    ![storage-1](./assets/storage-1.png)
 
 2. Copy your Storage Account connection string
 
-![storage-2](./assets/storage-2.png)
+    ![storage-2](./assets/storage-2.png)
 
 ## Create Your Azure SignalR service
 
@@ -79,86 +81,143 @@ See [reference](https://docs.microsoft.com/en-us/azure/azure-signalr/signalr-qui
 
 We will need connection string for chat room server:
 
-1. Enter your SignalR Service in [Azure Portal](https://ms.portal.azure.com/) and click *Keys*
+1. Enter your SignalR Service in [Azure Portal](https://ms.portal.azure.com/) and click `Keys`
 
-![signalr-1](./assets/signalr-1.png)
+    ![signalr-1](./assets/signalr-1.png)
 
 2. Copy your SignalR Service connection string
 
-![signalr-2](./assets/signalr-2.png)
+    ![signalr-2](./assets/signalr-2.png)
 
 
-## Configure Your Reliable Chat Room Server
+## Configure Your Reliable Chat Room Server (Locally)
 
 See [reference](https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-3.1&tabs=windows) about *Safe storage of app secrets in development in .NET Core*.
 
 0. Clone/download the source code from repo. 
 
-```dotnet cli
-git clone https://github.com/$USERNAME/AzureSignalR-samples.git
-```
+    ```dotnet cli
+    git clone https://github.com/$USERNAME/AzureSignalR-samples.git
+    ```
 
 1. Change your directory to the project directory
 
-```dotnet cli
-cd ./samples/ReliableChatRoom/ReliableChatRoom/
-```
+    ```dotnet cli
+    cd ./samples/ReliableChatRoom/ReliableChatRoom/
+    ```
 
 2. Initialize user-secrets
 
-```dotnetcli
-dotnet user-secrets init
-```
+    ```dotnetcli
+    dotnet user-secrets init
+    ```
 
 3. Add user secrets
 
-```dotnetcli
-dotnet user-secrets set "Azure:SignalR:ConnectionString" $YOUR_SIGNALR_CONNECTION_STRING
-dotnet user-secrets set "Azure:Storage:ConnectionString" $YOUR_STORAGE_ACCOUNT_CONNECTION_STRING
-dotnet user-secrets set "Azure:NotificationHub:HubName" $YOUR_HUB_NAME
-dotnet user-secrets set "Azure:NotificationHub:ConnectionString" $YOUR_NOTIFICATION_HUB_CONNECTION_STRING
-```
+    ```dotnetcli
+    dotnet user-secrets set "Azure:SignalR:ConnectionString" $YOUR_SIGNALR_CONNECTION_STRING
+    dotnet user-secrets set "ConnectionStrings:AzureStorageAccountConnectionString" $YOUR_STORAGE_ACCOUNT_CONNECTION_STRING
+    dotnet user-secrets set "ConnectionStrings:AzureNotificationHub:HubName" $YOUR_HUB_NAME
+    dotnet user-secrets set "ConnectionStrings:AzureNotificationHub:ConnectionString" $YOUR_NOTIFICATION_HUB_CONNECTION_STRING
+    ```
+
+## Configure Your Reliable Chat Room Server (Remotely on `Azure App Service`)
+
+1. In [Azure Portal](https://portal.azure.com/) create a `Web App`.
+
+    ![create-web-app](./assets/create-web-app.png)
+
+    Enter the required information in the next page.
+
+    **NOTICE:** `Azure Web App` is now moved to `Azure App Service`, we will refer to it as `Azure App Service` in the README context.
+
+2. In [Azure Portal](https://portal.azure.com/) -> `Home` -> `YOUR_WEB_APP(APP_SERVICE)`
+
+    ![enter-app-service](./assets/enter-app-service.png)
+
+    Copy the app service URL to your text editor. You will need it when integrating `Reliable ChatRoom Server` with `Android Mobile ChatRoom`:
+
+    ![copy-url](./assets/copy-url.png)
+
+3. In `Configuration` tab (under `Settings` section), add your `Azure Notification Hub`, `Azure SignalR Service`, and `Azure Storage Account` connection strings
+
+    |Name|Value|
+    |----|-----|
+    |ConnectionStrings__AzureNotificationHub__ConnectionString|Your `Azure Notification Hub` Connection String|
+    |ConnectionStrings__AzureNotificationHub__HubName| Your `Azure Notification Hub` Hub Name|
+    |ConnectionStrings__AzureStorageAccountConnectionString| Your `Azure Storage Account` Connection String|
+    |Azure__SignalR__ConnectionString| Your `Azure SignalR Service` Connection String|
+
+4. Publish the `ReliableChatRoom` to `Azure App Service`
+
+    1. Open the `ReliableChatRoom` with Visual Studio 2019
+
+    2. Right-click on project -> Choose `Publish...`
+
+        ![publish](./assets/publish.png)
+
+    3. Follow the instruction to publish the server-side code to your newly-created `Azure App Service`
+
+4. In `App Service logs` tab (under `Monitoring` section), turn on `Applicatin Logging (Filesystem)` and then set `Level` to `Information`.
+
+    ![log](./assets/log.png)
+
+    Don't forget to hit `Save` button.
+
+5. To check realtime logging information, enter `Log stream` tag.
+
+    ![log-stream](./assets/log-stream.png)
+
+
 
 ## Run Your Reliable Chat Room Server
 
-```dotnet cli
-dotnet run
-```
+1. To run the server locally, use the following command:
 
-If succeed, the output will be like:
-```dotnet cli
-Hosting environment: Development
-Content root path: *\source\repos\AzureSignalR-samples\samples\ReliableChatRoom\ReliableChatRoom
-Now listening on: http://localhost:5000
-Now listening on: https://localhost:5001
-Application started. Press Ctrl+C to shut down.
-```
+    ```dotnet cli
+    dotnet run
+    ```
+
+    If succeed, the output will be like:
+    ```dotnet cli
+    Hosting environment: Development
+    Content root path: *\source\repos\AzureSignalR-samples\samples\ReliableChatRoom\ReliableChatRoom
+    Now listening on: http://localhost:5000
+    Now listening on: https://localhost:5001
+    Application started. Press Ctrl+C to shut down.
+    ```
+
+2. To run the server remotely, please follow these steps:
+
+    1. In `YOUR_AZURE_APP_SERVICE` -> `Overview` -> Click `Start`
+
+        ![start-remote-server](./assets/start-remote-server.png)
 
 ## How Does Reliable Chat Protocol Work?
 
 1. Client enters the chat room
 
-![1-EnterChatRoom](./assets/1-EnterChatRoom.png)
+    ![1-EnterChatRoom](./assets/1-EnterChatRoom.png)
 
 2. Client broadcasts a message to all other clients
 
-![2-BroadcastMessage](./assets/2-BroadcastMessage.png)
+    ![2-BroadcastMessage](./assets/2-BroadcastMessage.png)
 
 3. Client sends a private message to another client
 
-![3-PrivateMessage](./assets/3-PrivateMessage.png)
+    ![3-PrivateMessage](./assets/3-PrivateMessage.png)
 
 4. Client pulls history messages from server
 
-![4-PullHistoryMessages](./assets/4-PullHistoryMessages.png)
+    ![4-PullHistoryMessages](./assets/4-PullHistoryMessages.png)
 
 5. Client pull image content from server
 
-![5-LoadImageContent](./assets/5-LoadImageContent.png)
+    ![5-LoadImageContent](./assets/5-LoadImageContent.png)
 
 6. Client leaves the chat room
 
-![6-LeaveChatRoom](./assets/6-LeaveChatRoom.png)
+    ![6-LeaveChatRoom](./assets/6-LeaveChatRoom.png)
 
 ## How Can I Integrate the Reliable Chat Room Server with Clients
 

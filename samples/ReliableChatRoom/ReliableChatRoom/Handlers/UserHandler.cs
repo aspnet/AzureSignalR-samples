@@ -1,5 +1,6 @@
 ﻿using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities;
 using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -11,6 +12,8 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
 {
     public class UserHandler : IUserHandler, IDisposable
     {
+        private readonly ILogger _logger;
+
         /// In memory storage of user <see cref="Session"/> 
         private readonly ConcurrentDictionary<string, Session> _sessionTable =
             new ConcurrentDictionary<string, Session>();
@@ -27,9 +30,10 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
         // Timer checking the session
         private readonly Timer _sessionCheckingTimer;
 
-        public UserHandler()
+        public UserHandler(ILogger<UserHandler> logger)
         {
-            this._sessionCheckingTimer = new Timer(_ => CheckSession(), state: null, dueTime: TimeSpan.FromMilliseconds(0), period: _sessionCheckingInterval);
+            _logger = logger;
+            _sessionCheckingTimer = new Timer(_ => CheckSession(), state: null, dueTime: TimeSpan.FromMilliseconds(0), period: _sessionCheckingInterval);
         }
 
         public void Dispose()
@@ -92,7 +96,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
 
             if (!connectionId.Equals(storedSession.ConnectionId)) //  ConnectionIds between two continuous touches changed
             {
-                Console.WriteLine(string.Format("Touch username: {0}\nconnectionId old: {1}\nconnectionId new: {2}", username, storedSession.ConnectionId, connectionId));
+                _logger.LogInformation("Touch username: {0}\nconnectionId old: {1}\nconnectionId new: {2}", username, storedSession.ConnectionId, connectionId);
                 //  Update connectionId
                 storedSession.ConnectionId = connectionId;
             }
@@ -124,7 +128,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
                     var elapsed = DateTime.UtcNow - session.LastTouchedDateTime;
                     if (elapsed > _sessionExpireThreshold)
                     {
-                        Console.WriteLine(string.Format("Session username: {0} time out. Force expire.", session.Username));
+                        _logger.LogInformation("Session username: {0} time out. Force expire.", session.Username);
                         session.Expire();
                     }
                 }

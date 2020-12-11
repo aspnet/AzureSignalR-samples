@@ -6,11 +6,14 @@ using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using System.Linq;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
 {
     public class ClientAckHandler : IClientAckHandler, IDisposable
     {
+        private readonly ILogger _logger;
+
         // HubContext used to send timed-out messages
         private readonly IHubContext<ReliableChatRoomHub> _hubContext;
 
@@ -39,13 +42,17 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
         // UNIX origin of time
         private readonly DateTime _javaEpoch = new DateTime(1970, 1, 1);
 
-        public ClientAckHandler(IHubContext<ReliableChatRoomHub> hubContext, IUserHandler userHandler)
+        public ClientAckHandler(
+            ILogger<ClientAckHandler> logger,
+            IHubContext<ReliableChatRoomHub> hubContext,
+            IUserHandler userHandler)
                     : this(
                            checkAckThreshold: TimeSpan.FromMilliseconds(5000),
                            checkAckInterval: TimeSpan.FromMilliseconds(500),
                            resendMessageThreshold: 3,
                            resendMessageInterval: TimeSpan.FromMilliseconds(1000))
         {
+            _logger = logger;
             _hubContext = hubContext;
             _userHandler = userHandler;
         }
@@ -89,7 +96,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
             }
             else
             {
-                Console.WriteLine("ClientAck id: {0} not found; sender: {1}.", id, username);
+                _logger.LogInformation("ClientAck id: {0} not found; sender: {1}.", id, username);
             }
         }
 
@@ -116,7 +123,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
                         var elapsed = DateTime.UtcNow - clientAck.ClientAckStartDateTime;
                         if (elapsed > _checkAckThreshold)
                         {
-                            Console.WriteLine(string.Format("Ack id: {0} time out", clientAck.ClientAckId));
+                            _logger.LogInformation("Ack id: {0} time out", clientAck.ClientAckId);
                             clientAck.TimeOut();
                         }
                     }
@@ -141,7 +148,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
                 if (clientAck.RetryCount < _resendMessageThreshold)
                 {
                     clientAck.Retry();
-                    Console.WriteLine(string.Format("Retry {0}: {1}", clientAck.RetryCount, clientAck.ClientAckId));
+                    _logger.LogInformation("Retry {0}: {1}", clientAck.RetryCount, clientAck.ClientAckId);
                     Message clientMessage = clientAck.ClientMessage;
                     if (clientAck.ClientMessage.Type == MessageTypeEnum.Broadcast)
                     {
@@ -163,7 +170,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
         private void ResendBroadcastMessage(Message broadcastMessage, string ackId)
         {
             string senderConnectionId = _userHandler.GetUserSession(broadcastMessage.Sender).ConnectionId;
-            Console.WriteLine(string.Format("ResendBroadcastMessage: sender connectionid: {0}", senderConnectionId));
+            _logger.LogInformation("ResendBroadcastMessage: sender connectionid: {0}", senderConnectionId);
             _hubContext.Clients.AllExcept(senderConnectionId)
                     .SendAsync("receiveBroadcastMessage",
                                 broadcastMessage.MessageId,
@@ -183,7 +190,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers
             {
                 string receiverConnectionId = receiverSession.ConnectionId;
 
-                Console.WriteLine(string.Format("ResendPrivateMessage: receiver connectionid: {0}", receiverConnectionId));
+                _logger.LogInformation("ResendPrivateMessage: receiver connectionid: {0}", receiverConnectionId);
                 _hubContext.Clients.Client(receiverConnectionId)
                         .SendAsync("receivePrivateMessage",
                                     privateMessage.MessageId,

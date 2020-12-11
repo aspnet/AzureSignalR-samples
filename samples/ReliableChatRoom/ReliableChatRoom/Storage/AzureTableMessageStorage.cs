@@ -5,6 +5,7 @@ using Microsoft.Azure.Cosmos.Table.Queryable;
 using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities;
 using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Factory;
 using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,6 +16,8 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
 {
     public class AzureTableMessageStorage : IMessageStorage
     {
+        private ILogger _logger;
+
         private readonly IMessageFactory _messageFactory;
 
         private readonly CloudStorageAccount _cloudStorageAccount;
@@ -29,8 +32,11 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
         private readonly string _dateFormatString = "yyyy'-'MM'-'dd'T'HH':'mm':'ss.ffff";
         private readonly int _messageCountPerFetch = 10;
 
-        public AzureTableMessageStorage(IMessageFactory messageFactory, string connectionString)
+        public AzureTableMessageStorage(ILogger<AzureTableMessageStorage> logger,
+                                        IMessageFactory messageFactory,
+                                        string connectionString)
         {
+            _logger = logger;
             _messageFactory = messageFactory;
 
             _cloudStorageAccount = CloudStorageAccount.Parse(connectionString);
@@ -58,7 +64,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
                 await Task.WhenAll(tasks);
             } catch (Exception ex) // Any failure in ExecuteAsync will appear as exception
             {
-                Console.WriteLine(ex);
+                _logger.LogError(ex.Message);
                 return false;
             }
 
@@ -74,7 +80,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
             }
             catch (Exception ex) // Any failure in ExecuteAsync will appear as exception
             {
-                Console.WriteLine(ex);
+                _logger.LogError(ex.Message);
                 return false;
             }
 
@@ -128,7 +134,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
                 messageEntities.Sort((p, q) => (string.Compare(q.RowKey, p.RowKey)));
             } catch (Exception ex) // Any failure in ExecuteSegmentedAsync will appear as exception
             {
-                Console.WriteLine(ex.Message);
+                _logger.LogError(ex.Message);
 
                 // Load failed
                 return false;
@@ -176,7 +182,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage
             }
             catch (Exception ex) // Any failure in ExecuteSegmentedAsync will appear as exception
             {
-                Console.WriteLine(ex.Message);
+                _logger.LogError(ex.Message);
 
                 // Load failed
                 return null;

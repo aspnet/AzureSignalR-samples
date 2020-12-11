@@ -4,6 +4,7 @@ using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Entities;
 using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Factory;
 using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Handlers;
 using Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Storage;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -15,6 +16,8 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
 {
     public class ReliableChatRoomHub : Hub
     {
+        private readonly ILogger _logger;
+
         private readonly IUserHandler _userHandler;
         private readonly IMessageStorage _messageStorage;
         private readonly IMessageFactory _messageFactory;
@@ -25,12 +28,14 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
 
 
         public ReliableChatRoomHub(
+            ILogger<ReliableChatRoomHub> logger,
             IUserHandler userHandler,
             IMessageStorage messageStorage,
             IMessageFactory messageFactory,
             IClientAckHandler clientAckHandler,
             INotificationHandler notificationHandler)
         {
+            _logger = logger;
             _userHandler = userHandler;
             _messageStorage = messageStorage;
             _messageFactory = messageFactory;
@@ -46,7 +51,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         /// <returns></returns>
         public async Task<string> EnterChatRoom(string deviceUuid, string username)
         {
-            Console.WriteLine("EnterChatRoom device: {0} username: {1}", deviceUuid, username);
+            _logger.LogInformation("EnterChatRoom device: {0} username: {1}", deviceUuid, username);
             
             //  Try to store user login information (ConnectionId & deviceUuid)
             Session session = _userHandler.Login(username, Context.ConnectionId, deviceUuid);
@@ -88,7 +93,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         /// <returns></returns>
         public async Task<string> LeaveChatRoom(string deviceUuid, string username)
         {
-            Console.WriteLine("LeaveChatRoom username: {0}", username);
+            _logger.LogInformation("LeaveChatRoom username: {0}", username);
 
             //  Do not care about logout result.
             Session session = _userHandler.Logout(username);
@@ -112,7 +117,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         /// <returns></returns>
         public async Task OnBroadcastMessageReceived(string messageId, string sender, string payload, bool isImage)
         {
-            Console.WriteLine("OnBroadcastMessageReceived {0} {1} payload size={2}", messageId, sender, payload.Length);
+            _logger.LogInformation("OnBroadcastMessageReceived {0} {1} payload size={2}", messageId, sender, payload.Length);
 
             //  Create message
             Message message = _messageFactory.CreateBroadcastMessage(messageId, sender, payload, isImage, DateTime.UtcNow);
@@ -143,7 +148,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         public async Task OnPrivateMessageReceived(string messageId, string sender, string receiver, string payload, bool isImage)
         {
 
-            Console.WriteLine("OnPrivateMessageReceive {0} {1} {2} payload size={3}", messageId, sender, receiver, payload.Length);
+            _logger.LogInformation("OnPrivateMessageReceive {0} {1} {2} payload size={3}", messageId, sender, receiver, payload.Length);
 
             //  Create message and send back server ack
             Message message = _messageFactory.CreatePrivateMessage(messageId, sender, receiver, payload, isImage, DateTime.UtcNow);
@@ -169,7 +174,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         /// <param name="username">The ack sender's username</param>
         public void OnAckResponseReceived(string clientAckId, string username)
         {
-            Console.WriteLine("OnAckResponseReceived clientAckId: {0}", clientAckId);
+            _logger.LogInformation("OnAckResponseReceived clientAckId: {0}", clientAckId);
             
              //  Complete the waiting client ack object
             _clientAckHandler.Ack(clientAckId, username);
@@ -184,7 +189,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         /// <returns></returns>
         public async Task OnReadResponseReceived(string messageId, string username)
         {
-            Console.WriteLine(string.Format("OnReadResponseReceived messageId: {0}; username: {1}", messageId, username));
+            _logger.LogInformation(string.Format("OnReadResponseReceived messageId: {0}; username: {1}", messageId, username));
 
             //  Try to set read and store the message
             Message message = await _messageStorage.TryFetchMessageById(messageId);
@@ -209,7 +214,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         /// <returns></returns>
         public async Task OnPullHistoryMessagesReceived(string username, long untilTime)
         {
-            Console.WriteLine(string.Format("OnPullHistoryMessageReceived username: {0}; until: {1}", username, untilTime));
+            _logger.LogInformation(string.Format("OnPullHistoryMessageReceived username: {0}; until: {1}", username, untilTime));
 
             //  Convert java base client time to C# DateTime object
             var untilDateTime = JavaLongToCSharpDateTime(untilTime);
@@ -233,7 +238,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
         /// <returns></returns>
         public async Task OnPullImageContentReceived(string username, string messageId)
         {
-            Console.WriteLine(string.Format("OnPullImageContentReceived username: {0}; messageId: {1}", username, messageId));
+            _logger.LogInformation(string.Format("OnPullImageContentReceived username: {0}; messageId: {1}", username, messageId));
 
             string imagePayload = await _messageStorage.TryFetchImageContentAsync(messageId);
 
@@ -285,7 +290,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
                                 clientAck.ClientAckId);
             } catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                _logger.LogError(ex.Message);
                 return false;
             }
 
@@ -324,7 +329,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
                                     clientAck.ClientAckId);
             } catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                _logger.LogError(ex.Message);
                 return false;
             }
 
@@ -345,12 +350,12 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom.Hubs
             try
             {
                 //  Convert list of history messages to jsonString, then send to the client.
-                Console.WriteLine("SendHistoryMessages");
+                _logger.LogInformation("SendHistoryMessages");
                 await Clients.Client(Context.ConnectionId)
                     .SendAsync("receiveHistoryMessages", _messageFactory.ToListJsonString(historyMessages));
             } catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                _logger.LogError(ex.Message);
                 return false;
             }
 
