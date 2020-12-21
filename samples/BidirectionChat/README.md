@@ -27,7 +27,12 @@ It's a quick try of this sample. You will create an Azure SignalR Service and an
 1. Create Azure SignalR Service using `az cli`
 
     ```bash
-    az signalr create -n <signalr-name> -g <resource-group-name> --service-mode Serverless --sku Free_F1
+    resourceGroup=myResourceGroup
+    signalrName=mySignalRName
+
+    az signalr create -n $signalrName -g $resourceGroup --service-mode Serverless --sku Standard_S1
+    # Get connection string for later use.
+    connectionString=$(az signalr key list -n $signalrName -g $resourceGroup --query primaryConnectionString -o tsv)
     ```
 
     For more details about creating Azure SignalR Service, see the [tutorial](https://docs.microsoft.com/en-us/azure/azure-signalr/signalr-quickstart-azure-functions-javascript#create-an-azure-signalr-service-instance).
@@ -42,18 +47,18 @@ It's a quick try of this sample. You will create an Azure SignalR Service and an
         #!/bin/bash
 
         # Function app and storage account names must be unique.
-        storageName=mystorageaccount$RANDOM
-        functionAppName=myserverlessfunc$RANDOM
-        region=westeurope
-
+        storageName=mystorageaccount
+        functionAppName=myserverlessfunc
+        region=eastus
+        
         # Create a resource group.
-        az group create --name myResourceGroup --location $region
+        az group create --name $resourceGroup --location $region
 
         # Create an Azure storage account in the resource group.
         az storage account create \
         --name $storageName \
         --location $region \
-        --resource-group myResourceGroup \
+        --resource-group $resourceGroup \
         --sku Standard_LRS
 
         # Create a serverless function app in the resource group.
@@ -61,22 +66,22 @@ It's a quick try of this sample. You will create an Azure SignalR Service and an
         --name $functionAppName \
         --storage-account $storageName \
         --consumption-plan-location $region \
-        --resource-group myResourceGroup \
+        --resource-group $resourceGroup \
         --functions-version 3
         ```
 
     3. Publish the sample to the Azure Function you created before.
 
         ```bash
-        cd <root>/bidirectional-chat/csharp
+        cd <root>/samples/BidirectionChat/csharp
         // If prompted function app version, use --force
-        func azure functionapp publish <function-app-name>
+        func azure functionapp publish $functionAppName
         ```
 
 2. Update application settings
 
     ```bash
-    az functionapp config appsettings set --resource-group <resource_group_name> --name <function_name> --setting AzureSignalRConnectionString="<signalr_connection_string>"
+    az functionapp config appsettings set --resource-group $resourceGroup --name $functionAppName --setting AzureSignalRConnectionString=$connectionString
     ```
 
 3. Update Azure SignalR Service Upstream settings
