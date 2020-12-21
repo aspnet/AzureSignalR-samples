@@ -1,0 +1,18 @@
+{
+  "version": "1.0",
+  "defaultProvider": "cdnjs",
+  "libraries": [
+    {
+      "library": "jquery@3.5.1",
+      "destination": "wwwroot/lib/jquery/"
+    },
+    {
+      "library": "ace@1.4.12",
+      "destination": "wwwroot/lib/ace/"
+    },
+    {
+      "library": "microsoft-signalr@5.0.1",
+      "destination": "wwwroot/lib/microsoft-signalr/"
+    }
+  ]
+}

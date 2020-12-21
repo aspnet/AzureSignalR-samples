@@ -1,0 +1,66 @@
+﻿@{
+    if (User.Identity.IsAuthenticated)
+    {
+        ViewData["Title"] = "SignalR Realtime Code Editor";
+    } else
+    {
+        ViewData["Title"] = "Sign In - SignalR Realtime Code Editor";
+    }
+}
+
+<div class="text-center">
+    @if (User.Identity.IsAuthenticated)
+    {
+        string role = "";
+        foreach (var pair in User.Claims)
+        {
+            if (pair.Type.Contains("role"))
+            {
+                role = pair.Value;
+                break;
+            }
+        }
+
+        string user = "";
+        foreach (var pair in User.Claims)
+        {
+            if (pair.Type.Contains("preferred_username"))
+            {
+                user = pair.Value;
+                break;
+            }
+        }
+
+        if (role == "Interviewer")
+        {
+            <form method="post" asp-controller="Home" asp-action="StartNewSession">
+                <input type="hidden" name="user" value="@user">
+                <input type="submit" value="Start A New Session">
+            </form>
+            <br>
+            <div>Or, enter a session code</div>
+            <form method="post" asp-controller="Home" asp-action="EnterSession">
+                <label for="sessionCode">Session Code:</label><br>
+                <input type="text" name="sessionCode"><br>
+                <input type="hidden" name="user" value="@user">
+                <input type="submit" value="Enter Session">
+            </form>
+        }
+        else
+        {
+            <div>Enter a session code to join</div>
+            <form method="post" asp-controller="Home" asp-action="EnterSession">
+                <label for="sessionCode">Session Code:</label><br>
+                <input type="text" name="sessionCode"><br>
+                <input type="hidden" name="user" value="@user">
+                <input type="submit" value="Enter Session">
+            </form>
+        }
+    }
+    else
+    {
+        <h6 class="display-4">Sign In with Azure Active Directory</h6>
+        <a class="btn-link" id="test" value="Sign Me In" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignIn">Sign Me In</a>
+    }
+</div>
+
