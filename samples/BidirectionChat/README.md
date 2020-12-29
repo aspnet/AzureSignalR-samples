@@ -29,6 +29,10 @@ It's a quick try of this sample. You will create an Azure SignalR Service and an
     ```bash
     resourceGroup=myResourceGroup
     signalrName=mySignalRName
+    region=eastus
+    
+    # Create a resource group.
+    az group create --name $resourceGroup --location $region
 
     az signalr create -n $signalrName -g $resourceGroup --service-mode Serverless --sku Standard_S1
     # Get connection string for later use.
@@ -49,10 +53,6 @@ It's a quick try of this sample. You will create an Azure SignalR Service and an
         # Function app and storage account names must be unique.
         storageName=mystorageaccount
         functionAppName=myserverlessfunc
-        region=eastus
-        
-        # Create a resource group.
-        az group create --name $resourceGroup --location $region
 
         # Create an Azure storage account in the resource group.
         az storage account create \
