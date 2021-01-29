@@ -19,17 +19,17 @@ namespace Microsoft.Azure.SignalR.Samples.FlightMap
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<IFlightControl, FlightControl>();
-            services.AddMvc();
+            services.AddControllers();
             services.AddSignalR().AddAzureSignalR();
         }
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseMvc();
+            app.UseRouting();
             app.UseFileServer();
-            app.UseAzureSignalR(routes =>
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapHub<FlightMapSampleHub>("/flightData");
+                endpoints.MapHub<FlightMapSampleHub>("/flightData");
             });
         }
     }

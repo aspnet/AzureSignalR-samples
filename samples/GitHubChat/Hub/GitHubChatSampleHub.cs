@@ -16,7 +16,7 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoom
         }
 
         // Uncomment this line to only allow user in Microsoft to send message
-        //[Authorize(Policy = "Microsoft_Only")]
+        // [Authorize(Policy = "Microsoft_Only")]
         public void BroadcastMessage(string message)
         {
             Clients.All.SendAsync("broadcastMessage", Context.User.Identity.Name, message);

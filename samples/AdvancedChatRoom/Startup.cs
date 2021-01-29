@@ -55,7 +55,7 @@ namespace Microsoft.Azure.SignalR.Samples.AdvancedChatRoom
                     };
                 });
 
-            services.AddMvc();
+            services.AddControllers();
             services.AddSignalR()
                 .AddAzureSignalR(options =>
             {
@@ -69,12 +69,14 @@ namespace Microsoft.Azure.SignalR.Samples.AdvancedChatRoom
         public void Configure(IApplicationBuilder app)
         {
             app.UseAuthentication();
-            app.UseMvc();
+            app.UseRouting();
             app.UseFileServer();
-            app.UseAzureSignalR(routes =>
+            app.UseAuthorization();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapHub<ChatJwtSampleHub>("/chatjwt");
-                routes.MapHub<ChatCookieSampleHub>("/chatcookie");
+                endpoints.MapControllers();
+                endpoints.MapHub<ChatJwtSampleHub>("/chatjwt");
+                endpoints.MapHub<ChatCookieSampleHub>("/chatcookie");
             });
         }
     }
