@@ -19,14 +19,14 @@
         <div id="messages" style="background-color: whitesmoke; "></div>
         <div style="width: 100%; border-left-style: ridge; border-right-style: ridge;">
             <textarea id="message" style="width: 100%; padding: 5px 10px; border-style: hidden;"
-                      placeholder="Type message and press Enter to send..."></textarea>
+                placeholder="Type message and press Enter to send..."></textarea>
         </div>
         <div style="overflow: auto; border-style: ridge; border-top-style: hidden;">
             <button class="btn-success pull-right" id="sendmessage">Send All</button>
         </div>
         <div style="width: 100%; border-left-style: ridge; border-right-style: ridge;">
             <textarea id="targetName" style="width: 100%; padding: 5px 10px; border-style: hidden;"
-                      placeholder="Type targetName"></textarea>
+                placeholder="Type targetName"></textarea>
         </div>
         <div style="overflow: auto; border-style: ridge; border-top-style: hidden;">
             <button class="btn-success pull-right" id="sendUserMessage">Send To User</button>
@@ -49,12 +49,6 @@
 
     <!--Add script to update the page and send messages.-->
     <script type="text/javascript">
-        var username = generateRandomName();
-
-        var connection = new signalR.HubConnectionBuilder()
-            .withUrl(`/chat?username=${username}`)
-            .build();
-
         function generateRandomName() {
             return Math.random().toString(36).substring(2, 10);
         }
@@ -72,29 +66,6 @@
             return message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         }
 
-        function createNewMessage(sender, message, messageId) {
-            const entry = document.createElement('div');
-            entry.classList.add("message-entry");
-            if (sender === "_SYSTEM_") {
-                entry.innerHTML = message;
-                entry.classList.add("text-center");
-                entry.classList.add("system-message");
-            } else if (sender === "_BROADCAST_") {
-                entry.classList.add("text-center");
-                entry.innerHTML =
-                    `<div class="text-center broadcast-message" id="${messageId}">${message}</div>`;
-            } else if (sender === username) {
-                entry.innerHTML =
-                    `<div class="message-avatar pull-right" id="${messageId}">${sender}</div>` +
-                    `<div class="message-content pull-right">${message}<div>`;
-            } else {
-                entry.innerHTML =
-                    `<div class="message-avatar pull-left" id="${messageId}">${sender}</div>` +
-                    `<div class="message-content pull-left">${message}<div>`;
-            }
-            return entry;
-        }
-
         function addNewMessageToScreen(messageEntry) {
             const messageBoxElement = document.getElementById('messages');
             messageBoxElement.appendChild(messageEntry);
@@ -103,6 +74,7 @@
 
         document.addEventListener('DOMContentLoaded', function () {
             // Get the user name and store it to prepend to messages.
+            var username = generateRandomName();
             var promptMessage = 'Enter your name:';
             do {
                 username = prompt(promptMessage, username);
@@ -113,10 +85,38 @@
                 }
             } while (!username);
 
+
+            var connection = new signalR.HubConnectionBuilder()
+                .withUrl(`/chat?username=${username}`)
+                .build();
+
             // Set initial focus to message input box.
             var messageInput = document.getElementById('message');
             var targetNameInput = document.getElementById('targetName');
             messageInput.focus();
+
+            function createNewMessage(sender, message, messageId) {
+                const entry = document.createElement('div');
+                entry.classList.add("message-entry");
+                if (sender === "_SYSTEM_") {
+                    entry.innerHTML = message;
+                    entry.classList.add("text-center");
+                    entry.classList.add("system-message");
+                } else if (sender === "_BROADCAST_") {
+                    entry.classList.add("text-center");
+                    entry.innerHTML =
+                        `<div class="text-center broadcast-message" id="${messageId}">${message}</div>`;
+                } else if (sender === username) {
+                    entry.innerHTML =
+                        `<div class="message-avatar pull-right" id="${messageId}">${sender}</div>` +
+                        `<div class="message-content pull-right">${message}<div>`;
+                } else {
+                    entry.innerHTML =
+                        `<div class="message-avatar pull-left" id="${messageId}">${sender}</div>` +
+                        `<div class="message-content pull-left">${message}<div>`;
+                }
+                return entry;
+            }
 
             function bindConnectionMessage(connection) {
                 //  Add the message to the screen

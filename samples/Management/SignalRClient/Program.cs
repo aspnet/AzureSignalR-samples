@@ -57,10 +57,10 @@ namespace SignalRClient
                 Console.WriteLine($"{userId}: gets message from service: '{message}'");
             });
 
-            connection.Closed += async ex =>
+            connection.Closed += ex =>
             {
                 Console.WriteLine(ex);
-                Environment.Exit(1);
+                return Task.FromResult(0);
             };
 
             return connection;

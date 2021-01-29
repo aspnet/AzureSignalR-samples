@@ -1,16 +1,17 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.SignalR.Samples.ChatRoom
 {
@@ -46,7 +47,7 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoom
                 options.AddPolicy("Microsoft_Only", policy => policy.RequireClaim("Company", "Microsoft"));
             });
 
-            services.AddMvc();
+            services.AddControllers();
 
             services.AddSignalR()
                     .AddAzureSignalR();
@@ -55,11 +56,17 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoom
         public void Configure(IApplicationBuilder app)
         {
             app.UseAuthentication();
-            app.UseMvc();
             app.UseFileServer();
-            app.UseAzureSignalR(routes =>
+            app.UseRouting();
+            app.UseAuthorization();
+            app.UseCookiePolicy(new CookiePolicyOptions()
             {
-                routes.MapHub<GitHubChatSampleHub>("/chat");
+                MinimumSameSitePolicy = AspNetCore.Http.SameSiteMode.Strict
+            });
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+                endpoints.MapHub<GitHubChatSampleHub>("/chat");
             });
         }
 
@@ -72,7 +79,7 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoom
             var response = await context.Backchannel.SendAsync(request,
                 HttpCompletionOption.ResponseHeadersRead, context.HttpContext.RequestAborted);
 
-            var user = JObject.Parse(await response.Content.ReadAsStringAsync());
+            var user = JsonSerializer.Deserialize<Dictionary<string, object>>(await response.Content.ReadAsStringAsync());
             if (user.ContainsKey("company"))
             {
                 var company = user["company"].ToString();

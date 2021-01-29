@@ -29,27 +29,32 @@ In real world scenarios you can replace the web server and the blob storage with
     az signalr create --resource-group <resource_group_name> --name <signalr_name> --sku Standard_S1
     ```
 
-1.  Create a web app using [Azure CLI].
+1.  Create a web app using Azure CLI:
 
     ```
     az appservice plan create --name <plan_name> --resource-group <resource_group_name> --sku S1 --is-linux
     az webapp create \
         --resource-group <resource_group_name> --plan <plan_name> --name <app_name> \
-        --runtime "dotnetcore|2.1"
+        --runtime "dotnetcore|3.1"
     ```
 
 1.  Deploy flight map to web app:
 
-    ```
-    az webapp deployment source config-local-git --resource-group <resource_group_name> --name <app_name>
-    az webapp deployment user set --user-name <user_name> --password <password>
+    a. Publish the app
+       ```
+       dotnet publish -c Release
+       ```
 
-    git init
-    git remote add origin <deploy_git_url>
-    git add -A
-    git commit -m "init commit"
-    git push origin master
-    ```
+    b. Package the published app into a zip file (or use whatever zip tool you like to do it)
+       ```
+       cd bin/Release/netcoreapp3.1/publish
+       zip app.zip * -r
+       ```
+
+    c. Publish using Azure CLI
+       ```
+       az webapp deployment source config-zip -n <app_name> -g <resource_group_name> --src app.zip
+       ```
 
 1.  Prepare flight data
 
@@ -80,7 +85,6 @@ In real world scenarios you can replace the web server and the blob storage with
 1.  Update settings of web app:
 
     ```
-    az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> --setting PORT=5000
     az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> \
         --setting Azure__SignalR__ConnectionString=<connection_string>
     az webapp config appsettings set --resource-group <resource_group_name> --name <app_name> \
