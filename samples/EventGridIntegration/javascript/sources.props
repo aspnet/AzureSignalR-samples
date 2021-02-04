@@ -1,5 +1,4 @@
 <RestoreSources>
       $(RestoreSources);
       https://api.nuget.org/v3/index.json;
-      https://www.myget.org/F/azure-signalr-dev/api/v3/index.json
 </RestoreSources>
