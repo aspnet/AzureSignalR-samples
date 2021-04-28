@@ -45,10 +45,10 @@ dotnet run
 Once the message publisher get started, use the command to send message
 
 ```
-send user <User ID List (Seperated by ',')> <Message>
+send user <User ID List (Separated by ',')> <Message>
 send users <User List> <Message>
 send group <Group Name> <Message>
-send groups <Group List (Seperated by ',')> <Message>
+send groups <Group List (Separated by ',')> <Message>
 usergroup add <User ID> <Group Name>
 usergroup remove <User ID> <Group Name>
 broadcast <Message>
