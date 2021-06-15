@@ -19,7 +19,7 @@
     {
       "type": "signalRConnectionInfo",
       "name": "connectionInfo",
-      "hubName": "serverlessSample",
+      "hubName": "serverless",
       "connectionStringSetting": "AzureSignalRConnectionString",
       "direction": "in"
     }
