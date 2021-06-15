@@ -29,14 +29,14 @@ namespace CSharp
         [FunctionName("negotiate")]
         public static SignalRConnectionInfo Negotiate( 
             [HttpTrigger(AuthorizationLevel.Anonymous)] HttpRequest req,
-            [SignalRConnectionInfo(HubName = "serverlessSample")] SignalRConnectionInfo connectionInfo)
+            [SignalRConnectionInfo(HubName = "serverless")] SignalRConnectionInfo connectionInfo)
         {
             return connectionInfo;
         }
 
-        [FunctionName("getStars")]
+        [FunctionName("broadcast")]
         public static async Task Broadcast([TimerTrigger("*/5 * * * * *")] TimerInfo myTimer,
-        [SignalR(HubName = "serverlessSample")] IAsyncCollector<SignalRMessage> signalRMessages)
+        [SignalR(HubName = "serverless")] IAsyncCollector<SignalRMessage> signalRMessages)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, "https://api.github.com/repos/azure/azure-webpubsub");
             request.Headers.UserAgent.ParseAdd("Serverless");
