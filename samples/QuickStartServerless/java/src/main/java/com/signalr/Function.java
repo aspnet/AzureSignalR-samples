@@ -59,11 +59,11 @@ public class Function {
         @TimerTrigger(name = "timeTrigger", schedule = "*/5 * * * * *") String timerInfo) throws IOException, InterruptedException {
         
         HttpClient client = HttpClient.newHttpClient();
-        HttpRequest req = HttpRequest.newBuilder().uri(URI.create("https://api.github.com/repos/azure/azure-webpubsub")).header("User-Agent", "serverless").build();
+        HttpRequest req = HttpRequest.newBuilder().uri(URI.create("https://api.github.com/repos/azure/azure-signalr")).header("User-Agent", "serverless").build();
         HttpResponse<String> res = client.send(req, BodyHandlers.ofString());
         Gson gson = new Gson();
         GitResult result = gson.fromJson(res.body(), GitResult.class);
-        return new SignalRMessage("newMessage", "Current start count of https://github.com/Azure/azure-webpubsub is:".concat(result.stargazers_count));
+        return new SignalRMessage("newMessage", "Current start count of https://github.com/Azure/azure-signalr is:".concat(result.stargazers_count));
     }
 
     class GitResult {
