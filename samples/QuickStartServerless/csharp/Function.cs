@@ -38,7 +38,7 @@ namespace CSharp
         public static async Task Broadcast([TimerTrigger("*/5 * * * * *")] TimerInfo myTimer,
         [SignalR(HubName = "serverless")] IAsyncCollector<SignalRMessage> signalRMessages)
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, "https://api.github.com/repos/azure/azure-webpubsub");
+            var request = new HttpRequestMessage(HttpMethod.Get, "https://api.github.com/repos/azure/azure-signalr");
             request.Headers.UserAgent.ParseAdd("Serverless");
             var response = await httpClient.SendAsync(request);
             var result = JsonConvert.DeserializeObject<GitResult>(await response.Content.ReadAsStringAsync());
@@ -46,7 +46,7 @@ namespace CSharp
                 new SignalRMessage
                 {
                     Target = "newMessage",
-                    Arguments = new[] { $"Current star count of https://github.com/Azure/azure-webpubsub is: {result.StartCount}" }
+                    Arguments = new[] { $"Current star count of https://github.com/Azure/azure-signalr is: {result.StartCount}" }
                 });
         }
 
