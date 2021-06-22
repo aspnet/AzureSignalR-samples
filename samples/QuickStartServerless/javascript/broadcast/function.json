@@ -1,0 +1,17 @@
+{
+  "bindings": [
+    {
+      "name": "myTimer",
+      "type": "timerTrigger",
+      "direction": "in",
+      "schedule": "*/5 * * * * *"
+    },
+    {
+      "type": "signalR",
+      "name": "signalRMessages",
+      "hubName": "serverless",
+      "connectionStringSetting": "AzureSignalRConnectionString",
+      "direction": "out"
+    }
+  ]
+}
