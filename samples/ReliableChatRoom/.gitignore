@@ -1,5 +1,2 @@
-bin/
-obj/
+TestResults/
 .vs/
-**.csproj.user
-*.sln
