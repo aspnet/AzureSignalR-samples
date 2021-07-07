@@ -1,0 +1,178 @@
+﻿@{
+    ViewData["Title"] = "TextEditor - SignalR Realtime Code Editor";
+}
+
+<style type="text/css" media="screen">
+    #editor {
+        height: 500px;
+        width: inherit;
+    }
+</style>
+
+<div class="text-center">
+    @{
+        string user = ViewBag.SessionModel.User;
+        string creator = ViewBag.SessionModel.Creator;
+        string sessionCode = ViewBag.SessionModel.SessionCode;
+        bool isLocked = ViewBag.SessionModel.IsLocked;
+        string savedState = ViewBag.SessionModel.SavedState;
+
+        if (User.Identity.IsAuthenticated)
+        {
+            string role = "";
+            foreach (var pair in User.Claims)
+            {
+                if (pair.Type.Contains("role"))
+                {
+                    role = pair.Value;
+                    break;
+                }
+            }
+
+            <script>var role = "@role";</script>
+
+            if (role == "Interviewer")
+            {
+                <div class="text-left">
+                    <input id="lockBtn" value="Lock Editor" type="button" />
+                    <div id="sessionCode" style="color:red">Session Code: @sessionCode</div>
+                    <div></div>
+                </div>
+            }
+            else
+            {
+                <div class="text-left">
+                    <div id="sessionCode" style="color:red">Session Code: @sessionCode</div>
+                    <div id="creator" style="color:blueviolet">Creator: @creator</div>
+                    <div id="state" style="color:red">State: Initializing</div>
+                </div>
+            }
+
+            <div class="text-left">
+                <div id="editor"></div>
+            </div>
+        }
+    }
+</div>
+
+@section Scripts
+{
+    <script src="~/lib/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script src="~/lib/microsoft-signalr/signalr.js" type="text/javascript"></script>
+    <script>
+        var underUpdating = false;
+        var editor = ace.edit("editor");
+        editor.resize();
+        editor.setTheme("ace/theme/monokai");
+        editor.session.setMode("ace/mode/javascript");
+        editor.setReadOnly(true);
+        editor.set
+        $("#editor").keypress(function () {
+            if (editor.getReadOnly() == true) {
+                $("#state").attr("style", "background-color:red;color:white");
+            }
+        });
+
+        function onConnected(connection) {
+            console.log('connection started');
+            connection.send('OnEnterSession', "@sessionCode", "@user");
+        }
+
+        function onConnectionError(error) {
+            if (error && error.message) {
+                console.error(error.message);
+            }
+        }
+
+        function bindServerCallbacks(connection) {
+            connection.on('enableEditor', enableEditor);
+            connection.on('updateCodeEditor', updateCodeEditor);
+            connection.on('lockCodeEditor', lockCodeEditor);
+            connection.on('unlockCodeEditor', unlockCodeEditor);
+            connection.on('expireSession', expireSession);
+            connection.onclose(onConnectionError);
+        }
+
+        function htmlDecode(input) {
+            var doc = new DOMParser().parseFromString(input, "text/html");
+            return doc.documentElement.textContent;
+        }
+
+        function enableEditor() {
+            editor.session.setValue(htmlDecode("@savedState"));
+            editor.setReadOnly(@isLocked.ToString().ToLower());
+
+            $("#state").attr("style", "background-color:white;color:red");
+            if (@isLocked.ToString().ToLower()) {
+                $("#state").html("State: Locked")
+            } else {
+                $("#state").html("State: Free to Type")
+            }
+
+            editor.getSession().on('change', function () {
+                if (!underUpdating) {
+                    connection.send('OnCodeEditorStateChanged', "@sessionCode", "@user", editor.getSession().getValue());
+                }
+            });
+
+            $("#lockBtn").on('click', function () {
+                onLockButtonClicked();
+            });
+        }
+
+        function updateCodeEditor(content) {
+            underUpdating = true;
+            editor.getSession().setValue(content);
+            underUpdating = false;
+        }
+
+        function lockCodeEditor() {
+            console.log("lockCodeEditor");
+            if (role == "Interviewer") {
+                $("#lockBtn").attr("value", "Unlock Editor");
+            } else {
+                console.log("set read only true");
+                $("#state").html("State: Locked")
+                editor.setReadOnly(true);
+            }
+        }
+
+        function unlockCodeEditor() {
+            if (role == "Interviewer") {
+                $("#lockBtn").attr("value", "Lock Editor");
+            } else {
+                console.log("set read only false");
+                $("#state").attr("style", "background-color:white;color:red");
+                $("#state").html("State: Free to Type")
+                editor.setReadOnly(false);
+            }
+        }
+
+        function expireSession() {
+            alert("Server has expired the session.")
+            window.location.href = "/";
+        }
+
+        function onLockButtonClicked() {
+            if ($("#lockBtn").attr("value") == "Lock Editor") {
+                console.log("Lock Editor");
+                connection.send('OnCodeEditorLocked', "@sessionCode", "@user");
+            } else {
+                console.log("Unlock Editor");
+                connection.send('OnCodeEditorUnlocked', "@sessionCode", "@user");
+            }
+        }
+
+        var connection = new signalR.HubConnectionBuilder()
+            .withUrl('/CodeEditor')
+            .build();
+        bindServerCallbacks(connection);
+        connection.start()
+            .then(function () {
+                onConnected(connection);
+            })
+            .catch(function (error) {
+                console.error(error.message);
+            });
+    </script>
+}
