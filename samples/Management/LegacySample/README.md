@@ -1,7 +1,7 @@
-Azure SignalR Service Management SDK Sample 
+Azure SignalR Service Management SDK Sample (Legacy)
 =================================
 
-This sample shows the use of Azure SignalR Service Management SDK.
+This sample shows the legacy usage of Azure SignalR Service Management SDK.
 
 * Message Publisher: shows how to publish messages to SignalR clients using Management SDK.
 * Negotiation Server: shows how to negotiate client from you app server to Azure SignalR Service using Management SDK.
