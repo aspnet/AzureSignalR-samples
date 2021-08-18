@@ -24,7 +24,7 @@ Sometimes SignalR clients may be disconnected by Azure SignalR Service, the `Clo
 ```C#
 connection.Closed += async ex =>
 {
-	// handle exception here
+  // handle exception here
     ...
 };
 ```
