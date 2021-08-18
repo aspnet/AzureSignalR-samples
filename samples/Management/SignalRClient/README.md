@@ -2,7 +2,7 @@
 
 This sample shows how to use SignalR clients to connect Azure SignalR Service without using a web server that host a SignalR hub.
 
-## Build from Scratch
+## Build from scratch
 
 ### Add Management SDK to your project
 
