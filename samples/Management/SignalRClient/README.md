@@ -57,4 +57,4 @@ await connection.StopAsync();
 
 ## Full Sample
 
-The full message publisher sample can be found [here](.). The usage of this sample can be found [here](<https://github.com/aspnet/AzureSignalR-samples/tree/master/samples/Management/LegacySample#start-signalr-clients>).
+The full message publisher sample can be found [here](.). The usage of this sample can be found [here](<https://github.com/aspnet/AzureSignalR-samples/tree/master/samples/Management#start-signalr-clients>).

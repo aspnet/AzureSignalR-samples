@@ -76,4 +76,4 @@ public ActionResult Index(string hub, string user)
 
 ## Full Sample
 
-The full negotiation server sample can be found [here](.). The usage of this sample can be found [here](<https://github.com/aspnet/AzureSignalR-samples/tree/master/samples/Management#start-the-negotiation-server>).
+The full negotiation server sample can be found [here](.). The usage of this sample can be found [here](<https://github.com/aspnet/AzureSignalR-samples/tree/master/samples/Management/LegacySample#start-the-negotiation-server>).

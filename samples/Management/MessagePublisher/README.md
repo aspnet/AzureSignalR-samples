@@ -8,25 +8,26 @@ This sample shows how to use [Microsoft.Azure.SignalR.Management](https://www.nu
 ### Add Management SDK to your project
 
 ```
-dotnet add package Microsoft.Azure.SignalR.Management -v 1.0.0-*
+dotnet add package Microsoft.Azure.SignalR.Management -v 1.10.*
 ```
 
-### Create instance of `IServiceManager`
+### Create instance of `ServiceManager`
 
-The `IServiceManager` is able to manage your Azure SignalR Service from your connection string.
+The `ServiceManager` is able to manage your Azure SignalR Service from your connection string.
 
 ```c#
-var serviceManager = new ServiceManagerBuilder()
-    .WithOptions(option =>
-    {
-        option.ConnectionString = "<Your Connection String>";
-    })
-    .Build();
+var serviceManager = new ServiceManagerBuilder().WithOptions(option =>
+{
+    option.ConnectionString = _connectionString;
+    option.ServiceTransportType = _serviceTransportType;
+})
+.WithLoggerFactory(new LoggerFactory())
+.BuildServiceManager();
 ```
 
-### Create instance of `IServiceHubContext` 
+### Create instance of `ServiceHubContext` 
 
-The `IServiceHubContext` is used to publish messages to a specific hub.
+The `ServiceHubContext` is used to publish messages to a specific hub.
 
 ```C#
 var hubContext = await serviceManager.CreateHubContextAsync("<Your Hub Name>");
@@ -61,9 +62,9 @@ hubContext.UserGroups.RemoveFromGroupAsync("<User ID>", "<Group Name>");
 ...
 ```
 
-All features can be found [here](<https://github.com/Azure/azure-signalr/blob/dev/docs/management-sdk-guide-legacy.md#features>).
+All features can be found [here](<https://github.com/Azure/azure-signalr/blob/dev/docs/management-sdk-guide.md#features>).
 
-### Dispose the instance of `IServiceHubContext` 
+### Dispose the instance of `ServiceHubContext` 
 
 ```c#
 await hubContext.DisposeAsync();
@@ -71,4 +72,4 @@ await hubContext.DisposeAsync();
 
 ## Full Sample
 
-The full message publisher sample can be found [here](.). The usage of this sample can be found [here](<https://github.com/aspnet/AzureSignalR-samples/tree/master/samples/Management/LegacySample#start-message-publisher>).
+The full message publisher sample can be found [here](.). The usage of this sample can be found [here](<https://github.com/aspnet/AzureSignalR-samples/tree/master/samples/Management#start-message-publisher>).
