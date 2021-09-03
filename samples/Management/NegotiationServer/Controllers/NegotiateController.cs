@@ -18,7 +18,7 @@ namespace NegotiationServer.Controllers
             _hubContext = signalrService.HubContext;
         }
 
-        [HttpPost("negotiate")]
+        [HttpPost("ManagementSampleHub/negotiate")]
         public async Task<ActionResult> Index(string user)
         {
             if (string.IsNullOrEmpty(user))
