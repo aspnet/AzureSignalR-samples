@@ -10,13 +10,21 @@ using Microsoft.Extensions.Logging;
 
 namespace NegotiationServer
 {
-    public class SignalRService : IHostedService
+    public interface IHubContextStore
     {
-        private const string Hub = "ManagementSampleHub";
+        public ServiceHubContext MessageHubContext { get; }
+        public ServiceHubContext ChatHubContext { get; }
+    }
+
+    public class SignalRService : IHostedService, IHubContextStore
+    {
+        private const string ChatHub = "Chat";
+        private const string MessageHub = "Message";
         private readonly IConfiguration _configuration;
         private readonly ILoggerFactory _loggerFactory;
 
-        public ServiceHubContext HubContext { get; private set; }
+        public ServiceHubContext MessageHubContext { get; private set; }
+        public ServiceHubContext ChatHubContext { get; private set; }
 
         public SignalRService(IConfiguration configuration, ILoggerFactory loggerFactory)
         {
@@ -24,16 +32,29 @@ namespace NegotiationServer
             _loggerFactory = loggerFactory;
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        async Task IHostedService.StartAsync(CancellationToken cancellationToken)
         {
             using var serviceManager = new ServiceManagerBuilder()
                 .WithConfiguration(_configuration)
                 //or .WithOptions(o=>o.ConnectionString = _configuration["Azure:SignalR:ConnectionString"]
                 .WithLoggerFactory(_loggerFactory)
                 .BuildServiceManager();
-            HubContext = await serviceManager.CreateHubContextAsync(Hub, cancellationToken);
+            MessageHubContext = await serviceManager.CreateHubContextAsync(MessageHub, cancellationToken);
+            ChatHubContext = await serviceManager.CreateHubContextAsync(ChatHub, cancellationToken);
         }
 
-        public Task StopAsync(CancellationToken cancellationToken) => HubContext?.DisposeAsync() ?? Task.CompletedTask;
+        Task IHostedService.StopAsync(CancellationToken cancellationToken)
+        {
+            return Task.WhenAll(Dispose(MessageHubContext), Dispose(ChatHubContext));
+        }
+
+        private static Task Dispose(ServiceHubContext hubContext)
+        {
+            if (hubContext == null)
+            {
+                return Task.CompletedTask;
+            }
+            return hubContext.DisposeAsync();
+        }
     }
 }

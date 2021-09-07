@@ -12,10 +12,10 @@ namespace Microsoft.Azure.SignalR.Samples.Management
     public class MessagePublisher
     {
         private const string Target = "Target";
-        private const string HubName = "ManagementSampleHub";
+        private const string HubName = "Message";
         private readonly string _connectionString;
         private readonly ServiceTransportType _serviceTransportType;
-        private IServiceHubContext _hubContext;
+        private ServiceHubContext _hubContext;
 
         public MessagePublisher(string connectionString, ServiceTransportType serviceTransportType)
         {

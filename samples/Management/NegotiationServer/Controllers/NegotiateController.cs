@@ -11,22 +11,35 @@ namespace NegotiationServer.Controllers
     [ApiController]
     public class NegotiateController : ControllerBase
     {
-        private readonly ServiceHubContext _hubContext;
+        private readonly ServiceHubContext _messageHubContext;
+        private readonly ServiceHubContext _chatHubContext;
 
-        public NegotiateController(SignalRService signalrService)
+        public NegotiateController(IHubContextStore store)
         {
-            _hubContext = signalrService.HubContext;
+            _messageHubContext = store.MessageHubContext;
+            _chatHubContext = store.ChatHubContext;
         }
 
-        [HttpPost("ManagementSampleHub/negotiate")]
-        public async Task<ActionResult> Index(string user)
+        [HttpPost("message/negotiate")]
+        public Task<ActionResult> MessageHubNegotiate(string user)
+        {
+            return NegotiateBase(user, _messageHubContext);
+        }
+
+        [HttpPost("chat/negotiate")]
+        public Task<ActionResult> ChatHubNegotiate(string user)
+        {
+            return NegotiateBase(user, _chatHubContext);
+        }
+
+        private async Task<ActionResult> NegotiateBase(string user, ServiceHubContext serviceHubContext)
         {
             if (string.IsNullOrEmpty(user))
             {
                 return BadRequest("User ID is null or empty.");
             }
 
-            var negotiateResponse = await _hubContext.NegotiateAsync(new() { UserId = user });
+            var negotiateResponse = await serviceHubContext.NegotiateAsync(new() { UserId = user });
 
             return new JsonResult(new Dictionary<string, string>()
             {
