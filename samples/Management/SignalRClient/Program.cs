@@ -13,26 +13,26 @@ namespace SignalRClient
 {
     class Program
     {
-        private const string DefaultHubEndpoint = "http://localhost:5000/ManagementSampleHub";
+        private const string MessageHubEndpoint = "http://localhost:5000/Message";
         private const string Target = "Target";
         private const string DefaultUser = "User";
 
         static void Main(string[] args)
         {
-            var app = new CommandLineApplication();
-            app.FullName = "Azure SignalR Management Sample: SignalR Client Tool";
+            var app = new CommandLineApplication
+            {
+                FullName = "Azure SignalR Management Sample: SignalR Client Tool"
+            };
             app.HelpOption("--help");
 
-            var hubEndpointOption = app.Option("-h|--hubEndpoint", $"Set hub endpoint. Default value: {DefaultHubEndpoint}", CommandOptionType.SingleValue, true);
             var userIdOption = app.Option("-u|--userIdList", "Set user ID list", CommandOptionType.MultipleValue, true);
 
             app.OnExecute(async () =>
             {
-                var hubEndpoint = hubEndpointOption.Value() ?? DefaultHubEndpoint;
-                var userIds = userIdOption.Values != null && userIdOption.Values.Count > 0 ? userIdOption.Values : new List<string>() { "User" };
+                var userIds = userIdOption.Values != null && userIdOption.Values.Count > 0 ? userIdOption.Values : new List<string>() { DefaultUser };
 
                 var connections = (from userId in userIds
-                                   select CreateHubConnection(hubEndpoint, userId)).ToList();
+                                   select CreateHubConnection(MessageHubEndpoint, userId)).ToList();
 
                 await Task.WhenAll(from conn in connections
                                    select conn.StartAsync());
