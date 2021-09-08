@@ -26,6 +26,7 @@ namespace NegotiationServer.Controllers
             return NegotiateBase(user, _messageHubContext);
         }
 
+        //This API is not used. Just demonstrate a way to have multiple hubs.
         [HttpPost("chat/negotiate")]
         public Task<ActionResult> ChatHubNegotiate(string user)
         {

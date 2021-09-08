@@ -14,7 +14,6 @@ namespace SignalRClient
     class Program
     {
         private const string MessageHubEndpoint = "http://localhost:5000/Message";
-        private const string ChatHubEndpoint = "http://localhost:5000/Chat";
         private const string Target = "Target";
         private const string DefaultUser = "User";
 
