@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.CommandLineUtils;
@@ -62,8 +61,13 @@ namespace SignalRClient
 
             connection.Closed += ex =>
             {
-                Console.WriteLine(ex);
-                return Task.FromResult(0);
+                Console.WriteLine($"The connection of '{userId}' is closed. Exception: {ex}");
+                if (ex == null)
+                {
+                    Console.WriteLine("If you expect non-null exception, you need to turn on 'EnableDetailedErrors' option during client negotiation.");
+                }
+
+                return Task.CompletedTask;
             };
 
             return connection;

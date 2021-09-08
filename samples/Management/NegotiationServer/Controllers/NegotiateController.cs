@@ -40,7 +40,11 @@ namespace NegotiationServer.Controllers
                 return BadRequest("User ID is null or empty.");
             }
 
-            var negotiateResponse = await serviceHubContext.NegotiateAsync(new() { UserId = user });
+            var negotiateResponse = await serviceHubContext.NegotiateAsync(new()
+            {
+                UserId = user/*,
+                EnableDetailedErrors = true*/
+            });
 
             return new JsonResult(new Dictionary<string, string>()
             {

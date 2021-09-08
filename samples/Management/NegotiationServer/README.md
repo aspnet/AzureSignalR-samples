@@ -35,19 +35,19 @@ namespace NegotiationServer.Controllers
 
 ### Create instance of `ServiceHubContext`
 
-`ServiceHubContext` provides methods to generate client endpoints and access tokens for SignalR clients to connect to Azure SignalR Service. Wrap `ServiceHubContext` into a [`IHostedService`](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/generic-host?view=aspnetcore-5.0) called `SignalRService` so that `ServiceHubContext` can be started and disposed when the web host started and stopped.
+`ServiceHubContext` provides methods to generate client endpoints and access tokens for SignalR clients to connect to Azure SignalR Service. Wrap `ServiceHubContext` into a [`IHostedService`](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/generic-host?view=aspnetcore-5.0) called `SignalRService` so that `ServiceHubContext` can be started and disposed when the web host starts and stops.
 
-In `SignalRService` class, create the `ServiceHubContext`.
+In `SignalRService` class, create the `ServiceHubContext`. In the sample we have two hub, message hub and chat hub to demostrate how to set up multiple hubs. The chat hub is actually not used.
 
 ```C#
 public async Task StartAsync(CancellationToken cancellationToken)
 {
     using var serviceManager = new ServiceManagerBuilder()
         .WithConfiguration(_configuration)
-        //or .WithOptions(o=>o.ConnectionString = _configuration["Azure:SignalR:ConnectionString"]
         .WithLoggerFactory(_loggerFactory)
         .BuildServiceManager();
-    HubContext = await serviceManager.CreateHubContextAsync(Hub, cancellationToken);
+    MessageHubContext = await serviceManager.CreateHubContextAsync(MessageHub, cancellationToken);
+    ChatHubContext = await serviceManager.CreateHubContextAsync(ChatHub, cancellationToken);
 }
 ```
 
@@ -63,7 +63,6 @@ public Task StopAsync(CancellationToken cancellationToken) => HubContext?.Dispos
 In the `NegotiateController` class, provide the negotiation endpoint `/negotiate?user=<User ID>`.
 
 We use the `_hubContext` to generate a client endpoint and an access token and return to SignalR client following [Negotiation Protocol](https://github.com/aspnet/SignalR/blob/master/specs/TransportProtocols.md#post-endpoint-basenegotiate-request), which will redirect the SignalR client to the service.
-
 ```C#
 [HttpPost("negotiate")]
 public async Task<ActionResult> Index(string user)
@@ -83,6 +82,16 @@ public async Task<ActionResult> Index(string user)
 }
 ```
 
+The sample above uses the default negotiation options. If you want to return detailed error messages to clients, you can set `EnableDetailedErrors` as follows:
+
+```C#
+var negotiateResponse = await serviceHubContext.NegotiateAsync(new()
+{
+    UserId = user,
+    EnableDetailedErrors = true
+});
+```
+`EnableDetailedErrors` defaults to false because these exception messages can contain sensitive information.
 ## Full Sample
 
 The full negotiation server sample can be found [here](.). The usage of this sample can be found [here](<https://github.com/aspnet/AzureSignalR-samples/tree/master/samples/Management#start-the-negotiation-server>).
