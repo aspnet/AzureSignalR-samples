@@ -1,6 +1,6 @@
 # Negotiation Server
 
-This sample shows how to use [Microsoft.Azure.SignalR.Management](https://www.nuget.org/packages/Microsoft.Azure.SignalR.Management) to host negotiation endpoint for SignalR clients.
+This sample shows how to use [Microsoft.Azure.SignalR.Management](https://www.nuget.org/packages/Microsoft.Azure.SignalR.Management) (version>=1.10.0) to host negotiation endpoint for SignalR clients.
 
 > You can use [Azure Functions](<https://azure.microsoft.com/en-us/services/functions/>) or other similar product instead to provide a totally serverless environment.
 >
