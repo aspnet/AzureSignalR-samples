@@ -44,17 +44,17 @@ dotnet run
 Once the message publisher get started, use the command to send message
 
 ```
-send user <User Id> <Message>
-send users <User Id List (Seperated by ',')> <Message>
-send group <Group Name> <Message>
-send groups <Group List (Seperated by ',')> <Message>
-usergroup add <User Id> <Group Name>
-usergroup remove <User Id> <Group Name>
+send user <UserId> <Message>
+send users <User1,User2,...> <Message>
+send group <GroupName> <Message>
+send groups <Group1,Group2,...> <Message>
+usergroup add <User1,User2,...> <GroupName>
+usergroup remove <UserId> <GroupName>
 broadcast <Message>
-close <Connection ID> <Reason>
-checkexist connection <Connection ID>
-checkexist user <User ID>
-checkexist group <Group Name>
+close <ConnectionID> <Reason>?
+checkexist connection <ConnectionID>
+checkexist user <UserID>
+checkexist group <GroupName>
 ```
  For example, type `broadcast hello`, and press keyboard `enter` to publish messages.
 
