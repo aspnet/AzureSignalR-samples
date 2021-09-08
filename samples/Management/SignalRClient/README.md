@@ -7,12 +7,12 @@ This sample shows how to use SignalR clients to connect Azure SignalR Service wi
 ### Add Management SDK to your project
 
 ```
-dotnet add package Microsoft.Azure.SignalR.Management -v 1.0.0-*
+dotnet add package Microsoft.Azure.SignalR.Management -v 1.*
 ```
 
 ### Connect SignalR clients to a hub endpoint with user ID
 
-```C# 
+```C#
 var url = $"{hubEndpoint.TrimEnd('/')}?user={<User ID>}";
 var connection = new HubConnectionBuilder().WithUrl(url).Build();
 ```

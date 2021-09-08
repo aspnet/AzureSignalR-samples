@@ -17,7 +17,7 @@ dotnet new webapi
 ### Add Management SDK to your project
 
 ```
-dotnet add package Microsoft.Azure.SignalR.Management -v 1.10.*
+dotnet add package Microsoft.Azure.SignalR.Management -v 1.*
 ```
 
 ### Create a controller for negotiation
@@ -60,9 +60,9 @@ public Task StopAsync(CancellationToken cancellationToken) => HubContext?.Dispos
 
 ### Provide Negotiation Endpoint
 
-In the `NegotiateController` class, provide the negotiation endpoint `/negotiate?user=<User ID>`.  
+In the `NegotiateController` class, provide the negotiation endpoint `/negotiate?user=<User ID>`.
 
-We use the `_hubContext` to generate a client endpoint and an access token and return to SignalR client following [Negotiation Protocol](https://github.com/aspnet/SignalR/blob/master/specs/TransportProtocols.md#post-endpoint-basenegotiate-request), which will redirect the SignalR client to the service. 
+We use the `_hubContext` to generate a client endpoint and an access token and return to SignalR client following [Negotiation Protocol](https://github.com/aspnet/SignalR/blob/master/specs/TransportProtocols.md#post-endpoint-basenegotiate-request), which will redirect the SignalR client to the service.
 
 ```C#
 [HttpPost("negotiate")]

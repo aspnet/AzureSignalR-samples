@@ -8,12 +8,12 @@ This sample shows how to use [Microsoft.Azure.SignalR.Management](https://www.nu
 ### Add Management SDK to your project
 
 ```
-dotnet add package Microsoft.Azure.SignalR.Management -v 1.10.*
+dotnet add package Microsoft.Azure.SignalR.Management -v 1.*
 ```
 
 ### Create instance of `ServiceManager`
 
-The `ServiceManager` is able to manage your Azure SignalR Service from your connection string.
+The `ServiceManager` is able to manage your Azure SignalR Service.
 
 ```c#
 var serviceManager = new ServiceManagerBuilder().WithOptions(option =>
@@ -21,11 +21,12 @@ var serviceManager = new ServiceManagerBuilder().WithOptions(option =>
     option.ConnectionString = _connectionString;
     option.ServiceTransportType = _serviceTransportType;
 })
-.WithLoggerFactory(new LoggerFactory())
+//Uncomment the following line to get more logs
+//.WithLoggerFactory(LoggerFactory.Create(builder => builder.AddConsole()))
 .BuildServiceManager();
 ```
 
-### Create instance of `ServiceHubContext` 
+### Create instance of `ServiceHubContext`
 
 The `ServiceHubContext` is used to publish messages to a specific hub.
 
@@ -41,7 +42,7 @@ Once you create the `hubContext`, you can use it to publish messages to a given 
 // broadcast
 hubContext.Clients.All.SendAsync("<Your SignalR Client Callback>", "<Arg1>", "<Arg2>", ...);
 
-// send to a user 
+// send to a user
 hubContext.Clients.User("<User ID>").SendAsync("<Your SignalR Client Callback>", "<Arg1>", "<Arg2>", ...);
 
 // send to users
@@ -64,7 +65,7 @@ hubContext.UserGroups.RemoveFromGroupAsync("<User ID>", "<Group Name>");
 
 All features can be found [here](<https://github.com/Azure/azure-signalr/blob/dev/docs/management-sdk-guide.md#features>).
 
-### Dispose the instance of `ServiceHubContext` 
+### Dispose the instance of `ServiceHubContext`
 
 ```c#
 await hubContext.DisposeAsync();
