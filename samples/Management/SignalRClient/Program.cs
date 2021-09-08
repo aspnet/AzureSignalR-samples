@@ -15,7 +15,7 @@ namespace SignalRClient
     {
         private const string MessageHubEndpoint = "http://localhost:5000/Message";
         private const string Target = "Target";
-        private const string DefaultUser = "User";
+        private const string DefaultUser = "TestUser";
 
         static void Main(string[] args)
         {
@@ -37,7 +37,10 @@ namespace SignalRClient
                 await Task.WhenAll(from conn in connections
                                    select conn.StartAsync());
 
-                Console.WriteLine($"{connections.Count} Client(s) started...");
+                foreach (var (connection, userId) in connections.Zip(userIds))
+                {
+                    Console.WriteLine($"User '{userId}' with connection id '{connection.ConnectionId}' connected.");
+                }
                 Console.ReadLine();
 
                 await Task.WhenAll(from conn in connections
