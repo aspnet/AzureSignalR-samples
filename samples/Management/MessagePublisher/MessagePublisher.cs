@@ -12,10 +12,10 @@ namespace Microsoft.Azure.SignalR.Samples.Management
     public class MessagePublisher
     {
         private const string Target = "Target";
-        private const string HubName = "ManagementSampleHub";
+        private const string HubName = "Message";
         private readonly string _connectionString;
         private readonly ServiceTransportType _serviceTransportType;
-        private IServiceHubContext _hubContext;
+        private ServiceHubContext _hubContext;
 
         public MessagePublisher(string connectionString, ServiceTransportType serviceTransportType)
         {
@@ -29,9 +29,12 @@ namespace Microsoft.Azure.SignalR.Samples.Management
             {
                 option.ConnectionString = _connectionString;
                 option.ServiceTransportType = _serviceTransportType;
-            }).Build();
+            })
+            //Uncomment the following line to get more logs
+            //.WithLoggerFactory(LoggerFactory.Create(builder => builder.AddConsole()))
+            .BuildServiceManager();
 
-            _hubContext = await serviceManager.CreateHubContextAsync(HubName, new LoggerFactory());
+            _hubContext = await serviceManager.CreateHubContextAsync(HubName, default);
         }
 
         public Task ManageUserGroup(string command, string userId, string groupName)

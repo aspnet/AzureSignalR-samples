@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Azure.SignalR.Management;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -22,6 +23,11 @@ namespace NegotiationServer
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            services
+                .AddSingleton<SignalRService>()
+                .AddHostedService(sp => sp.GetService<SignalRService>())
+                .AddSingleton<IHubContextStore>(sp => sp.GetService<SignalRService>());
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -39,7 +45,8 @@ namespace NegotiationServer
 
             app.UseRouting();
 
-            app.UseEndpoints(endpoints => {
+            app.UseEndpoints(endpoints =>
+            {
                 endpoints.MapControllers();
             });
         }

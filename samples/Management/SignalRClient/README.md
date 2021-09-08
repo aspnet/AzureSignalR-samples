@@ -2,17 +2,17 @@
 
 This sample shows how to use SignalR clients to connect Azure SignalR Service without using a web server that host a SignalR hub.
 
-## Build from Scratch
+## Build from scratch
 
 ### Add Management SDK to your project
 
 ```
-dotnet add package Microsoft.Azure.SignalR.Management -v 1.0.0-*
+dotnet add package Microsoft.Azure.SignalR.Management -v 1.*
 ```
 
 ### Connect SignalR clients to a hub endpoint with user ID
 
-```C# 
+```C#
 var url = $"{hubEndpoint.TrimEnd('/')}?user={<User ID>}";
 var connection = new HubConnectionBuilder().WithUrl(url).Build();
 ```
@@ -24,7 +24,7 @@ Sometimes SignalR clients may be disconnected by Azure SignalR Service, the `Clo
 ```C#
 connection.Closed += async ex =>
 {
-	// handle exception here
+  // handle exception here
     ...
 };
 ```

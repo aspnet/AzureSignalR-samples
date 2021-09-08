@@ -1,7 +1,7 @@
-Azure SignalR Service Management SDK Sample (Legacy)
+Azure SignalR Service Management SDK Sample
 =================================
 
-This sample shows the legacy usage of Azure SignalR Service Management SDK.
+This sample shows the usage of Azure SignalR Service Management SDK.
 
 * Message Publisher: shows how to publish messages to SignalR clients using Management SDK.
 * Negotiation Server: shows how to negotiate client from you app server to Azure SignalR Service using Management SDK.
@@ -25,8 +25,7 @@ dotnet run
 ```
 
 >  Parameters:
-> 
-> - -h|--hubEndpoint: Set hub endpoint. Default value: "<http://localhost:5000/ManagementSampleHub>".
+>
 > - -u|--user: Set user ID. Default value: "User". You can set multiple users like this: "-u user1 -u user2".
 
 ### Start message publisher
@@ -38,7 +37,7 @@ dotnet run
 ```
 
 > Parameters:
-> 
+>
 > -c|--connectionstring: Set connection string.
 > -t|--transport: Set service transport type. Options: <transient>|<persistent>. Default value: transient. Transient: calls REST API for each message. Persistent: Establish a WebSockets connection and send all messages in the connection.
 
