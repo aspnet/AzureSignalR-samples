@@ -108,6 +108,11 @@ namespace Microsoft.Azure.SignalR.Samples.Management
                         var exist = await publisher.CheckExist(args[1].ToLowerInvariant(), args[2]);
                         Console.WriteLine(exist ? $"{args[1]} '{args[2]}' exists." : $"{args[1]} '{args[2]}' does not exist.");
                     }
+                    else if (args.Length == 2 && args[0] == "close")
+                    {
+                        await publisher.CloseConnection(args[1], null);
+                        Console.WriteLine($"Close connection '{args[1]}'.");
+                    }
                     else
                     {
                         Console.WriteLine($"Can't recognize command {argLine}");
@@ -132,7 +137,7 @@ send groups <Group List (Seperated by ',')> <Message>
 usergroup add <User Id> <Group Name>
 usergroup remove <User Id> <Group Name>
 broadcast <Message>
-close <Connection ID> <Reason>
+close <Connection ID> <Reason>?
 checkexist connection <Connection ID>
 checkexist user <User ID>
 checkexist group <Group Name>
