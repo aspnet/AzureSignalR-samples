@@ -124,7 +124,7 @@ namespace Microsoft.Azure.SignalR.Samples.Management
 
         private static void MissOptions()
         {
-            Console.WriteLine("Miss required options: Connection string and Hub must be set");
+            Console.WriteLine("Miss required options: Connection string must be set");
         }
     }
 }

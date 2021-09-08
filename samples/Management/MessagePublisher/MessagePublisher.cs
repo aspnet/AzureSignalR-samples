@@ -30,7 +30,8 @@ namespace Microsoft.Azure.SignalR.Samples.Management
                 option.ConnectionString = _connectionString;
                 option.ServiceTransportType = _serviceTransportType;
             })
-            .WithLoggerFactory(new LoggerFactory())
+            //Uncomment the following line to get more logs
+            //.WithLoggerFactory(LoggerFactory.Create(builder => builder.AddConsole()))
             .BuildServiceManager();
 
             _hubContext = await serviceManager.CreateHubContextAsync(HubName, default);
