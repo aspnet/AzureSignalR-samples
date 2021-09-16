@@ -102,6 +102,7 @@ namespace Microsoft.Azure.SignalR.Samples.Management
                     {
                         await publisher.CloseConnection(args[1], args[2]);
                         Console.WriteLine($"closed connection '{args[1]}' because '{args[2]}'");
+                        //If you want client side see the reason, you need to turn on 'EnableDetailedErrors' option during client negotiation.
                     }
                     else if (args.Length == 3 && args[0] == "checkexist")
                     {
