@@ -61,12 +61,13 @@ namespace SignalRClient
 
             connection.Closed += ex =>
             {
-                Console.WriteLine($"The connection of '{userId}' is closed. Exception: {ex}");
-                if (ex == null)
+                Console.Write($"The connection of '{userId}' is closed.");
+                //If you expect non-null exception, you need to turn on 'EnableDetailedErrors' option during client negotiation.
+                if (ex != null)
                 {
-                    Console.WriteLine("If you expect non-null exception, you need to turn on 'EnableDetailedErrors' option during client negotiation.");
+                    Console.Write($" Exception: {ex}");
                 }
-
+                Console.WriteLine();
                 return Task.CompletedTask;
             };
 

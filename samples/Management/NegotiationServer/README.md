@@ -91,7 +91,7 @@ var negotiateResponse = await serviceHubContext.NegotiateAsync(new()
     EnableDetailedErrors = true
 });
 ```
-`EnableDetailedErrors` defaults to false because these exception messages can contain sensitive information.
+> `EnableDetailedErrors` defaults to false because these exception messages can contain sensitive information.
 ## Full Sample
 
 The full negotiation server sample can be found [here](.). The usage of this sample can be found [here](<https://github.com/aspnet/AzureSignalR-samples/tree/master/samples/Management#start-the-negotiation-server>).

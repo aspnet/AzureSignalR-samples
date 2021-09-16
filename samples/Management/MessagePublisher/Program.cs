@@ -101,17 +101,17 @@ namespace Microsoft.Azure.SignalR.Samples.Management
                     else if (args.Length == 3 && args[0] == "close")
                     {
                         await publisher.CloseConnection(args[1], args[2]);
-                        Console.WriteLine($"Close connection '{args[1]}' because '{args[2]}'");
+                        Console.WriteLine($"closed connection '{args[1]}' because '{args[2]}'");
                     }
                     else if (args.Length == 3 && args[0] == "checkexist")
                     {
                         var exist = await publisher.CheckExist(args[1].ToLowerInvariant(), args[2]);
-                        Console.WriteLine(exist ? $"{args[1]} '{args[2]}' exists." : $"{args[1]} '{args[2]}' does not exist.");
+                        Console.WriteLine(exist ? "exists" : "not exist");
                     }
                     else if (args.Length == 2 && args[0] == "close")
                     {
                         await publisher.CloseConnection(args[1], null);
-                        Console.WriteLine($"Close connection '{args[1]}'.");
+                        Console.WriteLine("closed");
                     }
                     else
                     {
@@ -131,10 +131,10 @@ namespace Microsoft.Azure.SignalR.Samples.Management
             Console.Write(
 @"*********Usage*********
 send user <UserId> <Message>
-send users <User1,User2,...> <Message>
+send users <User1>,<User2>,... <Message>
 send group <GroupName> <Message>
-send groups <Group1,Group2,...> <Message>
-usergroup add <User1,User2,...> <GroupName>
+send groups <Group1>,<Group2>,... <Message>
+usergroup add <User1>,<User2>,... <GroupName>
 usergroup remove <UserId> <GroupName>
 broadcast <Message>
 close <ConnectionID> <Reason>?
