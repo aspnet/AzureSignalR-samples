@@ -17,6 +17,10 @@ dotnet user-secrets set Azure:SignalR:ConnectionString "<Connection String>"
 dotnet run
 ```
 
+>  Parameters of `dotnet run`
+>
+> --enableDetailedErrors: true to enable log detailed errors on client side, false to disable. The default value is false, as detailed errors might contain sensitive information. This is useful if you want client connection to get the exception on close.
+
 ### Start SignalR clients
 
 ```
@@ -44,13 +48,17 @@ dotnet run
 Once the message publisher get started, use the command to send message
 
 ```
-send user <User ID List (Separated by ',')> <Message>
-send users <User List> <Message>
-send group <Group Name> <Message>
-send groups <Group List (Separated by ',')> <Message>
-usergroup add <User ID> <Group Name>
-usergroup remove <User ID> <Group Name>
+send user <UserId> <Message>
+send users <User1,User2,...> <Message>
+send group <GroupName> <Message>
+send groups <Group1,Group2,...> <Message>
+usergroup add <User1,User2,...> <GroupName>
+usergroup remove <UserId> <GroupName>
 broadcast <Message>
+close <ConnectionID> <Reason>?
+checkexist connection <ConnectionID>
+checkexist user <UserID>
+checkexist group <GroupName>
 ```
  For example, type `broadcast hello`, and press keyboard `enter` to publish messages.
 

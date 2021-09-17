@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.CommandLineUtils;
@@ -15,7 +14,7 @@ namespace SignalRClient
     {
         private const string MessageHubEndpoint = "http://localhost:5000/Message";
         private const string Target = "Target";
-        private const string DefaultUser = "User";
+        private const string DefaultUser = "TestUser";
 
         static void Main(string[] args)
         {
@@ -37,7 +36,10 @@ namespace SignalRClient
                 await Task.WhenAll(from conn in connections
                                    select conn.StartAsync());
 
-                Console.WriteLine($"{connections.Count} Client(s) started...");
+                foreach (var (connection, userId) in connections.Zip(userIds))
+                {
+                    Console.WriteLine($"User '{userId}' with connection id '{connection.ConnectionId}' connected.");
+                }
                 Console.ReadLine();
 
                 await Task.WhenAll(from conn in connections
@@ -59,8 +61,14 @@ namespace SignalRClient
 
             connection.Closed += ex =>
             {
-                Console.WriteLine(ex);
-                return Task.FromResult(0);
+                Console.Write($"The connection of '{userId}' is closed.");
+                //If you expect non-null exception, you need to turn on 'EnableDetailedErrors' option during client negotiation.
+                if (ex != null)
+                {
+                    Console.Write($" Exception: {ex}");
+                }
+                Console.WriteLine();
+                return Task.CompletedTask;
             };
 
             return connection;
