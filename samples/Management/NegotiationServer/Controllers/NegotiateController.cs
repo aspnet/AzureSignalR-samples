@@ -5,19 +5,23 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.SignalR.Management;
+using Microsoft.Extensions.Configuration;
 
 namespace NegotiationServer.Controllers
 {
     [ApiController]
     public class NegotiateController : ControllerBase
     {
+        private const string EnableDetailedErrors = "EnableDetailedErrors";
         private readonly ServiceHubContext _messageHubContext;
         private readonly ServiceHubContext _chatHubContext;
+        private readonly bool _enableDetailedErrors;
 
-        public NegotiateController(IHubContextStore store)
+        public NegotiateController(IHubContextStore store, IConfiguration configuration)
         {
             _messageHubContext = store.MessageHubContext;
             _chatHubContext = store.ChatHubContext;
+            _enableDetailedErrors = configuration.GetValue(EnableDetailedErrors, false);
         }
 
         [HttpPost("message/negotiate")]
@@ -42,8 +46,8 @@ namespace NegotiationServer.Controllers
 
             var negotiateResponse = await serviceHubContext.NegotiateAsync(new()
             {
-                UserId = user/*,
-                EnableDetailedErrors = true*/
+                UserId = user,
+                EnableDetailedErrors = _enableDetailedErrors
             });
 
             return new JsonResult(new Dictionary<string, string>()
