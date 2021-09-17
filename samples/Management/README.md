@@ -19,7 +19,7 @@ dotnet run
 
 >  Parameters of `dotnet run`
 >
-> --enableDetailedErrors: true to enable log detailed errors on client side, false to disable. The default value is false, as detailed errors might contain sensitive information.
+> --enableDetailedErrors: true to enable log detailed errors on client side, false to disable. The default value is false, as detailed errors might contain sensitive information. This is useful if you want client connection to get the exception on close.
 
 ### Start SignalR clients
 
