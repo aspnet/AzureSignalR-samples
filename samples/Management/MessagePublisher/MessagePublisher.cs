@@ -75,6 +75,22 @@ namespace Microsoft.Azure.SignalR.Samples.Management
             }
         }
 
+        public Task CloseConnection(string connectionId, string reason)
+        {
+            return _hubContext.ClientManager.CloseConnectionAsync(connectionId, reason);
+        }
+
+        public Task<bool> CheckExist(string type, string id)
+        {
+            return type switch
+            {
+                "connection" => _hubContext.ClientManager.ConnectionExistsAsync(id),
+                "user" => _hubContext.ClientManager.UserExistsAsync(id),
+                "group" => _hubContext.ClientManager.UserExistsAsync(id),
+                _ => throw new NotSupportedException(),
+            };
+        }
+
         public Task DisposeAsync() => _hubContext?.DisposeAsync();
     }
 }

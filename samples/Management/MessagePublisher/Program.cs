@@ -10,12 +10,14 @@ using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Azure.SignalR.Samples.Management
 {
-    class Program
+    public class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
-            var app = new CommandLineApplication();
-            app.FullName = "Azure SignalR Management Sample: Message Publisher";
+            var app = new CommandLineApplication
+            {
+                FullName = "Azure SignalR Management Sample: Message Publisher"
+            };
             app.HelpOption("--help");
             app.Description = "Message publisher using Azure SignalR Service Management SDK.";
 
@@ -28,7 +30,7 @@ namespace Microsoft.Azure.SignalR.Samples.Management
                 .Build();
 
 
-            app.OnExecute(async() =>
+            app.OnExecute(async () =>
             {
                 var connectionString = connectionStringOption.Value() ?? configuration["Azure:SignalR:ConnectionString"];
 
@@ -82,8 +84,8 @@ namespace Microsoft.Azure.SignalR.Samples.Management
 
                     if (args.Length == 2 && args[0].Equals("broadcast"))
                     {
-                        Console.WriteLine($"broadcast message '{args[1]}'");
                         await publisher.SendMessages(args[0], null, args[1]);
+                        Console.WriteLine($"broadcast message '{args[1]}'");
                     }
                     else if (args.Length == 4 && args[0].Equals("send"))
                     {
@@ -96,10 +98,27 @@ namespace Microsoft.Azure.SignalR.Samples.Management
                         var preposition = args[1] == "add" ? "to" : "from";
                         Console.WriteLine($"{args[1]} user '{args[2]}' {preposition} group '{args[3]}'");
                     }
+                    else if (args.Length == 3 && args[0] == "close")
+                    {
+                        await publisher.CloseConnection(args[1], args[2]);
+                        Console.WriteLine($"closed connection '{args[1]}' because '{args[2]}'");
+                        //If you want client side see the reason, you need to turn on 'EnableDetailedErrors' option during client negotiation.
+                    }
+                    else if (args.Length == 3 && args[0] == "checkexist")
+                    {
+                        var exist = await publisher.CheckExist(args[1].ToLowerInvariant(), args[2]);
+                        Console.WriteLine(exist ? "exists" : "not exist");
+                    }
+                    else if (args.Length == 2 && args[0] == "close")
+                    {
+                        await publisher.CloseConnection(args[1], null);
+                        Console.WriteLine("closed");
+                    }
                     else
                     {
                         Console.WriteLine($"Can't recognize command {argLine}");
                     }
+                    Console.Write("> ");
                 }
             }
             finally
@@ -110,16 +129,21 @@ namespace Microsoft.Azure.SignalR.Samples.Management
 
         private static void ShowHelp()
         {
-            Console.WriteLine(
-                "*********Usage*********\n" +
-                "send user <User Id> <Message>\n" +
-                "send users <User Id List (Seperated by ',')> <Message>\n" +
-                "send group <Group Name> <Message>\n" +
-                "send groups <Group List (Seperated by ',')> <Message>\n" +
-                "usergroup add <User Id> <Group Name>\n" +
-                "usergroup remove <User Id> <Group Name>\n" +
-                "broadcast <Message>\n" +
-                "***********************");
+            Console.Write(
+@"*********Usage*********
+send user <UserId> <Message>
+send users <User1>,<User2>,... <Message>
+send group <GroupName> <Message>
+send groups <Group1>,<Group2>,... <Message>
+usergroup add <User1>,<User2>,... <GroupName>
+usergroup remove <UserId> <GroupName>
+broadcast <Message>
+close <ConnectionID> <Reason>?
+checkexist connection <ConnectionID>
+checkexist user <UserID>
+checkexist group <GroupName>
+***********************
+> ");
         }
 
         private static void MissOptions()
