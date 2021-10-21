@@ -23,6 +23,8 @@ namespace Microsoft.Azure.SignalR.Samples.Management
 
             var connectionStringOption = app.Option("-c|--connectionstring", "Set connection string.", CommandOptionType.SingleValue, true);
             var serviceTransportTypeOption = app.Option("-t|--transport", "Set service transport type. Options: <transient>|<persistent>. Default value: transient. Transient: calls REST API for each message. Persistent: Establish a WebSockets connection and send all messages in the connection.", CommandOptionType.SingleValue, true); // todo: description
+            var stronglyTypedOption = app.Option("-s|--strongly-typed", "Use strongly typed hub.", CommandOptionType.NoValue);
+
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddUserSecrets<Program>()
@@ -50,7 +52,15 @@ namespace Microsoft.Azure.SignalR.Samples.Management
                     serviceTransportType = Enum.Parse<ServiceTransportType>(serviceTransportTypeOption.Value(), true);
                 }
 
-                var publisher = new MessagePublisher(connectionString, serviceTransportType);
+                IMessagePublisher publisher;
+                if (stronglyTypedOption.HasValue())
+                {
+                    publisher = new StronglyTypedMessagePublisher(connectionString, serviceTransportType);
+                }
+                else
+                {
+                    publisher = new MessagePublisher(connectionString, serviceTransportType);
+                }
                 await publisher.InitAsync();
 
                 await StartAsync(publisher);
@@ -61,7 +71,7 @@ namespace Microsoft.Azure.SignalR.Samples.Management
             app.Execute(args);
         }
 
-        private static async Task StartAsync(MessagePublisher publisher)
+        private static async Task StartAsync(IMessagePublisher publisher)
         {
             Console.CancelKeyPress += async (sender, e) =>
             {

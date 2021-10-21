@@ -1,23 +1,21 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.Azure.SignalR.Management;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Azure.SignalR.Samples.Management
 {
-    public class MessagePublisher : IMessagePublisher
+    public class StronglyTypedMessagePublisher : IMessagePublisher
     {
-        private const string Target = "Target";
-        private const string HubName = "Hub";
+        private const string HubName = "StronglyTypedHub";
         private readonly string _connectionString;
         private readonly ServiceTransportType _serviceTransportType;
-        private ServiceHubContext _hubContext;
+        private ServiceHubContext<IMessageClient> _hubContext;
 
-        public MessagePublisher(string connectionString, ServiceTransportType serviceTransportType)
+        public StronglyTypedMessagePublisher(string connectionString, ServiceTransportType serviceTransportType)
         {
             _connectionString = connectionString;
             _serviceTransportType = serviceTransportType;
@@ -31,11 +29,12 @@ namespace Microsoft.Azure.SignalR.Samples.Management
                 option.ServiceTransportType = _serviceTransportType;
             })
             //Uncomment the following line to get more logs
-            //.WithLoggerFactory(LoggerFactory.Create(builder => builder.AddConsole()))
+            .WithLoggerFactory(LoggerFactory.Create(builder => builder.AddConsole()))
             .BuildServiceManager();
 
-            _hubContext = await serviceManager.CreateHubContextAsync(HubName, default);
+            _hubContext = await serviceManager.CreateHubContextAsync<IMessageClient>(HubName, default);
         }
+
 
         public Task ManageUserGroup(string command, string userId, string groupName)
         {
@@ -56,19 +55,19 @@ namespace Microsoft.Azure.SignalR.Samples.Management
             switch (command)
             {
                 case "broadcast":
-                    return _hubContext.Clients.All.SendAsync(Target, message);
+                    return _hubContext.Clients.All.Target(message);
                 case "user":
                     var userId = receiver;
-                    return _hubContext.Clients.User(userId).SendAsync(Target, message);
+                    return _hubContext.Clients.User(userId).Target(message);
                 case "users":
                     var userIds = receiver.Split(',');
-                    return _hubContext.Clients.Users(userIds).SendAsync(Target, message);
+                    return _hubContext.Clients.Users(userIds).Target(message);
                 case "group":
                     var groupName = receiver;
-                    return _hubContext.Clients.Group(groupName).SendAsync(Target, message);
+                    return _hubContext.Clients.Group(groupName).Target(message);
                 case "groups":
                     var groupNames = receiver.Split(',');
-                    return _hubContext.Clients.Groups(groupNames).SendAsync(Target, message);
+                    return _hubContext.Clients.Groups(groupNames).Target(message);
                 default:
                     Console.WriteLine($"Can't recognize command {command}");
                     return Task.CompletedTask;
@@ -91,6 +90,6 @@ namespace Microsoft.Azure.SignalR.Samples.Management
             };
         }
 
-        public Task DisposeAsync() => _hubContext?.DisposeAsync();
+        public Task DisposeAsync() => _hubContext?.DisposeAsync().AsTask();
     }
 }
