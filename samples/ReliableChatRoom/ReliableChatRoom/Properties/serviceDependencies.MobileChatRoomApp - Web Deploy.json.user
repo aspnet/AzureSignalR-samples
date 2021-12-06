@@ -1,0 +1,34 @@
+{
+  "dependencies": {
+    "storage1": {
+      "restored": true,
+      "restoreTime": "2020-12-03T02:21:58.2909543Z"
+    },
+    "signalr1": {
+      "restored": true,
+      "restoreTime": "2020-12-03T01:59:12.5383189Z"
+    }
+  },
+  "parameters": {
+    "storage1.resourceGroupName": {
+      "Name": "storage1.resourceGroupName",
+      "Type": "resourceGroup",
+      "Value": "signalr-sample-demo"
+    },
+    "signalr1.resourceGroupName": {
+      "Name": "signalr1.resourceGroupName",
+      "Type": "resourceGroup",
+      "Value": "signalr-sample-demo"
+    },
+    "storage1.subscriptionId": {
+      "Name": "storage1.subscriptionId",
+      "Type": "subscription",
+      "Value": "9caf2a1e-9c49-49b6-89a2-56bdec7e3f97"
+    },
+    "signalr1.subscriptionId": {
+      "Name": "signalr1.subscriptionId",
+      "Type": "subscription",
+      "Value": "9caf2a1e-9c49-49b6-89a2-56bdec7e3f97"
+    }
+  }
+}
