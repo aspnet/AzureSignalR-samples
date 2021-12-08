@@ -6,10 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="Connected Services\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="WindowsAzure.Storage" Version="9.1.1" />
     <PackageReference Include="Microsoft.Azure.SignalR" Version="1.*" />
   </ItemGroup>
 </Project>
