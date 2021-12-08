@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.CommandLineUtils;
@@ -13,31 +12,34 @@ namespace SignalRClient
 {
     class Program
     {
-        private const string DefaultHubEndpoint = "http://localhost:5000/ManagementSampleHub";
+        private const string MessageHubEndpoint = "http://localhost:5000/Message";
         private const string Target = "Target";
-        private const string DefaultUser = "User";
+        private const string DefaultUser = "TestUser";
 
         static void Main(string[] args)
         {
-            var app = new CommandLineApplication();
-            app.FullName = "Azure SignalR Management Sample: SignalR Client Tool";
+            var app = new CommandLineApplication
+            {
+                FullName = "Azure SignalR Management Sample: SignalR Client Tool"
+            };
             app.HelpOption("--help");
 
-            var hubEndpointOption = app.Option("-h|--hubEndpoint", $"Set hub endpoint. Default value: {DefaultHubEndpoint}", CommandOptionType.SingleValue, true);
             var userIdOption = app.Option("-u|--userIdList", "Set user ID list", CommandOptionType.MultipleValue, true);
 
             app.OnExecute(async () =>
             {
-                var hubEndpoint = hubEndpointOption.Value() ?? DefaultHubEndpoint;
-                var userIds = userIdOption.Values != null && userIdOption.Values.Count > 0 ? userIdOption.Values : new List<string>() { "User" };
+                var userIds = userIdOption.Values != null && userIdOption.Values.Count > 0 ? userIdOption.Values : new List<string>() { DefaultUser };
 
                 var connections = (from userId in userIds
-                                   select CreateHubConnection(hubEndpoint, userId)).ToList();
+                                   select CreateHubConnection(MessageHubEndpoint, userId)).ToList();
 
                 await Task.WhenAll(from conn in connections
                                    select conn.StartAsync());
 
-                Console.WriteLine($"{connections.Count} Client(s) started...");
+                foreach (var (connection, userId) in connections.Zip(userIds))
+                {
+                    Console.WriteLine($"User '{userId}' with connection id '{connection.ConnectionId}' connected.");
+                }
                 Console.ReadLine();
 
                 await Task.WhenAll(from conn in connections
@@ -57,10 +59,16 @@ namespace SignalRClient
                 Console.WriteLine($"{userId}: gets message from service: '{message}'");
             });
 
-            connection.Closed += async ex =>
+            connection.Closed += ex =>
             {
-                Console.WriteLine(ex);
-                Environment.Exit(1);
+                Console.Write($"The connection of '{userId}' is closed.");
+                //If you expect non-null exception, you need to turn on 'EnableDetailedErrors' option during client negotiation.
+                if (ex != null)
+                {
+                    Console.Write($" Exception: {ex}");
+                }
+                Console.WriteLine();
+                return Task.CompletedTask;
             };
 
             return connection;

@@ -19,8 +19,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 
         public void ConfigureServices(IServiceCollection services)
         {
-
-            services.AddMvc();
+            services.AddControllers();
             services.AddSignalR()
                     .AddAzureSignalR(options =>
                     {
@@ -39,11 +38,11 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseMvc();
+            app.UseRouting();
             app.UseFileServer();
-            app.UseAzureSignalR(routes =>
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapHub<ReliableChatSampleHub>("/chat");
+                endpoints.MapHub<ReliableChatSampleHub>("/chat");
             }
             );
         }

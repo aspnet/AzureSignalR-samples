@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Microsoft.Azure.SignalR.Samples.AdvancedChatRoom
@@ -18,13 +19,13 @@ namespace Microsoft.Azure.SignalR.Samples.AdvancedChatRoom
             Clients.Client(Context.ConnectionId).SendAsync("echo", name, message + " (echo from server)");
         }
 
-        public async void JoinGroup(string name, string groupName)
+        public async Task JoinGroup(string name, string groupName)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
             await Clients.Group(groupName).SendAsync("echo", "_SYSTEM_", $"{name} joined {groupName} with connectionId {Context.ConnectionId}");
         }
 
-        public async void LeaveGroup(string name, string groupName)
+        public async Task LeaveGroup(string name, string groupName)
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
             await Clients.Client(Context.ConnectionId).SendAsync("echo", "_SYSTEM_", $"{name} leaved {groupName}");
