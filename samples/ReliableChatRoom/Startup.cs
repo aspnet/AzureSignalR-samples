@@ -23,11 +23,17 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
             services.AddSignalR()
                     .AddAzureSignalR(options =>
                     {
+                        //  This is a tircky way to associate user name with connection for sample purpose.
+                        //  For PROD, we suggest to use authentication and authorization, see here:
+                        //  https://docs.microsoft.com/en-us/aspnet/core/signalr/authn-and-authz?view=aspnetcore-2.2
                         options.ClaimsProvider = context => new[]
                         {
                             new Claim(ClaimTypes.NameIdentifier, context.Request.Query["username"])
                         };
                     });
+
+            services.AddSingleton<ISessionHandler, AzureTableSessionStorage>();
+            services.AddSingleton<IMessageHandler, AzureTableMessageStorage>();
         }
 
         public void Configure(IApplicationBuilder app)
@@ -36,7 +42,7 @@ namespace Microsoft.Azure.SignalR.Samples.ReliableChatRoom
             app.UseFileServer();
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapHub<ReliableChatRoom>("/chat");
+                endpoints.MapHub<ReliableChatSampleHub>("/chat");
             }
             );
         }

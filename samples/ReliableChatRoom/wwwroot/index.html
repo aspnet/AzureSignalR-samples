@@ -15,23 +15,42 @@
     <h2 class="text-center" style="margin-top: 0; padding-top: 30px; padding-bottom: 30px;">
         Azure SignalR Reliable Chat
     </h2>
-    <div class="container" style="height: calc(100% - 200px);">
-        <div id="messages" style="background-color: whitesmoke; "></div>
-        <div style="width: 100%; border-left-style: ridge; border-right-style: ridge;">
-            <textarea id="message" style="width: 100%; padding: 5px 10px; border-style: hidden;"
-                placeholder="Type message and press Enter to send..."></textarea>
-        </div>
-        <div style="overflow: auto; border-style: ridge; border-top-style: hidden;">
-            <button class="btn-success pull-right" id="sendmessage">Send All</button>
-        </div>
-        <div style="width: 100%; border-left-style: ridge; border-right-style: ridge;">
-            <textarea id="targetName" style="width: 100%; padding: 5px 10px; border-style: hidden;"
-                placeholder="Type targetName"></textarea>
-        </div>
-        <div style="overflow: auto; border-style: ridge; border-top-style: hidden;">
-            <button class="btn-success pull-right" id="sendUserMessage">Send To User</button>
-        </div>
-    </div>
+    <table style="height: calc(100% - 200px); width: 60%; margin-left: 20%; 
+    table-layout:fixed">
+        <tr>
+            <td style="width: 20%;height: 100%;">
+                <div style="height: 40px; background-color:#eee;">
+                    <div id="userName"
+                        style="font-size: 24px; width: 100%; padding: 5px 10px; border-style: hidden;height: 100%;
+                    border:1px solid #ccc; border-bottom-style: hidden;border-right-style: hidden; font-size: 20px; text-align: center">
+                    </div>
+                </div>
+                <div style="height: 40px; background-color: #eee; padding: 5px;border:1px solid #ccc;
+                border-bottom-style: hidden;border-right-style: hidden;">
+                    <input id="receiverName" style="width: 100%; padding: 5px 10px; border-style: hidden;height: 100%;
+                    border:1px solid #ccc; font-size: 16px; background-color: whitesmoke;"
+                           placeholder="Search user" />
+                </div>
+                <div style="height:calc(100% - 80px);">
+                    <div id="userlist" style="border-right-style: hidden">
+                    </div>
+                </div>
+            </td>
+            <td>
+                <div id="sessionLabel" class="sessionlabel" style="height: 80px">Public</div>
+                <div style="height:calc(100% - 80px);">
+                    <div id="messages" style="background-color: whitesmoke;"></div>
+                    <div style="width: 100%; border-left:1px solid #ccc; border-right:1px solid #ccc;">
+                        <textarea id="message" style="width: 100%; padding: 5px 10px; border-style: hidden;"
+                            placeholder="Type message and press Enter to send..."></textarea>
+                    </div>
+                    <div style="overflow: auto; border: 1px solid #ccc; border-top-style: hidden;">
+                        <button class="btn-success pull-right" id="sendmessage">Send</button>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
     <div class="modal alert alert-danger fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -49,172 +68,313 @@
 
     <!--Add script to update the page and send messages.-->
     <script type="text/javascript">
-        function generateRandomName() {
-            return Math.random().toString(36).substring(2, 10);
-        }
-
-        function generateGuid() {
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-                const r = Math.random() * 16 | 0,
-                    v = c === 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
-            });
-        }
-
-        // Html encode message.
-        function encodedMessage(message) {
-            return message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        }
-
-        function addNewMessageToScreen(messageEntry) {
-            const messageBoxElement = document.getElementById('messages');
-            messageBoxElement.appendChild(messageEntry);
-            messageBoxElement.scrollTop = messageBoxElement.scrollHeight;
-        }
-
         document.addEventListener('DOMContentLoaded', function () {
-            // Get the user name and store it to prepend to messages.
-            var username = generateRandomName();
-            var promptMessage = 'Enter your name:';
+
+            let username = Math.random().toString(36).substring(2, 10);
+            let sessionMap = new Map([
+                ['Public', 'Public']
+            ]);
+            let currentSession = 'Public';
+            let currentUser = 'Public';
+
+            const generateGuid = function () {
+                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                    const r = Math.random() * 16 | 0,
+                        v = c === 'x' ? r : (r & 0x3 | 0x8);
+                    return v.toString(16);
+                });
+            }
+
+            //  Html encode message.
+            const encodedMessage = function (message) {
+                return message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            }
+
+            const addNewSessionCard = function (userName, sessionId, lastestMessage) {
+                const entry = document.createElement('div');
+                entry.id = sessionId;
+                entry.classList.add("usercard");
+                if (sessionId === 'Public') {
+                    entry.style.backgroundColor = "#d0d0d0";
+                }
+                entry.innerHTML =
+                    `<div class="usercardname" id="userName-${sessionId}">${userName}</div>
+                    <div class="usercardmessage" id="message-${sessionId}">${lastestMessage}</div>`;
+                entry.addEventListener('click', (event) => {
+                    changeSession(userName, connection);
+                    console.log(`switch to session with user: ${userName}`);
+                });
+
+                document.getElementById("userlist").appendChild(entry);
+            }
+
+            const swapSessionCard = function (currentSession, newSession, targetName) {
+
+                const preSession = document.getElementById(currentSession);
+                preSession.style.backgroundColor = "#e0e0e0";
+
+                const curSession = document.getElementById(newSession);
+                curSession.style.backgroundColor = "#d0d0d0";
+                                
+                document.getElementById('sessionLabel').innerText = targetName;
+            }
+
+            const updateSessionCard = function (sessionId, lastestMessage) {
+                const elementId = 'message-' + sessionId;
+                const sessionCardElement = document.getElementById(elementId);
+
+                sessionCardElement.innerText = lastestMessage;
+            }
+
+            const createNewMessage = function (sender, message, messageId, now) {
+                now = now || new Date().toLocaleTimeString('en-GB');
+                messageId = messageId || new Date().toLocaleTimeString('en-GB');
+
+                const entry = document.createElement('div');
+                entry.classList.add("message-entry");
+                if (sender === "Public") {
+                    entry.innerHTML = message;
+                    entry.classList.add("text-center");
+                    entry.classList.add("system-message");
+                } else if (sender === username) {
+                    entry.innerHTML =
+                        `<div class="message-avatar pull-right" id="messageId-${messageId}">${sender}<br />${now}</div>` +
+                        `<div class="message-content pull-right">${message}<div>`;
+                } else {
+                    entry.innerHTML =
+                        `<div class="message-avatar pull-left" id="messageId-${messageId}">${sender}<br />${now}</div>` +
+                        `<div class="message-content pull-left">${message}<div>`;
+                }
+
+                return entry;
+            }
+
+            const addNewMessageToScreen = function (messageEntry) {
+                const messageBoxElement = document.getElementById('messages');
+                messageBoxElement.appendChild(messageEntry);
+                messageBoxElement.scrollTop = messageBoxElement.scrollHeight;
+
+                //  Clear text box and reset focus for next comment.
+                messageInput.value = '';
+                messageInput.focus();
+                event.preventDefault();
+            }
+
+            const createNewMessageStatus = function (messageId, messageStatus) {
+                const messageStatusEntry = document.createElement('div');
+                messageStatusEntry.innerHTML =
+                    `<div class="message-avatar pull-right" id="${messageId}-Status">
+                        ${messageStatus}</div>`;
+                return messageStatusEntry;
+            }
+
+            const updateMessageStatus = function (messageId, messageStatus, sequenceId) {
+                const statusElement = document.getElementById(messageId + '-Status');
+                const messageElement = document.getElementById('messageId-' + messageId);
+                statusElement.innerText = messageStatus;
+                statusElement.id = sequenceId + '-Status';
+                messageElement.id = 'messageId-' + sequenceId;
+            } 
+
+            //  Get the user name and store it to prepend to messages.
+            let promptMessage = 'Enter your name:';
             do {
                 username = prompt(promptMessage, username);
                 if (!username || username.startsWith('_') || username.indexOf('<') > -1 || username.indexOf(
-                    '>') > -1) {
+                    '>') > -1 || username === 'Public') {
                     username = '';
                     promptMessage = 'Invalid input. Enter your name:';
                 }
             } while (!username);
 
-
-            var connection = new signalR.HubConnectionBuilder()
-                .withUrl(`/chat?username=${username}`)
-                .build();
-
-            // Set initial focus to message input box.
-            var messageInput = document.getElementById('message');
-            var targetNameInput = document.getElementById('targetName');
+            //  Set initial focus to message input box.
+            const messageInput = document.getElementById('message');
             messageInput.focus();
 
-            function createNewMessage(sender, message, messageId) {
-                const entry = document.createElement('div');
-                entry.classList.add("message-entry");
-                if (sender === "_SYSTEM_") {
-                    entry.innerHTML = message;
-                    entry.classList.add("text-center");
-                    entry.classList.add("system-message");
-                } else if (sender === "_BROADCAST_") {
-                    entry.classList.add("text-center");
-                    entry.innerHTML =
-                        `<div class="text-center broadcast-message" id="${messageId}">${message}</div>`;
-                } else if (sender === username) {
-                    entry.innerHTML =
-                        `<div class="message-avatar pull-right" id="${messageId}">${sender}</div>` +
-                        `<div class="message-content pull-right">${message}<div>`;
-                } else {
-                    entry.innerHTML =
-                        `<div class="message-avatar pull-left" id="${messageId}">${sender}</div>` +
-                        `<div class="message-content pull-left">${message}<div>`;
-                }
-                return entry;
+            const addHistoryMessage = function (historyMessage, connection) {
+                const messageBoxElement = document.getElementById('messages');
+                messageBoxElement.innerHTML = ``;
+                messageBoxElement.innerText = ``;
+
+                let seqId = 0;
+                historyMessage.forEach(element => {
+                    let cnt = element.sequenceId || seqId;
+                    let webTime = element.sendTime.substring(11,19);
+
+                    let messageEntry = createNewMessage(element.senderName,
+                        encodedMessage(element.messageContent), cnt, webTime);
+
+                    if (currentSession != 'Public' && element.senderName != username) {
+                        if (element.messageStatus != 'Read') {
+                            connection.invoke('sendUserResponse', currentSession, cnt, element
+                                .senderName, 'Read');
+                        }
+                    } else if (currentSession != 'Public' && element.senderName === username) {
+                        const messageStatusEntry = createNewMessageStatus(cnt, element.messageStatus);
+                        messageEntry.appendChild(messageStatusEntry);
+                    }
+
+
+                    addNewMessageToScreen(messageEntry);
+                    seqId = seqId + 1;
+                });
             }
 
-            function bindConnectionMessage(connection) {
-                //  Add the message to the screen
-                const displayPublicMessage = function (name, message) {
-                    const messageEntry = createNewMessage(name, encodedMessage(message), generateGuid());
-                    addNewMessageToScreen(messageEntry);
-                };
-
-                const displayUserMessage = function (id, name, message, ackId) {
-                    const messageEntry = createNewMessage(name, encodedMessage(message), id);
-                    messageEntry.addEventListener('click', function (event) {
-                        connection.invoke('sendUserAck', id, name, "Acknowledged");
-                    });
-                    addNewMessageToScreen(messageEntry);
-
-                    connection.invoke('sendUserAck', id, name, "Received");
-                };
-
-                //  Change the status text under the message
-                const displayAckMessage = function (messageId, messageStatus, ackId) {
-                    const now = new Date();
-                    const entry = document.getElementById(messageId + "-Status");
-                    entry.innerText = messageStatus + " at " + now.toLocaleTimeString();
-                    console.log("messageId: " + messageId + "\nStatus: " + messageStatus +
-                        "\nLocal Time: " + now.toLocaleTimeString());
-                }
-
-                // Create a function that the hub can call to broadcast messages.
-                connection.on('broadcastMessage', displayPublicMessage);
-                connection.on('displayAckMessage', displayAckMessage);
-                connection.on('displayUserMessage', displayUserMessage);
-                connection.onclose(onConnectionError);
-            }
-
-            async function sendUserMessage(event) {
-                if (!messageInput.value) {
+            const changeSession = async function (targetName, connection) {
+                if (targetName === username) {
+                    alert('You cannot create a session with yourself!');
                     return;
                 }
 
-                const messageId = generateGuid();
+                //  Check if the session exists in local.
+                var sessionId;
 
-                // Create the message in the window.
-                var now = new Date();
-                const targetName = targetNameInput.value;
-                const messageText = messageInput.value;
+                if (sessionMap.has(targetName)) {
+                    sessionId = sessionMap.get(targetName);
+                } else {
+                    sessionId = await connection.invoke('getOrCreateSession', targetName);
+                    sessionMap.set(targetName, sessionId);
 
-                // Clear text box and reset focus for next comment.
-                messageInput.value = '';
-                targetNameInput.value = '';
-                messageInput.focus();
-                event.preventDefault();
+                    //  Add the sessionCard to the left side of the screen
+                    addNewSessionCard(targetName, sessionId, '');
+                }
 
-                // Create the message in the room.
-                const messageEntry = createNewMessage(username, messageText, messageId);
-                const messageBoxElement = document.getElementById('messages');
-                messageBoxElement.appendChild(messageEntry);
-                messageBoxElement.scrollTop = messageBoxElement.scrollHeight;
+                swapSessionCard(currentSession, sessionId, targetName);
 
-                // Create and add the message status to the message.
-                const messageElement = document.getElementById(messageId);
-                const messageStatusEntry = document.createElement('div');
-                messageStatusEntry.innerHTML =
-                    `<div class="message-avatar pull-right" id="${messageId}-Status"> Sent at ${now.toLocaleTimeString()}</div>`;
-                messageElement.appendChild(messageStatusEntry);
-                console.log("messageId: " + messageId + "\nStatus: Sending\nLocal Time: " + now
-                    .toLocaleTimeString());
+                currentSession = sessionId;
+                currentUser = targetName;
+                const historyMessage = await connection.invoke('loadMessages', sessionId);;
 
-                // Call the sendUserMessage method on the hub.
-                const x = await connection.invoke('sendUserMessage', messageId, targetName, messageText);
-                now = new Date();
-                const statusElement = document.getElementById(messageId + "-Status");
-                statusElement.innerText = x + " at " + now.toLocaleTimeString();
-                console.log("messageId: " + messageId + "\nStatus: " + x + "\nLocal Time: " + now
-                    .toLocaleTimeString());
+                //  Add the history message to the screen
+                addHistoryMessage(historyMessage, connection);
             }
 
-            function onConnected(connection) {
-                console.log('connection started');
-                connection.invoke('broadcastMessage', '_SYSTEM_', username + ' JOINED');
+            const sendUserMessage = async function (connection) {
+                if (!messageInput.value) {
+                    return;
+                }
+                const messageId = generateGuid();
+                const sessionId = currentSession;
+                const targetName = currentUser;
 
-                document.getElementById('sendmessage').addEventListener('click', function (event) {
-                    // Call the broadcastMessage method on the hub.
-                    if (messageInput.value) {
-                        connection.invoke('broadcastMessage', username, messageInput.value);
+                //  Create the message in the window.
+                const messageText = messageInput.value;
+                messageInput.value = '';
+
+                //  Currently we pull all messages from the server
+                await changeSession(currentUser, connection);
+
+                //  Create the message in the room.
+                const messageEntry = createNewMessage(username, messageText, messageId, '');
+                const messageStatusEntry = createNewMessageStatus(messageId, 'Sending');
+                messageEntry.appendChild(messageStatusEntry);
+                addNewMessageToScreen(messageEntry);
+                const messageBoxElement = document.getElementById('messages');                
+                messageBoxElement.scrollTop = messageBoxElement.scrollHeight;
+
+                //  Call the sendUserMessage method on the hub.
+                const sequenceId = currentSession === 'Public'
+                    ? await connection.invoke('broadcastMessage', messageText)
+                    : await connection.invoke('sendUserMessage', sessionId, targetName, messageText);
+
+                updateMessageStatus(messageId, 'Sent', sequenceId);
+                updateSessionCard(sessionId, messageText);
+            }
+
+            const bindConnectionMessage = function (connection) {
+                const displayUnreadMessage = function (sessionId, sender, messageContent) {
+                    if (sessionMap.has(sender) || sessionId === 'Public') {
+                        updateSessionCard(sessionId, sender + ': ' + messageContent);
+                    } else {
+                        sessionMap.set(sender, sessionId);
+                        addNewSessionCard(sender, sessionId, sender + ': ' + messageContent);
                     }
 
-                    // Clear text box and reset focus for next comment.
-                    messageInput.value = '';
-                    messageInput.focus();
-                    event.preventDefault();
-                });
+                    if (window.Notification && Notification.permission !== 'denied') {
+                        Notification.requestPermission(function (status) {
+                            let n = new Notification('You have a new nessage from' + sender, {
+                                body: messageContent
+                            });
+                        });
+                    }
+                }
 
-                document.getElementById('sendUserMessage').addEventListener('click', (event) =>
-                    sendUserMessage(event));
+                //  Add the message to the screen
+                const displayUserMessage = function (sessionId, sequenceId, sender, messageContent) {
+                    if (currentSession != sessionId) {
+                        displayUnreadMessage(sessionId, sender, messageContent);
+                        return;
+                    }
+
+                    if (currentSession != 'Public') {
+                        connection.invoke('sendUserResponse', sessionId, sequenceId, sender, 'Read');
+                    }
+
+                    const messageEntry = createNewMessage(sender, encodedMessage(messageContent),
+                        sequenceId, '');
+                    addNewMessageToScreen(messageEntry);
+                };
+
+                //  Change the status text under the message
+                const displayResponseMessage = function (sessionId, sequenceId, messageStatus) {
+                    if (sessionId != currentSession) {
+                        return;
+                    }
+
+                    const now = new Date();
+                    const entry = document.getElementById(sequenceId + '-Status');
+                    entry.innerText = messageStatus;
+                    console.log('messageId: ' + sessionId + '\nStatus: ' + messageStatus +
+                        '\nLocal Time: ' + now.toLocaleTimeString());
+                }
+
+                //  Log all sessions
+                const updateSessions = function (sessions) {
+                    console.log(sessions);
+                    sessions.forEach(element => {
+                        if (!sessionMap.has(element.key)) {
+                            sessionMap.set(element.key, element.value.sessionId);
+                            addNewSessionCard(element.key, element.value.sessionId, '');
+                        }
+                    })
+                }
+
+                //  Create a function that the hub can call to broadcast messages.
+                connection.on('displayResponseMessage', displayResponseMessage);
+                connection.on('displayUserMessage', displayUserMessage);
+                connection.on('updateSessions', updateSessions);
+                connection.onclose(onConnectionError);
+            }
+
+
+            function onConnected(connection) {
+                Notification.requestPermission(function (status) {
+                    if (status === 'granted') {
+                        let n = new Notification('Dear ' + username +
+                            ': \nYour new messages will be displayed here');
+                    }
+                });
+                console.log('connection started');
+                addNewSessionCard('Public', 'Public', '');
+                changeSession('Public', connection);
+
+                document.getElementById('userName').innerText = username;
+
+                document.getElementById('sendmessage').addEventListener('click', (event) => sendUserMessage(connection));
+                
                 document.getElementById('message').addEventListener('keypress', function (event) {
                     if (event.keyCode === 13) {
                         event.preventDefault();
                         document.getElementById('sendmessage').click();
+                        return false;
+                    }
+                });
+
+                document.getElementById('receiverName').addEventListener('keypress', function (event) {
+                    if (event.keyCode === 13) {
+                        event.preventDefault();
+                        changeSession(this.value, connection);
+                        this.value = '';
                         return false;
                     }
                 });
@@ -224,10 +384,15 @@
                 if (error && error.message) {
                     console.error(error.message);
                 }
+
                 const modal = document.getElementById('myModal');
                 modal.classList.add('in');
                 modal.style = 'display: block;';
-            }
+            }                
+
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl(`/chat?username=${username}`)
+                .build();
 
             bindConnectionMessage(connection);
             connection.start()
@@ -240,6 +405,5 @@
         });
     </script>
 </body>
-
 
 </html>

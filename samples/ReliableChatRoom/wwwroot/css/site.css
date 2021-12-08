@@ -14,11 +14,20 @@ html, body {
 }
 
 #messages {
-    width: 100%;
     border: 1px solid #ccc;
-    height: calc(100% - 120px);
+    height: 500px;
     float: none;
     margin: 0px auto;
+    padding-left: 0px;
+    overflow-y: auto;
+}
+
+#userlist {
+    border: 1px solid #ccc;
+    background-color: #e0e0e0; 
+    height: 582px;
+    float: none;
+    margin-top: 0px;
     padding-left: 0px;
     overflow-y: auto;
 }
@@ -29,6 +38,55 @@ textarea:focus {
 
 .system-message {
     background: #87CEFA;
+}
+
+.sessionlabel {
+    font-size: 24px;
+    padding:24px;
+    border: 1px solid #ccc;
+    border-bottom-style: hidden;
+    background-color: whitesmoke;
+    text-align: left;
+    padding-left: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.textarea {
+    width: 100%; 
+    border-left-style:1px solid #ccc; 
+    border-right-style:1px solid #ccc;
+}
+
+.usercard {
+    height: 60px;
+    border-bottom: 1px solid #ccc;
+}
+
+.currentusercard {
+    height: 60px;
+    border-bottom: 1px solid #ccc;
+    background-color: #d0d0d0;
+}
+
+.usercardname {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    padding-left: 5px;
+    font-size: 24px;
+    color: #606060;
+}
+
+.usercardmessage {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    padding-top:2px; 
+    padding-left: 5px;
+    font-size: 18px;
+    color: #a0a0a0;
 }
 
 .broadcast-message {
@@ -63,7 +121,6 @@ textarea:focus {
     width: 0;
     height: 0;
     display: inline-block;
-    float: left;
     border-top: 10px solid transparent;
     border-bottom: 10px solid transparent;
     border-right: 10px solid #b2e281;
@@ -74,7 +131,6 @@ textarea:focus {
     width: 0;
     height: 0;
     display: inline-block;
-    float: right;
     border-top: 10px solid transparent;
     border-bottom: 10px solid transparent;
     border-left: 10px solid #b2e281;
