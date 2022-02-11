@@ -8,6 +8,9 @@ namespace Microsoft.Azure.Functions.Worker
     /// <summary>
     /// An action to send a message to SignalR clients.
     /// </summary>
+    /// <remarks>
+    /// The class will be available by extensions in the next release.
+    /// </remarks>
     public sealed class SignalRMessageAction
     {
         /// <summary>
@@ -52,11 +55,5 @@ namespace Microsoft.Azure.Functions.Worker
         /// The arguments to send.
         /// </summary>
         public object[]? Arguments { get; set; }
-
-        /// <summary>
-        /// The SignalR endpoints to send to. Leave it null if you want to send to all endpoints.
-        /// You can get the available SignalR endpoints from the <see cref="SignalREndpointsInputAttribute"/> binding.
-        /// </summary>
-        public SignalREndpoint[]? Endpoints { get; set; }
     }
 }

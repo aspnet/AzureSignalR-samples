@@ -8,6 +8,9 @@ namespace Microsoft.Azure.Functions.Worker
     /// <summary>
     /// An action to manage a group.
     /// </summary>
+    /// <remarks>
+    /// The class will be available by extensions in the next release.
+    /// </remarks>
     public sealed class SignalRGroupAction
     {
         /// <summary>
@@ -38,17 +41,14 @@ namespace Microsoft.Azure.Functions.Worker
         /// The group action type.
         /// </summary>
         public SignalRGroupActionType Action { get; set; }
-
-        /// <summary>
-        /// The SignalR endpoints to send to. Leave it null if you want to send to all endpoints.
-        /// You can get the available SignalR endpoints from the <see cref="SignalREndpointsInputAttribute"/> binding.
-        /// </summary>
-        public SignalREndpoint[]? Endpoints { get; set; }
     }
 
     /// <summary>
     /// The type of a group action.
     /// </summary>
+    /// <remarks>
+    /// The class will be available by extensions in the next release.
+    /// </remarks>
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum SignalRGroupActionType
     {

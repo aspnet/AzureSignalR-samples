@@ -11,6 +11,9 @@ namespace Microsoft.Azure.Functions.Worker
     /// <summary>
     /// The context for a SignalR invocation.
     /// </summary>
+    /// <remarks>
+    /// The class will be available by extensions in the next release.
+    /// </remarks>
     public sealed class SignalRInvocationContext
     {
         /// <summary>
