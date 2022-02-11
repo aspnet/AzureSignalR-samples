@@ -36,10 +36,11 @@ namespace IsolatedModel_BidirectionChat
         [SignalROutput(HubName = "Hub")]
         public SignalRMessageAction OnConnected([SignalRTrigger("Hub", "connections", "connected")] SignalRInvocationContext invocationContext)
         {
+            invocationContext.Headers.TryGetValue("Authorization", out var auth);
             _logger.LogInformation($"{invocationContext.ConnectionId} has connected");
             return new SignalRMessageAction("newConnection")
             {
-                Arguments = new object[] { new NewConnection(invocationContext.ConnectionId) }
+                Arguments = new object[] { new NewConnection(invocationContext.ConnectionId, auth) }
             };
         }
 
@@ -143,10 +144,10 @@ namespace IsolatedModel_BidirectionChat
 
             public string Authentication { get; }
 
-            public NewConnection(string connectionId)
+            public NewConnection(string connectionId, string auth)
             {
                 ConnectionId = connectionId;
-                Authentication = "";
+                Authentication = auth;
             }
         }
 

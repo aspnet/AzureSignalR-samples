@@ -6,6 +6,9 @@ namespace Microsoft.Azure.Functions.Worker
     /// <summary>
     /// Contains necessary information for a SignalR client to connect to SignalR Service.
     /// </summary>
+    /// <remarks>
+    /// The class will be available by extensions in the next release.
+    /// </remarks>
     public sealed class SignalRConnectionInfo
     {
         /// <summary>

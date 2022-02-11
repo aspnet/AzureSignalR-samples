@@ -8,6 +8,8 @@ using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
+using System.Security.Claims;
 
 namespace FunctionApp
 {
@@ -31,7 +33,11 @@ namespace FunctionApp
         [FunctionName("negotiate")]
         public SignalRConnectionInfo Negotiate([HttpTrigger(AuthorizationLevel.Anonymous)]HttpRequest req)
         {
-            return Negotiate(req.Headers["x-ms-signalr-user-id"], GetClaims(req.Headers["Authorization"]));
+            var claims = GetClaims(req.Headers["Authorization"]);
+            return Negotiate(
+                claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value,
+                claims
+            );
         }
 
         [FunctionName(nameof(OnConnected))]
