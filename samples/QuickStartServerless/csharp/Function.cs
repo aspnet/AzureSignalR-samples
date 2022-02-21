@@ -16,7 +16,7 @@ namespace CSharp
     {
         private static HttpClient httpClient = new HttpClient();
         private static string Etag = string.Empty;
-        private static string StartCount = "0";
+        private static string StarCount = "0";
 
         [FunctionName("index")]
         public static IActionResult GetHomePage([HttpTrigger(AuthorizationLevel.Anonymous)]HttpRequest req, ExecutionContext context)
@@ -52,14 +52,14 @@ namespace CSharp
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 var result = JsonConvert.DeserializeObject<GitResult>(await response.Content.ReadAsStringAsync());
-                StartCount = result.StartCount;
+                StarCount = result.StarCount;
             }
             
             await signalRMessages.AddAsync(
                 new SignalRMessage
                 {
                     Target = "newMessage",
-                    Arguments = new[] { $"Current star count of https://github.com/Azure/azure-signalr is: {StartCount}" }
+                    Arguments = new[] { $"Current star count of https://github.com/Azure/azure-signalr is: {StarCount}" }
                 });
         }
 
@@ -67,7 +67,7 @@ namespace CSharp
         {
             [JsonRequired]
             [JsonProperty("stargazers_count")]
-            public string StartCount { get; set; }
+            public string StarCount { get; set; }
         }
     }
 }
