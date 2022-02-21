@@ -27,6 +27,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 public class Function {
+    private static String Etag = "";
+    private static String StarCount;
+
     @FunctionName("index")
     public HttpResponseMessage run(
             @HttpTrigger(
@@ -57,13 +60,21 @@ public class Function {
     @SignalROutput(name = "$return", hubName = "serverless")
     public SignalRMessage broadcast(
         @TimerTrigger(name = "timeTrigger", schedule = "*/5 * * * * *") String timerInfo) throws IOException, InterruptedException {
-        
         HttpClient client = HttpClient.newHttpClient();
-        HttpRequest req = HttpRequest.newBuilder().uri(URI.create("https://api.github.com/repos/azure/azure-signalr")).header("User-Agent", "serverless").build();
+        HttpRequest req = HttpRequest.newBuilder().uri(URI.create("https://api.github.com/repos/azure/azure-signalr")).header("User-Agent", "serverless").header("If-None-Match", Etag).build();
         HttpResponse<String> res = client.send(req, BodyHandlers.ofString());
-        Gson gson = new Gson();
-        GitResult result = gson.fromJson(res.body(), GitResult.class);
-        return new SignalRMessage("newMessage", "Current start count of https://github.com/Azure/azure-signalr is:".concat(result.stargazers_count));
+        if (res.headers().firstValue("Etag").isPresent())
+        {
+            Etag = res.headers().firstValue("Etag").get();
+        }
+        if (res.statusCode() == 200)
+        {
+            Gson gson = new Gson();
+            GitResult result = gson.fromJson(res.body(), GitResult.class);
+            StarCount = result.stargazers_count;
+        }
+        
+        return new SignalRMessage("newMessage", "Current start count of https://github.com/Azure/azure-signalr is:".concat(StarCount));
     }
 
     class GitResult {
