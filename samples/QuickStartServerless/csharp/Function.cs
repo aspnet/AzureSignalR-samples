@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -14,6 +15,8 @@ namespace CSharp
     public static class Function
     {
         private static HttpClient httpClient = new HttpClient();
+        private static string Etag = string.Empty;
+        private static string StartCount = "0";
 
         [FunctionName("index")]
         public static IActionResult GetHomePage([HttpTrigger(AuthorizationLevel.Anonymous)]HttpRequest req, ExecutionContext context)
@@ -40,13 +43,23 @@ namespace CSharp
         {
             var request = new HttpRequestMessage(HttpMethod.Get, "https://api.github.com/repos/azure/azure-signalr");
             request.Headers.UserAgent.ParseAdd("Serverless");
+            request.Headers.Add("If-None-Match", Etag);
             var response = await httpClient.SendAsync(request);
-            var result = JsonConvert.DeserializeObject<GitResult>(await response.Content.ReadAsStringAsync());
+            if (response.Headers.Contains("Etag"))
+            {
+                Etag = response.Headers.GetValues("Etag").First();
+            }
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                var result = JsonConvert.DeserializeObject<GitResult>(await response.Content.ReadAsStringAsync());
+                StartCount = result.StartCount;
+            }
+            
             await signalRMessages.AddAsync(
                 new SignalRMessage
                 {
                     Target = "newMessage",
-                    Arguments = new[] { $"Current star count of https://github.com/Azure/azure-signalr is: {result.StartCount}" }
+                    Arguments = new[] { $"Current star count of https://github.com/Azure/azure-signalr is: {StartCount}" }
                 });
         }
 
