@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -42,6 +43,7 @@ namespace CSharp
         {
             var request = new HttpRequestMessage(HttpMethod.Get, "https://api.github.com/repos/azure/azure-signalr");
             request.Headers.UserAgent.ParseAdd("Serverless");
+            request.Headers.Add("If-None-Match", Etag);
             var response = await httpClient.SendAsync(request);
             if (response.Headers.Contains("Etag"))
             {
