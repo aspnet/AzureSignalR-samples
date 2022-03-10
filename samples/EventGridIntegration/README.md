@@ -14,8 +14,8 @@ A step by step tutorial to build a chat room with real-time online counting usin
 The following softwares are required to build this tutorial.
 
 * [Node.js](https://nodejs.org/en/download/) (Version 10.x, required for JavaScript sample)
-* [.NET SDK](https://www.microsoft.com/net/download) (Version 2.x, required for Functions extensions)
-* [Azure Functions Core Tools](https://github.com/Azure/azure-functions-core-tools) (Version 2)
+* [.NET SDK](https://www.microsoft.com/net/download) (Version 6.0, required for Functions extensions)
+* [Azure Functions Core Tools](https://github.com/Azure/azure-functions-core-tools) (Version 4)
 * [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
 
 ### Create an Azure SignalR Service instance
@@ -160,7 +160,7 @@ We use **Static Website** to host the web page. Find the [document](https://docs
     Upload the `index.html` to Azure Storage
 
     ```bash
-    az storage blob upload-batch -s content -d \$web --account-name <storage-account-name>
+    az storage blob upload-batch -s content -d '$web' --account-name <storage-account-name>
     ```
 
     Get the primary url of website and save it for future use.
