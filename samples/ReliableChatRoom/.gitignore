@@ -2,4 +2,3 @@ bin/
 obj/
 .vs/
 **.csproj.user
-*.sln
