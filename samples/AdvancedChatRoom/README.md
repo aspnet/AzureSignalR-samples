@@ -27,7 +27,7 @@ You can also deploy this sample via existing docker image
 
 ```
 docker run -e SIGNALR_CONN_STRING="<signalr-connection-string>" \
-           -p 5000:5000 mcr.microsoft.com/signalrsamples/advancedchatroom:latest
+           -p 80:5000 mcr.microsoft.com/signalrsamples/advancedchatroom:latest
 ```
 
 Open the broswer with url `localhost:5000`, you can see the sample just like Chat Sample but has more operations. 
