@@ -73,7 +73,7 @@ You can also deploy this sample via existing docker image
 
 ```
 docker run -e SIGNALR_CONN_STRING="<signalr-connection-string>" \
-           -p 80:5000 mcr.microsoft.com/signalrsamples/chatroom:latest
+           -p 5000:80 mcr.microsoft.com/signalrsamples/chatroom:latest
 ```
 
 When you open http://localhost:5000, you can see the application runs as usual, just instead of hosting a SignalR runtime by itself, it connects to the SignalR service running on Azure.

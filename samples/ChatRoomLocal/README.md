@@ -144,7 +144,7 @@ You can also deploy this sample via existing docker image
 
 ```
 docker run -e SIGNALR_CONN_STRING="<signalr-connection-string>" \
-           -p 80:5000 mcr.microsoft.com/signalrsamples/chatroomlocal:latest
+           -p 5000:80 mcr.microsoft.com/signalrsamples/chatroomlocal:latest
 ```
 
 Open http://localhost:5000, and you'll see the chat room running on your local machine.
