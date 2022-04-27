@@ -80,8 +80,7 @@ namespace Microsoft.Azure.SignalR.Samples.ChatRoom
                 HttpCompletionOption.ResponseHeadersRead, context.HttpContext.RequestAborted);
 
             var user = JsonSerializer.Deserialize<Dictionary<string, object>>(await response.Content.ReadAsStringAsync());
-            object company;
-            if (user.TryGetValue("company", out company) && company != null)
+            if (user.TryGetValue("company", out var company) && company != null)
             {
                 var companyIdentity = new ClaimsIdentity(new[]
                 {
