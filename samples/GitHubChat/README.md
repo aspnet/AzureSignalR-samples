@@ -10,7 +10,7 @@ First step is to create a OAuth App in GitHub:
 
 1. Go to GitHub -> Settings -> Developer Settings, and click "New OAuth App".
 2. Fill in an application name, a description and a homepage URL (for this sample you can just enter any random URL)
-3. Authorization callback URL is the url GitHub will redirect you to after authentication. For now make it `http://localhost:5000/signin-github`.
+3. Authorization callback URL is the url GitHub will redirect you to after authentication. For now make it `http://localhost:80/signin-github`.
 4. Click "Register application" and you'll get an application with client ID and secret, you'll need them later when you implement the OAuth flow.
 
 ## Implement OAuth Flow
@@ -129,7 +129,7 @@ You can also deploy this sample via existing docker image
 docker run -e SIGNALR_CONN_STRING=<signalr-connection-string> \
            -e GITHUB_CLIENT_ID=<github-client-id> \
            -e GITHUB_CLIENT_SECRET=<github-client-secret> \
-           -p 5000:5000 mcr.microsoft.com/signalrsamples/githubchat:latest
+           -p 80:80 mcr.microsoft.com/signalrsamples/githubchat:latest
 ```
 
 ## Customize Hub Method Authorization
