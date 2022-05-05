@@ -143,7 +143,7 @@ dotnet run
 You can also deploy this sample via existing docker image
 
 ```
-docker run -e SIGNALR_CONN_STRING="<signalr-connection-string>" \
+docker run -e Azure__SignalR__ConnectionString="<signalr-connection-string>" \
            -p 5000:80 mcr.microsoft.com/signalrsamples/chatroomlocal:latest
 ```
 
