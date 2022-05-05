@@ -126,7 +126,7 @@ And change the callback url of your GitHub app from localhost to the actual Azur
 You can also deploy this sample via existing docker image
 
 ```
-docker run -e SIGNALR_CONN_STRING=<signalr-connection-string> \
+docker run -e Azure__SignalR__ConnectionString="<signalr-connection-string>" \
            -e GITHUB_CLIENT_ID=<github-client-id> \
            -e GITHUB_CLIENT_SECRET=<github-client-secret> \
            -p 5000:80 mcr.microsoft.com/signalrsamples/githubchat:latest
