@@ -1,15 +1,15 @@
 # Azure SignalR Service Advanced Chat Room
 
-Just like [ChatRoom sample](../ChatRoom), you have learned how to use Azure SignalR Service to build a chat room application. This sample demostrates a chat room with more general features in a chat application.
+Just like [ChatRoom sample](../ChatRoom), you have learned how to use Azure SignalR Service to build a chat room application. This sample demonstrates a chat room with more general features in a chat application.
 In this tutorial, you'll learn how to use Azure Storage Service and Azure Web App Service to get everything running in the cloud.
 
 Now the sample supports:
 
-* Broadcast
-* Joined / Left Broadcast
-* New message notification 
-* Send to User in a private chat room
-* Replay history messages
+-   Broadcast
+-   Joined / Left Broadcast
+-   New message notification
+-   Send to User in a private chat room
+-   Replay history messages
 
 ## Provision storage service for data
 
@@ -48,7 +48,8 @@ Now set the connection string in the [Secret Manager](https://docs.microsoft.com
 
 ```
 dotnet restore
-dotnet user-secrets set ConnectionStrings:AzureStorage "<Your connection string>"
+dotnet user-secrets set ConnectionStrings:AzureStorage "<Your Azure Storage's connection string>"
+dotnet user-secrets set Azure:SignalR:ConnectionString "<Your Azure SignalR's connection string>"
 dotnet run
 ```
 
@@ -72,18 +73,17 @@ When you open http://localhost:5000, you can see the application using the confi
 
 ## Publish your application
 
-1, Create a web app service in Azure [Create an ASP.NET Core web app in Azure](https://docs.microsoft.com/en-us/azure/app-service/app-service-web-get-started-dotnet)
+1. Create a web app service in Azure [Create an ASP.NET Core web app in Azure](https://docs.microsoft.com/en-us/azure/app-service/app-service-web-get-started-dotnet)
 
-2, In the Publish summary page of your project **(Solution Explorer > Connected Services > Publish)**, add an `Azure SignalR Service` to the dependency list.
-
-![AddAzureSignalRServiceDependency](./Images/AddAzureSignalRServiceDependency.PNG)
-
-3, Go to your web app's Configuration page. 
+2. Go to your web app's Configuration page.
 
 ![AppConfiguration](./Images/AppConfiguration.PNG)
 
-Add a connection string **`AzureStorage`** and restart your web app.
+Add your Azure Storage's connection string **`AzureStorage`**.
 
 ![AddConnectionString](./Images/AddConnectionString.PNG)
+
+Similarly, add your Azure SignalR's connection string as **`Azure__SignalR__ConnectionString`**.
+Then restart your web app.
 
 **Congratulations!** Your chat room web app is running live in Azure App Service.
