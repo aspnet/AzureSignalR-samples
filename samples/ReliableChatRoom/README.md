@@ -52,6 +52,16 @@ dotnet user-secrets set ConnectionStrings:AzureStorage "<Your connection string>
 dotnet run
 ```
 
+## Quick Deploy via Docker image
+You can also deploy this sample via existing docker image
+
+```
+docker run -e Azure__SignalR__ConnectionString="<signalr-connection-string>" \
+           -e STORAGE_CONN_STRING="<storage-connection-string>" \
+		   -p 5000:80 mcr.microsoft.com/signalrsamples/reliablechatroom:latest
+```
+
+
 ### Use your own database
 
 If you want to use your own database to store the messages and sessions, you should create a class which implements [ISessionHandler](./SessionHandler/ISessionHandler.cs) and another one implementing [IMessageHandler](./MessageHandler/IMessageHandler.cs).
