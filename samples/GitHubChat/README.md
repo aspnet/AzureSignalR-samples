@@ -121,6 +121,17 @@ az webapp config appsettings set --resource-group <resource_group_name> --name <
 
 And change the callback url of your GitHub app from localhost to the actual Azure website.
 
+
+## Quick Deploy via Docker image
+You can also deploy this sample via existing docker image
+
+```
+docker run -e Azure__SignalR__ConnectionString="<signalr-connection-string>" \
+           -e GITHUB_CLIENT_ID=<github-client-id> \
+           -e GITHUB_CLIENT_SECRET=<github-client-secret> \
+           -p 5000:80 mcr.microsoft.com/signalrsamples/githubchat:latest
+```
+
 ## Customize Hub Method Authorization
 
 It is possible to define different permission levels on hub methods. For example, we don't want everyone to be able to send message in a chat room. To achieve this, we can define a custom authorization policy:
@@ -153,3 +164,4 @@ Now, if your GitHub account's company is not Microsoft, you cannot send messages
 > connection.invoke('broadcastMessage', messageInput.value)
 >           .catch(e => appendMessage('_BROADCAST_', e.message));
 > ```
+
