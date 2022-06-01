@@ -9,8 +9,10 @@ In this sample, we demonstrate how to broadcast messages with SignalR Service an
 
 ## Setup and run locally
 
-1. Rename `local.settings.template.json` to `local.settings.json` and update `AzureSignalRConnectionString` setting to your SignalR Service connection string.
+1. Rename `local.settings.template.json` to `local.settings.json`, update `AzureSignalRConnectionString` setting to your SignalR Service connection string and `AzureWebJobsStorage` setting to your stroage account connection string.
 
-1. Run `func start` to start Azure Function locally.
+2. In Azure Portal of your SignalR service, update Service Mode from Default to Serverless in Settings Panel.
 
-1. Visit `http://localhost:7071/api/index` and you can see the result.
+3. Run `func start` to start Azure Function locally.
+
+4. Visit `http://localhost:7071/api/index` and you can see the result.
