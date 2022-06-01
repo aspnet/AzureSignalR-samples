@@ -68,6 +68,14 @@ dotnet user-secrets set Azure:SignalR:ConnectionString "<your connection string>
 dotnet run
 ```
 
+## Quick Deploy via Docker image
+You can also deploy this sample via existing docker image
+
+```
+docker run -e Azure__SignalR__ConnectionString="<signalr-connection-string>" \
+           -p 5000:80 mcr.microsoft.com/signalrsamples/chatroom:latest
+```
+
 When you open http://localhost:5000, you can see the application runs as usual, just instead of hosting a SignalR runtime by itself, it connects to the SignalR service running on Azure.
 
 In this sample, you have learned how to use Azure SignalR Service to replace your self-hosted SignalR runtime. But you still need a web server to host your hub logic. In the next tutorial you'll learn how to use other Azure services to host your hub logic so you can get everything running in the cloud.

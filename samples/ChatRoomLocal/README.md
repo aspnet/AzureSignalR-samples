@@ -138,6 +138,15 @@ dotnet run
 
 > You can also use `dotnet watch run` to watch and reload the code changes.
 
+
+## Quick Deploy via Docker image
+You can also deploy this sample via existing docker image
+
+```
+docker run -e Azure__SignalR__ConnectionString="<signalr-connection-string>" \
+           -p 5000:80 mcr.microsoft.com/signalrsamples/chatroomlocal:latest
+```
+
 Open http://localhost:5000, and you'll see the chat room running on your local machine.
 
 In this sample you have learned the basics of SignalR and how to use it to build a chat room application.
