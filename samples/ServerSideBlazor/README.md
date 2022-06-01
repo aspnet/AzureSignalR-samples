@@ -3,7 +3,7 @@
 This sample is to show how to make Server-side Blazor work with Azure SignalR Service.
 
 ## Prerequisites
-* Install [.NET Core 3.0 SDK](https://dotnet.microsoft.com/download/dotnet-core/3.0) (Version >= 3.0.100)
+* Install [.NET 6.0 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) (Version >= 6.0.3)
 * Install [Visual Studio 2019](https://visualstudio.microsoft.com/vs/) (Version >= 16.3)
 > Visual Studio 2019 Preview version also works which is releasing with latest Blazor Server-side template targeting newer .Net Core version.
 

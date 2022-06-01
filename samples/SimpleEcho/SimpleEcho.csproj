@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;netcoreapp2.2;netcoreapp3.0;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.1;netcoreapp2.2;netcoreapp3.0;netcoreapp3.1;net6.0</TargetFrameworks>
     <UserSecretsId>2da0d60d-9962-455e-97af-f0d2668c4ea1</UserSecretsId>
     <RootNamespace>Microsoft.Azure.SignalR.Samples.SimpleEcho</RootNamespace>
     <LangVersion>7.1</LangVersion>
@@ -19,11 +19,15 @@
     <PackageReference Include="Microsoft.Azure.SignalR" Version="1.*" />
   </ItemGroup>
 
-    <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0' OR '$(TargetFramework)' == 'netcoreapp3.1'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0' OR '$(TargetFramework)' == 'netcoreapp3.1'">
       <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="3.1.*" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.1' OR '$(TargetFramework)' == 'netcoreapp2.2'">
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="6.0.3" />
   </ItemGroup>
 </Project>
