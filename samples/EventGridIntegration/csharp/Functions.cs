@@ -4,13 +4,13 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Azure.EventGrid.Models;
+using Azure.Messaging.EventGrid;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.EventGrid;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 using Microsoft.Extensions.Logging;
-using Microsoft.WindowsAzure.Storage.Table;
+using Microsoft.Azure.Cosmos.Table;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -58,7 +58,7 @@ namespace SignalR.Sample
             [Table(TableName)]CloudTable cloudTable,
             ILogger log)
         {
-            var message = ((JObject) eventGridEvent.Data).ToObject<SignalREvent>();
+            var message = JsonConvert.DeserializeObject<SignalREvent>(eventGridEvent.Data.ToString());
             var partitionKey = GetLastPart(eventGridEvent.Topic);
             var rowKey = message.HubName;
             var isSuccess = true;
