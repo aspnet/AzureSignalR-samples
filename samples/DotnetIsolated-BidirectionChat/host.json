@@ -6,6 +6,9 @@
                 "isEnabled": true,
                 "excludedTypes": "Request"
             }
+        },
+        "logLevel": {
+            "default": "Debug"
         }
     }
 }
