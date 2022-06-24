@@ -40,17 +40,25 @@ namespace IsolatedModel_BidirectionChat
             _logger.LogInformation($"{invocationContext.ConnectionId} has connected");
             return new SignalRMessageAction("newConnection")
             {
-                Arguments = new object[] { new NewConnection(invocationContext.ConnectionId, auth) }
+                Arguments = new object[] { new NewConnection(invocationContext.ConnectionId, auth) },
+
             };
         }
 
         [Function("Broadcast")]
         [SignalROutput(HubName = "Hub")]
-        public SignalRMessageAction Broadcast([SignalRTrigger("Hub", "messages", "Broadcast", "message")] SignalRInvocationContext invocationContext, string message)
+        public SignalRMessageAction Broadcast(
+        [SignalREndpointsInput("Hub")] SignalREndpoint[] endpoints,
+        [SignalRNegotiationInput("Hub", "AzureSignalRConnectionString")] SignalRNegotiationContext negotiationContext,
+        [SignalRTrigger("Hub", "messages", "Broadcast", "message")] SignalRInvocationContext invocationContext, string message)
         {
+            _logger.LogInformation($"{negotiationContext.Endpoints[0].Endpoint}");
+            _logger.LogInformation($"{negotiationContext.Endpoints[0].ConnectionInfo.AccessToken}");
+            _logger.LogInformation($"{negotiationContext.Endpoints[1].Endpoint}");
             return new SignalRMessageAction("newMessage")
             {
-                Arguments = new object[] { new NewMessage(invocationContext, message) }
+                Arguments = new object[] { new NewMessage(invocationContext, message) },
+                Endpoints = endpoints
             };
         }
 
