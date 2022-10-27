@@ -10,7 +10,7 @@ This sample provides regular function `Broadcast` and new feature `Client Invoca
 
 ## Usage
 
-1. Set the connection string in the [Secret Manager tool](https://learn.microsoft.com/aspnet/core/security/app-secrets?view=aspnetcore-7.0&tabs=windows#secret-manager) for .NET Core, and run this app.
+1. Set the connection string in the [Secret Manager tool](https://learn.microsoft.com/aspnet/core/security/app-secrets?view=aspnetcore-7.0&tabs=windows#secret-manager) for .NET Core.
 
     ```bash
     dotnet restore
@@ -31,7 +31,7 @@ This sample provides regular function `Broadcast` and new feature `Client Invoca
     > Microsoft.Azure.SignalR      1.*                     1.19.0
     ```
 
-3. If not, run command to explictly install the package.
+3. If not, run command to explicitly install the package.
 
     ```bash
     dotnet add package Microsoft.Azure.SignalR --version 1.19.0-preview1-11052 --source https://www.myget.org/F/azure-signalr-dev/api/v3/index.json
