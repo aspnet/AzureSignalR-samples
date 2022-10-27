@@ -28,19 +28,19 @@ dotnet run
 4. The client invoked will unlock 'Ack Message' button and you can type something in the text box above.
 5. Press 'Ack Message' to return the message to the server which will return it to the original client that asked for a result.
 
-### Multiple servers using client invocation
+### Using client invocation with multiple servers
 
-1. Run `dotnet run` to start default profile.
-2. Open another bash window, run `dotnet run --launch-profile Server1` to start another server.
-3. Open default server under `https://localhost:7243`.
-4. In any of the iframe update the url to second server's port __7245__, `https://localhost:7245/chats` in this sample to access from second server.
+1. Run `dotnet run` to start default profile and will serve under `https://localhost:7243`. Skip this step if you didn't stop it yet.
+2. Open another bash window, run `dotnet run --launch-profile Server1` to start another server and will serve under `https://localhost:7245`.
+3. Browse the default server site under `https://localhost:7243`.
+4. In any of the iframe update the url to second server chats page `https://localhost:7245/chats` to access from second server.
 5. Press 'Enter' to access. Now you're able to test clients on different servers.
 
-### Using broadcast method
+### Using broadcast
 
 1. Browse to the site with your favorite browser and it will connect with the SignalR Javascript client.
 2. It creates 2 clients by default.
-3. Etner some message in the text box above 'Broadcast'.
+3. Enter some messages in the text box above 'Broadcast'.
 4. Press 'Broadcast' to send message to all connected clients.
 
 ### Using client invoation from anywhere with `IHubContext`
