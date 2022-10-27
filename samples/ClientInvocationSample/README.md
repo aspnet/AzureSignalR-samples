@@ -10,13 +10,38 @@ This sample provides regular function `Broadcast` and new feature `Client Invoca
 
 ## Usage
 
-Set the connection string in the [Secret Manager tool](https://learn.microsoft.com/aspnet/core/security/app-secrets?view=aspnetcore-7.0&tabs=windows#secret-manager) for .NET Core, and run this app.
+1. Set the connection string in the [Secret Manager tool](https://learn.microsoft.com/aspnet/core/security/app-secrets?view=aspnetcore-7.0&tabs=windows#secret-manager) for .NET Core, and run this app.
 
-```bash
-dotnet restore
-dotnet user-secrets set Azure:SignalR:ConnectionString "<your connection string>"
-dotnet run
-```
+    ```bash
+    dotnet restore
+    dotnet user-secrets set Azure:SignalR:ConnectionString "<your connection string>"
+    ```
+
+2. Confirm you're installing correct package.
+
+    ```bash
+    dotnet list package
+    ```
+
+    Expected resolved package version is greater than `1.19.0-preview1-11052`.
+
+    ```
+    [net7.0]:
+    Top-level Package              Requested               Resolved
+    > Microsoft.Azure.SignalR      1.*                     1.19.0
+    ```
+
+3. If not, run command to explictly install the package.
+
+    ```bash
+    dotnet add package Microsoft.Azure.SignalR --version 1.19.0-preview1-11052 --source https://www.myget.org/F/azure-signalr-dev/api/v3/index.json
+    ```
+
+4. Start the app
+
+    ```bash
+    dotnet run
+    ```
 
 ![client-invocation](../../docs/images/client-invocation.png)
 
