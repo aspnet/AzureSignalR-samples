@@ -12,7 +12,7 @@ This sample shows the usage of Azure SignalR Service Management SDK.
 ### Start the negotiation server
 
 ```
-cd NegotitationServer
+cd NegotiationServer
 dotnet user-secrets set Azure:SignalR:ConnectionString "<Connection String>"
 dotnet run
 ```
