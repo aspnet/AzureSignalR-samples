@@ -86,7 +86,7 @@ It's a quick try of this sample. You will create an Azure SignalR Service and an
 
 3. Update Azure SignalR Service Upstream settings
 
-    Open the Azure Portal and nevigate to the Function App created before. Find `signalr_extension` key in the **App keys** blade.
+    Open the Azure Portal and navigate to the Function App created before. Find `signalr_extension` key in the **App keys** blade.
 
     ![Overview with auth](getkeys.png)
 
