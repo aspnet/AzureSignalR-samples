@@ -1,0 +1,159 @@
+<html>
+
+<head>
+    <title>Serverless Chat</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css">
+    <script>
+        const apiBaseUrl = window.location.origin;
+        const authProvider = 'aad'; // aad, twitter, microsoftaccount, google, facebook
+    </script>
+    <style>
+        .slide-fade-enter-active,
+        .slide-fade-leave-active {
+            transition: all 1s ease;
+        }
+
+        .slide-fade-enter,
+        .slide-fade-leave-to {
+            height: 0px;
+            overflow-y: hidden;
+            opacity: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <p>&nbsp;</p>
+    <div id="app" class="container">
+        <h3>Serverless chat</h3>
+        <div v-if="!isLocalhost">
+            <div v-if="authenticated">
+                You are logged in [<a href="#" v-on:click.prevent="logout">Logout</a>]
+            </div>
+            <div v-if="!authenticated">
+                <a href="#" v-on:click.prevent="login">Login</a>
+            </div>
+        </div>
+        <div class="row" v-if="(isLocalhost || authenticated) && ready">
+            <div class="signalr-demo col-sm">
+                <hr />
+                <form v-on:submit.prevent="sendNewMessage">
+                    <input type="text" v-model="newMessage" id="message-box" class="form-control"
+                        placeholder="Type message here..." />
+                </form>
+            </div>
+        </div>
+        <div class="row" v-if="(isLocalhost || authenticated) && !ready">
+            <div class="col-sm">
+                <div>Loading...</div>
+            </div>
+        </div>
+        <div v-if="ready">
+            <transition-group name="slide-fade" tag="div">
+                <div class="row" v-for="message in messages" v-bind:key="message.id">
+                    <div class="col-sm">
+                        <hr />
+                        <div>
+                            <div style="display: inline-block; padding-left: 12px;">
+                                <div>
+                                    <a href="#" v-on:click.prevent="sendPrivateMessage(message.sender)">
+                                        <span class="text-info small"><strong>{{ message.sender }}</strong></span>
+                                    </a>
+                                    <span v-if="message.isPrivate" class="badge badge-secondary">private message</small>
+                                </div>
+                                <div>
+                                    {{ message.text }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        </div>
+        </transition-group>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@aspnet/signalr@1.0.3/dist/browser/signalr.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@0.18.0/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/timeago.js@3.0.2/dist/timeago.min.js"></script>
+
+    <script>
+        const axiosConfig = {
+            withCredentials: true
+        };
+        const hubName = 'chat';
+
+        const app = new Vue({
+            el: '#app',
+            data: function () {
+                return {
+                    authenticated: false,
+                    isLocalhost: /\/\/localhost/.test(apiBaseUrl),
+                    username: '',
+                    newMessage: '',
+                    messages: [],
+                    ready: false,
+                    loginUrl: `${apiBaseUrl}/.auth/login/${authProvider}?post_login_redirect_url=${encodeURIComponent(window.location.href)}`,
+                    logoutUrl: `${apiBaseUrl}/.auth/logout?post_logout_redirect_uri=${encodeURIComponent(window.location.href)}`
+                };
+            },
+            mounted: function () {
+                return this.getAuthInfo().then(function () {
+                    if (this.isLocalhost || this.authenticated) {
+                        const connection = new signalR.HubConnectionBuilder()
+                            .withUrl(`${apiBaseUrl}/api`)
+                            .build();
+
+                        connection.on('newMessage', onNewMessage.bind(this));
+                        connection.onclose(() => console.log('disconnected'));
+
+                        console.log('connecting...');
+                        connection.start()
+                            .then(() => this.ready = true)
+                            .catch(console.error);
+                    }
+
+                    let counter = 0;
+                    function onNewMessage(message) {
+                        if (!message.sender) {
+                            message.sender = "anonymous";
+                        }
+                        message.id = counter++; // vue transitions need an id
+                        this.messages.unshift(message);
+                    }
+                }.bind(this));
+            },
+            methods: {
+                sendNewMessage: function () {
+                    this.sendMessage(this.username, null, this.newMessage);
+                    this.newMessage = '';
+                },
+                login: function () {
+                    window.location.href = this.loginUrl;
+                },
+                logout: function () {
+                    window.location.href = this.logoutUrl;
+                },
+                sendPrivateMessage: function (recipient) {
+                    const messageText = prompt('Send private message to ' + recipient);
+                    if (messageText) {
+                        this.sendMessage(this.username, recipient, messageText);
+                    }
+                },
+                sendMessage: function (sender, recipient, messageText) {
+                    return axios.post(`${apiBaseUrl}/api/messages`, {
+                        recipient: recipient,
+                        sender: sender,
+                        text: messageText
+                    }, axiosConfig).then(resp => resp.data);
+                },
+                getAuthInfo: function () {
+                    return axios.post(`${apiBaseUrl}/.auth/me`, null, axiosConfig)
+                        .then(() => this.authenticated = true, () => null);
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
