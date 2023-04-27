@@ -28,7 +28,7 @@ namespace IsolatedModel_BidirectionChat
         public SignalRConnectionInfo Negotiate([HttpTrigger(AuthorizationLevel.Anonymous)] HttpRequestData req,
             [SignalRConnectionInfoInput(HubName = "Hub", UserId = "{query.userid}")] SignalRConnectionInfo signalRConnectionInfo)
         {
-            _logger.LogInformation("Executing negotation.");
+            _logger.LogInformation("Executing negotiation.");
             return signalRConnectionInfo;
         }
 
@@ -47,18 +47,11 @@ namespace IsolatedModel_BidirectionChat
 
         [Function("Broadcast")]
         [SignalROutput(HubName = "Hub")]
-        public SignalRMessageAction Broadcast(
-        [SignalREndpointsInput("Hub")] SignalREndpoint[] endpoints,
-        [SignalRNegotiationInput("Hub", "AzureSignalRConnectionString")] SignalRNegotiationContext negotiationContext,
-        [SignalRTrigger("Hub", "messages", "Broadcast", "message")] SignalRInvocationContext invocationContext, string message)
+        public SignalRMessageAction Broadcast([SignalRTrigger("Hub", "messages", "Broadcast", "message")] SignalRInvocationContext invocationContext, string message)
         {
-            _logger.LogInformation($"{negotiationContext.Endpoints[0].Endpoint}");
-            _logger.LogInformation($"{negotiationContext.Endpoints[0].ConnectionInfo.AccessToken}");
-            _logger.LogInformation($"{negotiationContext.Endpoints[1].Endpoint}");
             return new SignalRMessageAction("newMessage")
             {
-                Arguments = new object[] { new NewMessage(invocationContext, message) },
-                Endpoints = endpoints
+                Arguments = new object[] { new NewMessage(invocationContext, message) }
             };
         }
 
