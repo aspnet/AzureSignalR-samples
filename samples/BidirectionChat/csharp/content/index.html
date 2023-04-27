@@ -33,7 +33,8 @@
           <label for="checkbox">Send To Default Group: {{ this.defaultgroup }}</label>
         </div>
         <form v-on:submit.prevent="sendNewMessage(checked)">
-          <input type="text" v-model="newMessage" id="message-box" class="form-control" placeholder="Type message here..." />
+          <input type="text" v-model="newMessage" id="message-box" class="form-control"
+            placeholder="Type message here..." />
         </form>
       </div>
     </div>
@@ -57,20 +58,25 @@
                   </a>
                   <span v-if="message.ConnectionId || message.connectionId">
                     <a href="#" v-on:click.prevent="sendToConnection(message.ConnectionId || message.connectionId)">
-                      <span class="badge badge-primary">Connection: {{ message.ConnectionId || message.connectionId }}</span>
+                      <span class="badge badge-primary">Connection: {{ message.ConnectionId ||
+                        message.connectionId
+                        }}</span>
                     </a>
                   </span>
                   <a href="#" v-on:click.prevent="addUserToGroup(message.Sender || message.sender)">
-                    <span class="badge badge-primary">AddUserToGroup</span>
+                    <span v-if="message.Sender || message.sender" class="badge badge-primary">AddUserToGroup</span>
                   </a>
                   <a href="#" v-on:click.prevent="removeUserFromGroup(message.Sender || message.sender)">
-                    <span class="badge badge-primary">RemoveUserFromGroup</span>
+                    <span v-if="message.Sender || message.sender" class="badge badge-primary">RemoveUserFromGroup</span>
                   </a>
                   <a href="#" v-on:click.prevent="addConnectionToGroup(message.ConnectionId || message.connectionId)">
-                    <span v-if="message.ConnectionId || message.connectionId" class="badge badge-primary">AddConnectionToGroup</span>
+                    <span v-if="message.ConnectionId || message.connectionId"
+                      class="badge badge-primary">AddConnectionToGroup</span>
                   </a>
-                  <a href="#" v-on:click.prevent="removeConnectionIdFromGroup(message.ConnectionId || message.connectionId)">
-                    <span v-if="message.ConnectionId || message.connectionId" class="badge badge-primary">RemoveConnectionFromGroup</span>
+                  <a href="#"
+                    v-on:click.prevent="removeConnectionIdFromGroup(message.ConnectionId || message.connectionId)">
+                    <span v-if="message.ConnectionId || message.connectionId"
+                      class="badge badge-primary">RemoveConnectionFromGroup</span>
                   </a>
                   <span v-if="message.IsPrivate || message.isPrivate" class="badge badge-secondary">private message
                   </span>
@@ -127,7 +133,7 @@
               connection.invoke("sendToConnection", connectionId, messageText);
             }
           },
-          addConnectionToGroup: function(connectionId) {
+          addConnectionToGroup: function (connectionId) {
             confirm('Add connection ' + connectionId + ' to group: ' + this.defaultgroup);
             connection.invoke("joinGroup", connectionId, this.defaultgroup);
           },
@@ -135,11 +141,11 @@
             r = confirm('Add user ' + user + ' to group: ' + this.defaultgroup);
             connection.invoke("joinUserToGroup", user, this.defaultgroup);
           },
-          removeConnectionIdFromGroup: function(connectionId) {
+          removeConnectionIdFromGroup: function (connectionId) {
             confirm('Remove connection ' + connectionId + ' from group: ' + this.defaultgroup);
             connection.invoke("leaveGroup", connectionId, this.defaultgroup);
           },
-          removeUserFromGroup: function(user) {
+          removeUserFromGroup: function (user) {
             confirm('Remove user ' + user + ' from group: ' + this.defaultgroup);
             connection.invoke("leaveUserFromGroup", user, this.defaultgroup);
           }
@@ -173,7 +179,7 @@
       function getAxiosConfig() {
         const config = {
           headers: {
-            'x-ms-signalr-user-id':  data.username,
+            'x-ms-signalr-user-id': data.username,
             'Authorization': 'Bearer ' + generateAccessToken(data.username)
           }
         };
@@ -187,13 +193,12 @@
       function onNewConnection(message) {
         data.myConnectionId = message.ConnectionId;
         authEnabled = false;
-        if (message.Authentication)
-        {
+        if (message.Authentication) {
           authEnabled = true;
         }
         newConnectionMessage = {
-          id : counter++,
-          text : `${message.ConnectionId} has connected, with Authorization: ${authEnabled.toString()}`
+          id: counter++,
+          text: `${message.ConnectionId} has connected, with Authorization: ${authEnabled.toString()}`
         };
         data.messages.unshift(newConnectionMessage);
       }
@@ -222,7 +227,7 @@
         var stringifiedHeader = CryptoJS.enc.Utf8.parse(JSON.stringify(header));
         var encodedHeader = base64url(stringifiedHeader);
 
-        // customize your JWT token payload here 
+        // customize your JWT token payload here
         var data = {
           "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier": userName,
           "exp": 1699819025,

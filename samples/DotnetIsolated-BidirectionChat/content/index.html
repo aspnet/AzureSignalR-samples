@@ -33,7 +33,8 @@
                     <label for="checkbox">Send To Default Group: {{ this.defaultgroup }}</label>
                 </div>
                 <form v-on:submit.prevent="sendNewMessage(checked)">
-                    <input type="text" v-model="newMessage" id="message-box" class="form-control" placeholder="Type message here..." />
+                    <input type="text" v-model="newMessage" id="message-box" class="form-control"
+                        placeholder="Type message here..." />
                 </form>
             </div>
         </div>
@@ -56,21 +57,30 @@
                                         </span>
                                     </a>
                                     <span v-if="message.ConnectionId || message.connectionId">
-                                        <a href="#" v-on:click.prevent="sendToConnection(message.ConnectionId || message.connectionId)">
-                                            <span class="badge badge-primary">Connection: {{ message.ConnectionId || message.connectionId }}</span>
+                                        <a href="#"
+                                            v-on:click.prevent="sendToConnection(message.ConnectionId || message.connectionId)">
+                                            <span class="badge badge-primary">Connection: {{ message.ConnectionId ||
+                                                message.connectionId }}</span>
                                         </a>
                                     </span>
                                     <a href="#" v-on:click.prevent="addUserToGroup(message.Sender || message.sender)">
-                                        <span class="badge badge-primary">AddUserToGroup</span>
+                                        <span v-if="message.Sender || message.sender"
+                                            class="badge badge-primary">AddUserToGroup</span>
                                     </a>
-                                    <a href="#" v-on:click.prevent="removeUserFromGroup(message.Sender || message.sender)">
-                                        <span class="badge badge-primary">RemoveUserFromGroup</span>
+                                    <a href="#"
+                                        v-on:click.prevent="removeUserFromGroup(message.Sender || message.sender)">
+                                        <span v-if="message.Sender || message.sender"
+                                            class="badge badge-primary">RemoveUserFromGroup</span>
                                     </a>
-                                    <a href="#" v-on:click.prevent="addConnectionToGroup(message.ConnectionId || message.connectionId)">
-                                        <span v-if="message.ConnectionId || message.connectionId" class="badge badge-primary">AddConnectionToGroup</span>
+                                    <a href="#"
+                                        v-on:click.prevent="addConnectionToGroup(message.ConnectionId || message.connectionId)">
+                                        <span v-if="message.ConnectionId || message.connectionId"
+                                            class="badge badge-primary">AddConnectionToGroup</span>
                                     </a>
-                                    <a href="#" v-on:click.prevent="removeConnectionIdFromGroup(message.ConnectionId || message.connectionId)">
-                                        <span v-if="message.ConnectionId || message.connectionId" class="badge badge-primary">RemoveConnectionFromGroup</span>
+                                    <a href="#"
+                                        v-on:click.prevent="removeConnectionIdFromGroup(message.ConnectionId || message.connectionId)">
+                                        <span v-if="message.ConnectionId || message.connectionId"
+                                            class="badge badge-primary">RemoveConnectionFromGroup</span>
                                     </a>
                                     <span v-if="message.IsPrivate || message.isPrivate" class="badge badge-secondary">
                                         private message
