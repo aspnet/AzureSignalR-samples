@@ -8,6 +8,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="5.0.9" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="6.0.16" />
   </ItemGroup>
 </Project>
