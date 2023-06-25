@@ -1,11 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
+
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <UserSecretsId>chatroom</UserSecretsId>
-    <RootNamespace>Microsoft.Azure.SignalR.Samples.ChatRoom</RootNamespace>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>chatroomlocal</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\" />
+    <PackageReference Include="Microsoft.Azure.SignalR" Version="1.*" />
   </ItemGroup>
+
 </Project>

@@ -1,8 +1,6 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 
-public class ChatSampleHub : Hub
+public class ChatHub : Hub
 {
     public Task BroadcastMessage(string name, string message) =>
         Clients.All.SendAsync("broadcastMessage", name, message);

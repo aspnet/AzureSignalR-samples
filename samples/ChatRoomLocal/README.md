@@ -24,71 +24,56 @@ Let's implement this feature step by step.
     dotnet new web
     ```
 
-    > Before you start, make sure you installed the latest [.NET Core 3.1 SDK](https://dotnet.microsoft.com/download/dotnet-core/3.1).
+    > Before you start, make sure you installed the latest [.NET Core 7.0 SDK](https://dotnet.microsoft.com/download/dotnet-core/7.0).
 
-2.  Create a `Chat.cs` that defines a `Chat` hub class.
+2.  Create a `ChatSampleHub.cs` that defines a `Chat` hub class.
 
     ```cs
     using Microsoft.AspNetCore.SignalR;
 
-    public class Chat : Hub
+    public class ChatSampleHub : Hub
     {
-        public void BroadcastMessage(string name, string message)
-        {
+        public Task BroadcastMessage(string name, string message) =>
             Clients.All.SendAsync("broadcastMessage", name, message);
-        }
 
-        public void Echo(string name, string message)
-        {
-            Clients.Client(Context.ConnectionId).SendAsync("echo", name, message + " (echo from server)");
-        }
+        public Task Echo(string name, string message) =>
+            Clients.Client(Context.ConnectionId)
+                    .SendAsync("echo", name, $"{message} (echo from server)");
     }
     ```
 
     > SignalR feature is already *available* as part of the `Microsoft.AspNetCore.App` shared framework.
 
-    Hub is the core concept in SignalR which exposes a set of methods that can be called from clients. Here we define two methods: `Broadcast()` which broadcasts the message to all clients and `Echo()` which sends the message back to the caller.
+    Hub is the core concept in SignalR which exposes a set of methods that can be called from clients. Here we define two methods: `BroadcastMessage()` which broadcasts the message to all clients and `Echo()` which sends the message back to the caller.
 
     In each method you can see there is a `Clients` interface that gives you access to all connected clients so you can directly call back to these clients.
 
-3.  Then we need to initialize the SignalR runtime when the application starts up. Add the following in `Startup.cs`:
+3.  Then we need to initialize the SignalR runtime when the application starts up. Update `Program.cs` to the following:
 
     ```cs
-    public void ConfigureServices(IServiceCollection services)
-    {
-        services.AddSignalR();
-    }
+    var builder = WebApplication.CreateBuilder(args);
+    builder.Services.AddSignalR().AddAzureSignalR();
+    var app = builder.Build();
 
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-    {
-        ...
-        app.UseRouting();
-        app.UseEndpoints(endpoints =>
-        {
-            endpoints.MapHub<Chat>("/chat");
-        });
-        ...
-    }
+    app.UseRouting();
+    app.MapHub<ChatSampleHub>("/chat");
+    app.Run();
     ```
-
-    > Make sure you remove `endpoints.MapGet("/", async context =>...` from inside `app.UseEndpoint` in method `Configure()`, which will always give you a Hello World page.
 
     The key changes here are `AddSignalR()` which initializes the SignalR runtime and `MapHub()` which maps the hub to the `/chat` endpoint so clients can access the hub using this url.
 
 4.  The last step is to create the UI of the chat room. In this sample, we will use HTML and Javascript to build a web application:
 
     Copy the HTML and script files from [wwwroot](wwwroot/) of the sample project to the `wwwroot` folder of your project.
-    Add the following code to `Startup.cs` above `app.UseRouting()` to make the application serve the pages:
+    Add the following code to `Program.cs` above `app.UseRouting()` to make the application serve the pages:
 
     ```cs
-    public void Configure(IApplicationBuilder app, IHostingEnvironment env)
-    {
-        ...
-        app.UseDefaultFiles();
-        app.UseStaticFiles();
-        app.UseRouting();
-        ...
-    }
+    ...
+    app.UseDefaultFiles();
+    app.UseStaticFiles();
+    app.UseRouting();
+    ...
+    
     ```
 
     Let's take a look at key changes in [index.html](wwwroot/index.html). First it creates a hub connection to the server:
@@ -129,23 +114,13 @@ Let's implement this feature step by step.
     connection.on('broadcastMessage', messageCallback);
     ```
 
-Now, build and run the application:
+Now, let's run run the application:
 
 ```
-dotnet build
 dotnet run
 ```
 
 > You can also use `dotnet watch run` to watch and reload the code changes.
-
-
-## Quick Deploy via Docker image
-You can also deploy this sample via existing docker image
-
-```
-docker run -e Azure__SignalR__ConnectionString="<signalr-connection-string>" \
-           -p 5000:80 mcr.microsoft.com/signalrsamples/chatroomlocal:latest
-```
 
 Open http://localhost:5000, and you'll see the chat room running on your local machine.
 
