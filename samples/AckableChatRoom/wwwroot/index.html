@@ -19,14 +19,14 @@
         <div id="messages" style="background-color: whitesmoke; "></div>
         <div style="width: 100%; border-left-style: ridge; border-right-style: ridge;">
             <textarea id="message" style="width: 100%; padding: 5px 10px; border-style: hidden;"
-                placeholder="Type message and press Enter to send..."></textarea>
+                      placeholder="Type message and press Enter to send..."></textarea>
         </div>
         <div style="overflow: auto; border-style: ridge; border-top-style: hidden;">
             <button class="btn-success pull-right" id="sendmessage">Send All</button>
         </div>
         <div>
             <textarea id="targetName" style="width: 100%; padding: 5px 10px; border-style: hidden;"
-                placeholder="Type targetName"></textarea>
+                      placeholder="Type targetName"></textarea>
             <button class="btn-success pull-right" id="sendUserMessage">Send To User</button>
         </div>
     </div>
@@ -41,10 +41,7 @@
         </div>
     </div>
 
-    <!--Reference the SignalR library. -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@aspnet/signalr@1.1.0/dist/browser/signalr.min.js">
-    </script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
     <!--Add script to update the page and send messages.-->
     <script type="text/javascript">
         document.addEventListener('DOMContentLoaded', function () {
@@ -103,7 +100,7 @@
                 const messageBoxElement = document.getElementById('messages');
                 messageBoxElement.appendChild(messageEntry);
             }
-                        
+
             // Set initial focus to message input box.
             const messageInput = document.getElementById('message');
             const targetNameInput = document.getElementById('targetName');

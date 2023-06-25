@@ -38,15 +38,12 @@ Then, let's update the chat room sample to use the new service you just created.
 
 Let's look at the key changes:
 
-1.  In [Startup.cs](Startup.cs), call `AddAzureSignalR()` after `AddSignalR()` and pass in connection string to make the application connect to the service instead of hosting SignalR by itself.
+1.  In [Program.cs](Program.cs), call `AddAzureSignalR()` after `AddSignalR()` to make the application connect to the service instead of hosting SignalR by itself.
 
     ```cs
-    public void ConfigureServices(IServiceCollection services)
-    {
-        ...
-        services.AddSignalR()
-                .AddAzureSignalR();
-    }
+    ...
+    services.AddSignalR()
+            .AddAzureSignalR();
     ```
 
     You also need to reference the service SDK before using these APIs. This is how that would look in your ChatRoom.csproj file:
@@ -63,7 +60,6 @@ Other than these changes, everything else remains the same, you can still use th
 Now set the connection string in the [Secret Manager](https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-2.1&tabs=visual-studio#secret-manager) tool for .NET Core, and run this app.
 
 ```
-dotnet restore
 dotnet user-secrets set Azure:SignalR:ConnectionString "<your connection string>"
 dotnet run
 ```
