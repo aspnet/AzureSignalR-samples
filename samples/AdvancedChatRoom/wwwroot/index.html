@@ -17,7 +17,7 @@
 
         <div class="input-prepend input-append" style="padding-bottom: 5px; padding-top: 5px;">
             <input type="text" id="message" style="width: 50%; padding: 5px 10px;"
-                      placeholder="Type message and press Enter to send...">
+                   placeholder="Type message and press Enter to send...">
             <button class="btn-success" id="echo">Echo</button>
             <button class="btn-success" id="sendmessage">Broadcast</button>
         </div>
@@ -58,7 +58,8 @@
     </div>
 
     <!--Reference the SignalR library. -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@aspnet/signalr@1.0.0/dist/browser/signalr.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
+
     <!--Add script to update the page and send messages.-->
     <script type="text/javascript">
         document.addEventListener('DOMContentLoaded', function () {
@@ -72,11 +73,11 @@
                         if (xhr.status >= 200 && xhr.status < 300) {
                             resolve(xhr.response || xhr.responseText);
                         } else {
-                            reject({message: xhr.statusText, statusCode: xhr.status});
+                            reject({ message: xhr.statusText, statusCode: xhr.status });
                         }
                     }
                     xhr.onerror = () => {
-                        reject({message: xhr.statusText, statusCode: xhr.status});
+                        reject({ message: xhr.statusText, statusCode: xhr.status });
                     }
                 });
             }
@@ -278,14 +279,14 @@
 
             var url = `/${authType}/login?username=${username}&role=${role}`;
             get(url).then((token) => {
-                    jwtToken = token;
-                    bindConnectionMessage(connection);
-                    return connection.start();
-                })
-                .then(function() {
+                jwtToken = token;
+                bindConnectionMessage(connection);
+                return connection.start();
+            })
+                .then(function () {
                     onConnected(connection);
                 })
-                .catch(function(error) {
+                .catch(function (error) {
                     if (error.message) {
                         console.error(error.message);
                     }

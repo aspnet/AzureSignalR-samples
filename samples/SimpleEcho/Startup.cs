@@ -17,6 +17,7 @@ namespace Microsoft.Azure.SignalR.Samples.SimpleEcho
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseRouting();
             app.UseEndpoints(e =>
             {
                 e.MapHub<EchoSampleHub>("/echo");

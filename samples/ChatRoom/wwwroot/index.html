@@ -15,8 +15,8 @@
         <div id="messages" style="background-color: whitesmoke; "></div>
         <div style="width: 100%; border-left-style: ridge; border-right-style: ridge;">
             <textarea id="message"
-                          style="width: 100%; padding: 5px 10px; border-style: hidden;" 
-                          placeholder="Type message and press Enter to send..."></textarea>
+                      style="width: 100%; padding: 5px 10px; border-style: hidden;"
+                      placeholder="Type message and press Enter to send..."></textarea>
         </div>
         <div style="overflow: auto; border-style: ridge; border-top-style: hidden;">
             <button class="btn-warning pull-right" id="echo">Echo</button>
@@ -33,9 +33,9 @@
             </div>
         </div>
     </div>
-    
+
     <!--Reference the SignalR library. -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@aspnet/signalr@1.1.0/dist/browser/signalr.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
 
     <!--Add script to update the page and send messages.-->
     <script type="text/javascript">
@@ -54,7 +54,7 @@
                     username = '';
                     promptMessage = 'Invalid input. Enter your name:';
                 }
-            } while(!username)
+            } while (!username)
 
             // Set initial focus to message input box.
             var messageInput = document.getElementById('message');
@@ -81,13 +81,13 @@
             }
 
             function bindConnectionMessage(connection) {
-                var messageCallback = function(name, message) {
+                var messageCallback = function (name, message) {
                     if (!message) return;
                     // Html encode display name and message.
                     var encodedName = name;
                     var encodedMsg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
                     var messageEntry = createMessageEntry(encodedName, encodedMsg);
-                                
+
                     var messageBox = document.getElementById('messages');
                     messageBox.appendChild(messageEntry);
                     messageBox.scrollTop = messageBox.scrollHeight;
@@ -140,8 +140,8 @@
             }
 
             var connection = new signalR.HubConnectionBuilder()
-                                        .withUrl('/chat')
-                                        .build();
+                .withUrl('/chat')
+                .build();
             bindConnectionMessage(connection);
             connection.start()
                 .then(function () {
