@@ -15,11 +15,11 @@ namespace Microsoft.Azure.SignalR.Samples.SimpleEcho
             services.AddSignalR().AddAzureSignalR();
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime applicationLifetime)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UseAzureSignalR(routes =>
+            app.UseEndpoints(e =>
             {
-                routes.MapHub<EchoSampleHub>("/echo");
+                e.MapHub<EchoSampleHub>("/echo");
             });
         }
     }
