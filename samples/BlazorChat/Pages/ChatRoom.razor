@@ -29,6 +29,15 @@ else
         <span>You are connected as <b>@_username</b></span>
         <button class="btn btn-sm btn-warning ml-md-auto" @onclick="@DisconnectAsync">Disconnect</button>
     </div>
+
+    <h2>Connected users:</h2>
+    <ul>
+        @foreach (var user in _connectedUsers)
+        {
+            <li>@user</li>
+        }
+    </ul>
+
     // display messages
     <div id="scrollbox">
         @foreach (var item in _messages)
@@ -40,12 +49,18 @@ else
             else
             {
                 <div class="@item.CSS">
+                    @if (!string.IsNullOrWhiteSpace(item.RecieverUsername))
+                    {
+                        <div class="user">@item.RecieverUsername</div>
+                    }
                     <div class="user">@item.Username</div>
                     <div class="msg">@item.Body</div>
                 </div>
             }
         }
         <hr />
+        <label for="recipientUsername">Send message to:</label>
+        <input type="text" id="recipientUsername" @bind="_recipientUsername" />
         <textarea class="input-lg" placeholder="enter your comment" @bind="@_newMessage"></textarea>
         <button class="btn btn-default" @onclick="@(() => SendAsync(_newMessage))">Send</button>
     </div>
@@ -61,11 +76,17 @@ else
     // on-screen message
     private string _message;
 
+    // on-screen recipientUsername
+    private string _recipientUsername;
+
     // new message input
     private string _newMessage;
 
     // list of messages in chat
     private List<Message> _messages = new List<Message>();
+
+    // list of messages in chat
+    private List<string> _connectedUsers = new List<string>();
 
     private string _hubUrl;
     private HubConnection _hubConnection;
@@ -94,10 +115,18 @@ else
             _hubUrl = baseUrl.TrimEnd('/') + BlazorChatSampleHub.HubUrl;
 
             _hubConnection = new HubConnectionBuilder()
-                .WithUrl(_hubUrl)
+                .WithUrl($"{_hubUrl}?username={_username}")
                 .Build();
 
+            _hubConnection.On<IEnumerable<string>>("GetConnectedUsers", (userList) =>
+            {
+                _connectedUsers = userList.ToList();
+                InvokeAsync(StateHasChanged);
+                //StateHasChanged();
+            });
+
             _hubConnection.On<string, string>("Broadcast", BroadcastMessage);
+            _hubConnection.On<string, string, string>("RecieveUserToUser", RecieveUserToUser);
 
             await _hubConnection.StartAsync();
 
@@ -108,6 +137,17 @@ else
             _message = $"ERROR: Failed to start chat client: {e.Message}";
             _isChatting = false;
         }
+    }
+
+    private void RecieveUserToUser(string senderUsername, string recieverUsername, string message)
+    {
+        bool isMine = senderUsername.Equals(_username, StringComparison.OrdinalIgnoreCase);
+        var messageObj = new Message(senderUsername, message, isMine);
+        messageObj.RecieverUsername = recieverUsername;
+        _messages.Add(messageObj);
+
+        // Inform blazor the UI needs updating
+        InvokeAsync(StateHasChanged);
     }
 
     private void BroadcastMessage(string name, string message)
@@ -138,8 +178,9 @@ else
     {
         if (_isChatting && !string.IsNullOrWhiteSpace(message))
         {
-            await _hubConnection.SendAsync("Broadcast", _username, message);
 
+            await _hubConnection.SendAsync("Broadcast", _username, message);
+            await _hubConnection.SendAsync("SendUserToUser",_username, _recipientUsername, message);
             _newMessage = string.Empty;
         }
     }
@@ -154,6 +195,7 @@ else
         }
 
         public string Username { get; set; }
+        public string RecieverUsername { get; set; }
         public string Body { get; set; }
         public bool Mine { get; set; }
 
