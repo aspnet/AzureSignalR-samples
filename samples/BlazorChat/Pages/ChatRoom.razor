@@ -117,7 +117,7 @@ else
         _messages.Add(new Message(name, message, isMine));
 
         // Inform blazor the UI needs updating
-        StateHasChanged();
+        InvokeAsync(StateHasChanged);
     }
 
     private async Task DisconnectAsync()
