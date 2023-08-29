@@ -31,6 +31,9 @@ namespace BlazorChat
             var username = Context.GetHttpContext().Request.Query["username"];
             _connectedUsers.TryAdd(Context.ConnectionId, username);
             Console.WriteLine($"{Context.ConnectionId}:${username} connected");
+
+            var userList = GetConnectedUsers();
+            Clients.Client(Context.ConnectionId).SendAsync("ReceiveConnectedUsers", userList);
             return base.OnConnectedAsync();
         }
 

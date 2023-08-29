@@ -118,15 +118,14 @@ else
                 .WithUrl($"{_hubUrl}?username={_username}")
                 .Build();
 
-            _hubConnection.On<IEnumerable<string>>("GetConnectedUsers", (userList) =>
+            _hubConnection.On<IEnumerable<string>>("ReceiveConnectedUsers", (userList) =>
             {
                 _connectedUsers = userList.ToList();
                 InvokeAsync(StateHasChanged);
                 //StateHasChanged();
             });
-
             _hubConnection.On<string, string>("Broadcast", BroadcastMessage);
-            _hubConnection.On<string, string, string>("RecieveUserToUser", RecieveUserToUser);
+            _hubConnection.On<string, string, string>("SendUserToUser", SendUserToUser);
 
             await _hubConnection.StartAsync();
 
@@ -139,7 +138,7 @@ else
         }
     }
 
-    private void RecieveUserToUser(string senderUsername, string recieverUsername, string message)
+    private void SendUserToUser(string senderUsername, string recieverUsername, string message)
     {
         bool isMine = senderUsername.Equals(_username, StringComparison.OrdinalIgnoreCase);
         var messageObj = new Message(senderUsername, message, isMine);
@@ -178,9 +177,14 @@ else
     {
         if (_isChatting && !string.IsNullOrWhiteSpace(message))
         {
-
-            await _hubConnection.SendAsync("Broadcast", _username, message);
-            await _hubConnection.SendAsync("SendUserToUser",_username, _recipientUsername, message);
+            if (string.IsNullOrWhiteSpace(_recipientUsername))
+            {
+                await _hubConnection.SendAsync("Broadcast", _username, message);
+            }
+            else
+            {
+                await _hubConnection.SendAsync("SendUserToUser",_username, _recipientUsername, message);
+            }
             _newMessage = string.Empty;
         }
     }
