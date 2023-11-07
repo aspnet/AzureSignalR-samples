@@ -212,7 +212,7 @@ Although there is a CORS setting in **local.settings.json**, it is not propagate
 
 ### Enable App Service Authentication
 
-App Service Authentication supports authentication with Azure Active Directory, Facebook, Twitter, Microsoft account, and Google.
+App Service Authentication supports authentication with Microsoft Entra ID, Facebook, Twitter, Microsoft account, and Google.
 
 1. In the function app that was opened in the portal, locate the **Platform features** tab, select **Authentication/Authorization**.
 
@@ -224,7 +224,7 @@ App Service Authentication supports authentication with Azure Active Directory, 
 
 1. Follow the documentation for the login provider of your choice to complete the configuration.
 
-    - [Azure Active Directory](https://docs.microsoft.com/azure/app-service/configure-authentication-provider-aad)
+    - [Microsoft Entra ID](https://docs.microsoft.com/azure/app-service/configure-authentication-provider-aad)
     - [Facebook](https://docs.microsoft.com/azure/app-service/configure-authentication-provider-facebook)
     - [Twitter](https://docs.microsoft.com/azure/app-service/configure-authentication-provider-twitter)
     - [Microsoft account](https://docs.microsoft.com/azure/app-service/configure-authentication-provider-microsoft)
@@ -236,7 +236,7 @@ App Service Authentication supports authentication with Azure Active Directory, 
 
 1. Open **index.html** and update the value of `isAuthNeeded` to `true`.
 
-1. The application can be configured with authentication using Azure Active Directory, Facebook, Twitter, Microsoft account, or Google. Select the authentication provider that you will use by setting the value of `authProvider`.
+1. The application can be configured with authentication using Microsoft Entra ID, Facebook, Twitter, Microsoft account, or Google. Select the authentication provider that you will use by setting the value of `authProvider`.
 
 1. Use **Azure Storage: Deploy to Static Website** command to upload the **index.html** to Azure Storage
 
