@@ -40,22 +40,25 @@
     <!--Add script to update the page and send messages.-->
     <script type="text/javascript">
         document.addEventListener('DOMContentLoaded', function () {
+            function getUserName() {
+                function generateRandomName() {
+                    return Math.random().toString(36).substring(2, 10);
+                }
 
-            function generateRandomName() {
-                return Math.random().toString(36).substring(2, 10);
+                // Get the user name and store it to prepend to messages.
+                var username = generateRandomName();
+                var promptMessage = 'Enter your name:';
+                do {
+                    username = prompt(promptMessage, username);
+                    if (!username || username.startsWith('_') || username.indexOf('<') > -1 || username.indexOf('>') > -1) {
+                        username = '';
+                        promptMessage = 'Invalid input. Enter your name:';
+                    }
+                } while (!username)
+                return username;
             }
 
-            // Get the user name and store it to prepend to messages.
-            var username = generateRandomName();
-            var promptMessage = 'Enter your name:';
-            do {
-                username = prompt(promptMessage, username);
-                if (!username || username.startsWith('_') || username.indexOf('<') > -1 || username.indexOf('>') > -1) {
-                    username = '';
-                    promptMessage = 'Invalid input. Enter your name:';
-                }
-            } while (!username)
-
+            username = getUserName();
             // Set initial focus to message input box.
             var messageInput = document.getElementById('message');
             messageInput.focus();
@@ -80,17 +83,20 @@
                 return entry;
             }
 
+            function appendMessage(encodedName, encodedMsg) {
+                var messageEntry = createMessageEntry(encodedName, encodedMsg);
+                var messageBox = document.getElementById("messages");
+                messageBox.appendChild(messageEntry);
+                messageBox.scrollTop = messageBox.scrollHeight;
+            }
+
             function bindConnectionMessage(connection) {
                 var messageCallback = function (name, message) {
                     if (!message) return;
                     // Html encode display name and message.
                     var encodedName = name;
                     var encodedMsg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                    var messageEntry = createMessageEntry(encodedName, encodedMsg);
-
-                    var messageBox = document.getElementById('messages');
-                    messageBox.appendChild(messageEntry);
-                    messageBox.scrollTop = messageBox.scrollHeight;
+                    appendMessage(encodedName, encodedMsg);
                 };
                 // Create a function that the hub can call to broadcast messages.
                 connection.on('broadcastMessage', messageCallback);
@@ -104,7 +110,8 @@
                 document.getElementById('sendmessage').addEventListener('click', function (event) {
                     // Call the broadcastMessage method on the hub.
                     if (messageInput.value) {
-                        connection.send('broadcastMessage', username, messageInput.value);
+                        connection.send('broadcastMessage', username, messageInput.value)
+                        .catch((e) => appendMessage("_BROADCAST_", e.message));
                     }
 
                     // Clear text box and reset focus for next comment.
