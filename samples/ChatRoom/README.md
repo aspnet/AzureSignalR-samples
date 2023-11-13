@@ -57,9 +57,10 @@ Other than these changes, everything else remains the same, you can still use th
 > Under the hood, an endpoint `/chat/negotiate` is exposed for negotiation by Azure SignalR Service SDK. It will return a special negotiation response when clients try to connect and redirect clients to service endpoint from the connection string. Read more details about the redirection at SignalR's [Negotiation Protocol](https://github.com/aspnet/SignalR/blob/master/specs/TransportProtocols.md#post-endpoint-basenegotiate-request).
 
 
-Now set the connection string in the [Secret Manager](https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-2.1&tabs=visual-studio#secret-manager) tool for .NET Core, and run this app.
+Now use [dotnet dev-certs](https://learn.microsoft.com/dotnet/core/tools/dotnet-dev-certs) to generate a self-signed cert to enable HTTPS use in development, and set the connection string in the [Secret Manager](https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-2.1&tabs=visual-studio#secret-manager) tool for .NET Core, and run this app.
 
 ```
+dotnet dev-certs https --trust
 dotnet user-secrets set Azure:SignalR:ConnectionString "<your connection string>"
 dotnet run
 ```
