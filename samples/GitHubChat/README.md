@@ -10,7 +10,7 @@ First step is to create a OAuth App in GitHub:
 
 1. Go to GitHub -> Settings -> Developer Settings, and click "New OAuth App".
 2. Fill in an application name, a description and a homepage URL (for this sample you can just enter any random URL)
-3. Authorization callback URL is the url GitHub will redirect you to after authentication. For now make it `http://localhost:5000/signin-github`.
+3. Authorization callback URL is the url GitHub will redirect you to after authentication. For now make it `https://localhost:5001/signin-github`.
 4. Click "Register application" and you'll get an application with client ID and secret, you'll need them later when you implement the OAuth flow.
 
 ## Implement OAuth Flow
@@ -21,7 +21,10 @@ Add a link in the chat room for user to login, when Http status code is `401` (u
 
 ```js
 if (error.statusCode && error.statusCode === 401) {
-    appendMessage('_BROADCAST_', 'You\'re not logged in. Click <a href="/login">here</a> to login with GitHub.');
+  appendMessage(
+    "_BROADCAST_",
+    "You\"re not logged in. Click <a href="/login">here</a> to login with GitHub."
+  );
 }
 ```
 
@@ -31,12 +34,12 @@ The link points to `/login` which redirects to the GitHub OAuth page if you are 
 [HttpGet("login")]
 public IActionResult Login()
 {
-    if (!User.Identity.IsAuthenticated)
+    if (User.Identity == null || !User.Identity.IsAuthenticated)
     {
         return Challenge(GitHubAuthenticationDefaults.AuthenticationScheme);
     }
 
-    HttpContext.Response.Cookies.Append("githubchat_username", User.Identity.Name);
+    HttpContext.Response.Cookies.Append("githubchat_username", User.Identity.Name ?? "");
     HttpContext.SignInAsync(User);
     return Redirect("/");
 }
@@ -57,10 +60,10 @@ After you authorized the application, GitHub will return a code to the applicati
 
 Then let's update the hub to enforce authentication.
 
-1. Add `[Authorize]` attribute on the `Chat` class. Then only authenticated user can access the `/chat` endpoint. An `Unauthorized` error will be returned if user is not authenticated.
+1. Add `[Authorize]` attribute on the `ChatSampleHub` class. Then only authenticated user can access the `/chat` endpoint. An `Unauthorized` error will be returned if user is not authenticated.
 ```cs
 [Authorize]
-public class Chat : Hub
+public class ChatSampleHub : Hub
 {
     ...
 }
@@ -70,9 +73,9 @@ public class Chat : Hub
 Let's remove the `name` parameter and read user identifier from `Hub` class's `Context` member.:
 
 ```cs
-public void BroadcastMessage(string message)
+public Task BroadcastMessage(string message)
 {
-    Clients.All.SendAsync("broadcastMessage", Context.User.Identity.Name, message);
+    return Clients.All.SendAsync("broadcastMessage", Context.User?.Identity?.Name, message);
 }
 ```
 
@@ -82,20 +85,18 @@ Finally let's update the client code to handle `Unauthorized` error and instruct
 
 ```js
 connection.start()
-    .then(function () {
-        onConnected(connection);
-    })
-    .catch(function (error) {
-        if (error) {
-            if (error.message){
-                console.error(error.message);
-            }
-
-            if (error.statusCode && error.statusCode === 401) {
-                appendMessage('_BROADCAST_', 'You\'re not logged in. Click <a href="/login">here</a> to login with GitHub.');
-            }
-        }
-    });
+  .then(function () {
+    onConnected(connection);
+  })
+  .catch(function (error) {
+    console.error(error.message);
+    if (error.statusCode && error.statusCode === 401) {
+      appendMessage(
+        "_BROADCAST_",
+        "You\"re not logged in. Click <a href="/login">here</a> to login with GitHub."
+      );
+    }
+  });
 ```
 
 Now you can run the project and chat using your GitHub ID:
@@ -161,7 +162,7 @@ Now, if your GitHub account's company is not Microsoft, you cannot send messages
 > So, if you want to get a confirmation of the hub invocation (for example in this case you want to know whether your call has enough permission) you need to use `invoke()`:
 >
 > ```js
-> connection.invoke('broadcastMessage', messageInput.value)
->           .catch(e => appendMessage('_BROADCAST_', e.message));
+> connection.invoke("broadcastMessage", messageInput.value)
+>           .catch(e => appendMessage("_BROADCAST_", e.message));
 > ```
 
