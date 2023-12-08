@@ -42,4 +42,4 @@ msbuild.log
 msbuild.err
 msbuild.wrn
 
-module/*
+model/*
