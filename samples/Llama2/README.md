@@ -4,6 +4,7 @@ This is a chatroom sample integrated with LLAMA2 languange model to demonstrates
 
 - [Prerequisites](#prerequisites)
 - [Run the sample](#run-the-sample)
+- [Details in the sample](#details-in-the-sample)
 
 <a name="prerequisites"></a>
 
@@ -71,4 +72,12 @@ dotnet run
 
 You can normally group chat with other people using the webpage. And you can also type in content starting with `@llama`, e.g., `@llama how are you` to contact with llama2 model. And llama2 will broadcast the response to all paticipants.
 
-## Details in 
+> **_NOTE:_**  Relatively small model will result in bad conversation quality. Use CPU only will result in very slow response.
+
+![Alt text](media/llama-chat.png)
+
+## Details in the sample
+
+The sample uses [LlamaSharp](https://github.com/SciSharp/LLamaSharp) which is a C# binding of [llama.cpp](https://github.com/ggerganov/llama.cpp). Llama.cpp is a runtime which is responsible for contacting with the languange model. LlamaSharp provides some high-level APIs and also provide stateful context which means it can "remeber" the context you've just ask.
+
+The sample uses Azure SignalR which is a managed SignalR service which provides reliablity and scalibity. It shared the same protocol as self-hosted SignalR library. In the sample, we created a `ChatSampleHub` and defined several hub method. `Inference` is the one when invoked by client will send the message to Llama2 and wait for the response tokens. The server will generate a unique ID per invocation and streamingly broadcast tokens together with the ID to all clients. For clients, when receiving a message from the server, it will generate a new div for a new ID to show the response from Llama2 or append to the existing div if the ID is exist.
