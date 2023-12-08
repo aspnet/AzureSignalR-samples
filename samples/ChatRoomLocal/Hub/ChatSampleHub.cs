@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 
-public class ChatHub : Hub
+public class ChatSampleHub : Hub
 {
     public Task BroadcastMessage(string name, string message) =>
         Clients.All.SendAsync("broadcastMessage", name, message);
