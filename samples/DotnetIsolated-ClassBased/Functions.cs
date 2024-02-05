@@ -1,25 +1,20 @@
 using System.Net;
-using System.Text.Json;
-using Azure.Core.Serialization;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Azure.SignalR.Management;
+using Microsoft.Azure.Functions.Worker.SignalRService;
 using Microsoft.Extensions.Logging;
 
 namespace DotnetIsolated_ClassBased
 {
-    public class Functions
+    [SignalRConnection("AzureSignalRConnectionString")]
+    public class Functions : ServerlessHub<IChatClient>
     {
-        private static readonly ObjectSerializer JsonObjectSerializer = new JsonObjectSerializer(new(JsonSerializerDefaults.Web));
+        private const string HubName = nameof(Functions);
         private readonly ILogger _logger;
-        private readonly IHubContextStore _hubContextStore;
-        private ServiceHubContext MessageHubContext => _hubContextStore.MessageHubContext;
 
-        public Functions(ILoggerFactory loggerFactory, IHubContextStore hubContextStore)
+        public Functions(IServiceProvider serviceProvider, ILogger<Functions> logger) : base(serviceProvider)
         {
-            _logger = loggerFactory.CreateLogger<Functions>();
-            _hubContextStore = hubContextStore;
+            _logger = logger;
         }
 
         [Function("index")]
@@ -36,80 +31,83 @@ namespace DotnetIsolated_ClassBased
         {
             _logger.LogInformation("C# HTTP trigger function processed a request.");
 
-            var negotiateResponse = await MessageHubContext.NegotiateAsync(new() { UserId = req.Headers.GetValues("userId").FirstOrDefault() });
+            var negotiateResponse = await NegotiateAsync(new() { UserId = req.Headers.GetValues("userId").FirstOrDefault() });
             var response = req.CreateResponse();
-            // We need to make sure the response JSON naming is camelCase, otherwise SignalR client can't recognize it.
-            await response.WriteAsJsonAsync(negotiateResponse, JsonObjectSerializer);
+            response.WriteBytes(negotiateResponse.ToArray());
             return response;
         }
 
-
         [Function("OnConnected")]
-        public Task OnConnected([SignalRTrigger("Hub", "connections", "connected")] SignalRInvocationContext invocationContext)
+        public Task OnConnected([SignalRTrigger(HubName, "connections", "connected")] SignalRInvocationContext invocationContext)
         {
             invocationContext.Headers.TryGetValue("Authorization", out var auth);
             _logger.LogInformation($"{invocationContext.ConnectionId} has connected");
-            return MessageHubContext.Clients.All.SendAsync("newConnection", new NewConnection(invocationContext.ConnectionId, auth));
+            return Clients.All.newConnection(new NewConnection(invocationContext.ConnectionId, auth));
         }
 
         [Function("Broadcast")]
         public Task Broadcast(
-        [SignalRTrigger("Hub", "messages", "broadcast", "message")] SignalRInvocationContext invocationContext, string message)
+        [SignalRTrigger(HubName, "messages", "broadcast", "message")] SignalRInvocationContext invocationContext, string message)
         {
-            return MessageHubContext.Clients.All.SendAsync("newMessage", new NewMessage(invocationContext, message));
+            return Clients.All.newMessage(new NewMessage(invocationContext, message));
         }
 
         [Function("SendToGroup")]
-        public Task SendToGroup([SignalRTrigger("Hub", "messages", "SendToGroup", "groupName", "message")] SignalRInvocationContext invocationContext, string groupName, string message)
+        public Task SendToGroup([SignalRTrigger(HubName, "messages", "SendToGroup", "groupName", "message")] SignalRInvocationContext invocationContext, string groupName, string message)
         {
-            return MessageHubContext.Clients.Group(groupName).SendAsync("newMessage", new NewMessage(invocationContext, message));
+            return Clients.Group(groupName).newMessage(new NewMessage(invocationContext, message));
         }
 
         [Function("SendToUser")]
-        public Task SendToUser([SignalRTrigger("Hub", "messages", "SendToUser", "userName", "message")] SignalRInvocationContext invocationContext, string userName, string message)
+        public Task SendToUser([SignalRTrigger(HubName, "messages", "SendToUser", "userName", "message")] SignalRInvocationContext invocationContext, string userName, string message)
         {
-            return MessageHubContext.Clients.User(userName).SendAsync("newMessage", new NewMessage(invocationContext, message));
-
+            return Clients.User(userName).newMessage(new NewMessage(invocationContext, message));
         }
 
         [Function("SendToConnection")]
-        public Task SendToConnection([SignalRTrigger("Hub", "messages", "SendToConnection", "connectionId", "message")] SignalRInvocationContext invocationContext, string connectionId, string message)
+        public Task SendToConnection([SignalRTrigger(HubName, "messages", "SendToConnection", "connectionId", "message")] SignalRInvocationContext invocationContext, string connectionId, string message)
         {
-            return MessageHubContext.Clients.Client(connectionId).SendAsync("newMessage", new NewMessage(invocationContext, message));
+            return Clients.Client(connectionId).newMessage(new NewMessage(invocationContext, message));
         }
 
         [Function("JoinGroup")]
-        [SignalROutput(HubName = "Hub")]
-        public Task JoinGroup([SignalRTrigger("Hub", "messages", "JoinGroup", "connectionId", "groupName")] SignalRInvocationContext invocationContext, string connectionId, string groupName)
+        [SignalROutput(HubName = HubName)]
+        public Task JoinGroup([SignalRTrigger(HubName, "messages", "JoinGroup", "connectionId", "groupName")] SignalRInvocationContext invocationContext, string connectionId, string groupName)
         {
-            return MessageHubContext.Groups.AddToGroupAsync(connectionId, groupName);
+            return Groups.AddToGroupAsync(connectionId, groupName);
         }
 
         [Function("LeaveGroup")]
-        [SignalROutput(HubName = "Hub")]
-        public Task LeaveGroup([SignalRTrigger("Hub", "messages", "LeaveGroup", "connectionId", "groupName")] SignalRInvocationContext invocationContext, string connectionId, string groupName)
+        [SignalROutput(HubName = HubName)]
+        public Task LeaveGroup([SignalRTrigger(HubName, "messages", "LeaveGroup", "connectionId", "groupName")] SignalRInvocationContext invocationContext, string connectionId, string groupName)
         {
-            return MessageHubContext.Groups.RemoveFromGroupAsync(connectionId, groupName);
+            return Groups.RemoveFromGroupAsync(connectionId, groupName);
         }
 
         [Function("JoinUserToGroup")]
-        [SignalROutput(HubName = "Hub")]
-        public Task JoinUserToGroup([SignalRTrigger("Hub", "messages", "JoinUserToGroup", "userName", "groupName")] SignalRInvocationContext invocationContext, string userName, string groupName)
+        [SignalROutput(HubName = HubName)]
+        public Task JoinUserToGroup([SignalRTrigger(HubName, "messages", "JoinUserToGroup", "userName", "groupName")] SignalRInvocationContext invocationContext, string userName, string groupName)
         {
-            return MessageHubContext.UserGroups.AddToGroupAsync(userName, groupName);
+            return UserGroups.AddToGroupAsync(userName, groupName);
         }
 
         [Function("LeaveUserFromGroup")]
-        [SignalROutput(HubName = "Hub")]
-        public Task LeaveUserFromGroup([SignalRTrigger("Hub", "messages", "LeaveUserFromGroup", "userName", "groupName")] SignalRInvocationContext invocationContext, string userName, string groupName)
+        [SignalROutput(HubName = HubName)]
+        public Task LeaveUserFromGroup([SignalRTrigger(HubName, "messages", "LeaveUserFromGroup", "userName", "groupName")] SignalRInvocationContext invocationContext, string userName, string groupName)
         {
-            return MessageHubContext.UserGroups.RemoveFromGroupAsync(userName, groupName);
+            return UserGroups.RemoveFromGroupAsync(userName, groupName);
         }
 
         [Function("OnDisconnected")]
-        public void OnDisconnected([SignalRTrigger("Hub", "connections", "disconnected")] SignalRInvocationContext invocationContext)
+        public void OnDisconnected([SignalRTrigger(HubName, "connections", "disconnected")] SignalRInvocationContext invocationContext)
         {
             _logger.LogInformation($"{invocationContext.ConnectionId} has disconnected");
         }
+    }
+
+    public interface IChatClient
+    {
+        Task newMessage(NewMessage message);
+        Task newConnection(NewConnection connection);
     }
 }
