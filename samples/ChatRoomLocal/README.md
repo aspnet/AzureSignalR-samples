@@ -52,7 +52,7 @@ Let's implement this feature step by step.
 
     ```cs
     var builder = WebApplication.CreateBuilder(args);
-    builder.Services.AddSignalR().AddAzureSignalR();
+    builder.Services.AddSignalR();
     var app = builder.Build();
 
     app.UseRouting();
