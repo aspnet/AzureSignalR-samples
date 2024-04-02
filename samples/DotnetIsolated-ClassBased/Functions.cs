@@ -71,28 +71,24 @@ namespace DotnetIsolated_ClassBased
         }
 
         [Function("JoinGroup")]
-        [SignalROutput(HubName = HubName)]
         public Task JoinGroup([SignalRTrigger(HubName, "messages", "JoinGroup", "connectionId", "groupName")] SignalRInvocationContext invocationContext, string connectionId, string groupName)
         {
             return Groups.AddToGroupAsync(connectionId, groupName);
         }
 
         [Function("LeaveGroup")]
-        [SignalROutput(HubName = HubName)]
         public Task LeaveGroup([SignalRTrigger(HubName, "messages", "LeaveGroup", "connectionId", "groupName")] SignalRInvocationContext invocationContext, string connectionId, string groupName)
         {
             return Groups.RemoveFromGroupAsync(connectionId, groupName);
         }
 
         [Function("JoinUserToGroup")]
-        [SignalROutput(HubName = HubName)]
         public Task JoinUserToGroup([SignalRTrigger(HubName, "messages", "JoinUserToGroup", "userName", "groupName")] SignalRInvocationContext invocationContext, string userName, string groupName)
         {
             return UserGroups.AddToGroupAsync(userName, groupName);
         }
 
         [Function("LeaveUserFromGroup")]
-        [SignalROutput(HubName = HubName)]
         public Task LeaveUserFromGroup([SignalRTrigger(HubName, "messages", "LeaveUserFromGroup", "userName", "groupName")] SignalRInvocationContext invocationContext, string userName, string groupName)
         {
             return UserGroups.RemoveFromGroupAsync(userName, groupName);
