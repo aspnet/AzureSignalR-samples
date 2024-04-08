@@ -10,7 +10,7 @@ app.http('index', {
 
             context.log(`Http function processed request for url "${request.url}"`);
 
-            const path = context.executionContext.functionDirectory + '../../content/index.html'
+            const path = context.executionContext.functionDirectory + '../content/index.html'
             const html = await fs.readFile(path);
 
             return {

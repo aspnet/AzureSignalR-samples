@@ -9,7 +9,7 @@ In this sample, we demonstrate how to broadcast messages with SignalR Service an
 
 ## Setup and run locally
 
-1. Start local storage emulator.
+1. Start local storage emulator in terminal.
 
     ```bash
     npm run start:azurite
@@ -19,7 +19,7 @@ In this sample, we demonstrate how to broadcast messages with SignalR Service an
 
     * `SIGNALR_CONNECTION_STRING`: The connection string of your Azure SignalR Service.
 
-1. Run command to start Azure Function locally.
+1. Run command to start Azure Function locally in different terminal.
 
     ```bash
     npm start
