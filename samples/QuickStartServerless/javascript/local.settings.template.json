@@ -1,9 +1,9 @@
 {
   "IsEncrypted": false,
   "Values": {
-    "FUNCTIONS_WORKER_RUNTIME": "node",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-    "AzureSignalRConnectionString": ""
-  },
-  "ConnectionStrings": {}
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "AzureWebJobsFeatureFlags": "EnableWorkerIndexing",
+    "SIGNALR_CONNECTION_STRING": "<SIGNALR_CONNECTION_STRING>"
+  }
 }
