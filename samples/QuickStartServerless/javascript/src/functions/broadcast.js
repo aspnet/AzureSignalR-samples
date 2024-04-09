@@ -1,5 +1,5 @@
-const { app } = require('@azure/functions');
-const { getStars } = require('../getStars');
+const { app, output } = require('@azure/functions');
+const getStars = require('../getStars');
 
 var etag = '';
 var star = 0;
@@ -11,20 +11,30 @@ const goingOutToSignalR = output.generic({
     connectionStringSetting: 'SIGNALR_CONNECTION_STRING',
 });
 
-
 app.timer('sendMessasge', {
-    schedule: '0 */5 * * * *',
+    schedule: '0 * * * * *',
     extraOutputs: [goingOutToSignalR],
     handler: async (myTimer, context) => {
-        const response = await getStars(etag);
 
-        etag = response.etag;
+        try {
+            const response = await getStars(etag);
 
-        context.extraOutputs.set(goingOutToSignalR,
-            {
-                'target': 'newMessage',
-                'arguments': [ `Current star count of https://github.com/Azure/azure-signalr is: ${response.stars}` ]
-            });
+            if(response.etag === etag){
+                console.log(`Same etag: ${response.etag}, no need to broadcast message`);
+                return;
+            }
+        
+            etag = response.etag;
+            const message = `${response.stars}`;
+
+            context.extraOutputs.set(goingOutToSignalR,
+                {
+                    'target': 'newMessage',
+                    'arguments': [message]
+                });
+        } catch (error) {
+            context.log(error);
+        }
 
     }
 });

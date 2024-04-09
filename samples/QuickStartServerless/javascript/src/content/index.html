@@ -2,16 +2,20 @@
 
 <body>
   <h1>Azure SignalR Serverless Sample</h1>
-  <div id="messages"></div>
+  <div>Instructions: Goto <a href="https://github.com/Azure/azure-signalr">GitHub repo</a> and star the repository.</div>
+  <hr>
+  <div>Star count: <div id="messages"></div></div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/3.1.7/signalr.min.js"></script>
   <script>
     let messages = document.querySelector('#messages');
     const apiBaseUrl = window.location.origin;
+    console.log(`apiBaseUrl: ${apiBaseUrl}`);
     const connection = new signalR.HubConnectionBuilder()
         .withUrl(apiBaseUrl + '/api')
         .configureLogging(signalR.LogLevel.Information)
         .build();
       connection.on('newMessage', (message) => {
+        console.log(`message: ${message}`);
         document.getElementById("messages").innerHTML = message;
       });
 

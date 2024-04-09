@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@azure/functions": "^4.0.0",
-    "node-fetch": "^3.3.2"
+    "node-fetch": "2.7.0"
   },
   "devDependencies": {
     "azurite": "3.29.0", 

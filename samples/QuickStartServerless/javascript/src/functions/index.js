@@ -1,5 +1,6 @@
 const { app } = require('@azure/functions');
 const fs = require('fs').promises;
+const path = require('path');
 
 app.http('index', {
     methods: ['GET', 'POST'],
@@ -10,8 +11,8 @@ app.http('index', {
 
             context.log(`Http function processed request for url "${request.url}"`);
 
-            const path = context.executionContext.functionDirectory + '../content/index.html'
-            const html = await fs.readFile(path);
+            const filePath = path.join(__dirname,'../content/index.html');
+            const html = await fs.readFile(filePath);
 
             return {
                 body: html,
@@ -21,10 +22,10 @@ app.http('index', {
             };
 
         } catch (error) {
-            context.log.error(err);
+            context.log(error);
             return {
                 status: 500,
-                jsonBody: err
+                jsonBody: error
             }
         }
     }

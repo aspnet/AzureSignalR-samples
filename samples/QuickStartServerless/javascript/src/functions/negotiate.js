@@ -10,7 +10,15 @@ const inputSignalR = input.generic({
 app.post('negotiate', {
     authLevel: 'anonymous',
     handler: (request, context) => {
-        return { body: JSON.stringify(context.extraInputs.get(inputSignalR)) }
+        try {
+            return { body: JSON.stringify(context.extraInputs.get(inputSignalR)) }
+        } catch (error) {
+            context.log(error);
+            return {
+                status: 500,
+                jsonBody: error
+            }
+        }
     },
     route: 'negotiate',
     extraInputs: [inputSignalR],
