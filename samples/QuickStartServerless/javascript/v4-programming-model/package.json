@@ -1,0 +1,19 @@
+{
+  "name": "javascript",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "start:azurite": "azurite -s -l __azurite__",
+    "start": "func start",
+    "test": "echo \"No tests yet...\""
+  },
+  "dependencies": {
+    "@azure/functions": "^4.0.0",
+    "node-fetch": "2.7.0"
+  },
+  "devDependencies": {
+    "azurite": "3.29.0", 
+    "azure-functions-core-tools": "^4.0.5611"
+  },
+  "main": "src/functions/*.js"
+}
