@@ -9,7 +9,7 @@ using Microsoft.AspNet.SignalR;
 
 namespace ChatRoom
 {
-    public class ChatSampleHub : Hub
+    public class ChatHub : Hub
     {
         public void Send(string name, string message)
         {
