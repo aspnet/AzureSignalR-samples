@@ -57,9 +57,9 @@ Let's look at the key changes:
 
     ```xml
     <configuration>
-    <connectionStrings>
-        <add name="Azure:SignalR:ConnectionString" connectionString="<Replace By Your Connection String>"/>
-    </connectionStrings>
+        <connectionStrings>
+            <add name="Azure:SignalR:ConnectionString" connectionString="{Replace By Your Connection String}"/>
+        </connectionStrings>
     ...
     </configuration>
     ```
