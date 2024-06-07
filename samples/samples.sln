@@ -21,8 +21,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerSideBlazor", "ServerS
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleEcho", "SimpleEcho\SimpleEcho.csproj", "{485FB16C-0600-41BC-8958-4E65F1283936}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChatRoom.NetCore21", "ChatRoom.NetCore21\ChatRoom\ChatRoom.NetCore21.csproj", "{C05D2484-8AED-4AA0-919E-EDD734CD51CE}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -65,10 +63,6 @@ Global
 		{485FB16C-0600-41BC-8958-4E65F1283936}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{485FB16C-0600-41BC-8958-4E65F1283936}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{485FB16C-0600-41BC-8958-4E65F1283936}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C05D2484-8AED-4AA0-919E-EDD734CD51CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C05D2484-8AED-4AA0-919E-EDD734CD51CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C05D2484-8AED-4AA0-919E-EDD734CD51CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C05D2484-8AED-4AA0-919E-EDD734CD51CE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
