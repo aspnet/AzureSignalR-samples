@@ -33,23 +33,23 @@ jobs:
       run: |
         pushd aspnet-samples/AdvancedChatRoom
         nuget restore
-        msbuild
+        msbuild AdvancedChatRoom.sln
         popd
     - name: Build ChatRoom project
       run: |
         pushd aspnet-samples/ChatRoom
         nuget restore
-        msbuild
+        msbuild ChatRoom.sln
         popd
     - name: Build ChatRoomLocal project
       run: |
         pushd aspnet-samples/ChatRoomLocal
         nuget restore
-        msbuild
+        msbuild ChatRoom.sln
         popd
     - name: Build AspnetForm project
       run: |
         pushd aspnet-samples/AspnetForm
         nuget restore
-        msbuild
+        msbuild AspnetForm.sln
         popd
