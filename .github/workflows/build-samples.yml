@@ -1,0 +1,144 @@
+name: .NET
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      netcore_setup: ${{ steps.setup_dotnet.outputs.dotnet-version }}
+      msbuild_setup: ${{ steps.setup_msbuild.outputs.msbuild-path }}
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      id: setup_dotnet
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+    - name: Setup MSBuild.exe
+      id: setup_msbuild
+      uses: microsoft/setup-msbuild@v2
+    - name: Cache repository
+      id: cache-repo
+      uses: actions/cache@v3
+      with:
+        path: |
+          ./samples
+          ./aspnet-samples
+        key: ${{ runner.os }}-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-
+
+  build-netcore:
+    runs-on: ubuntu-latest
+    needs: setup
+
+    steps:
+    - uses: actions/checkout@v4
+      if: steps.cache-repo.outputs.cache-hit != 'true'
+    - name: Restore repository cache
+      if: steps.cache-repo.outputs.cache-hit == 'true'
+      uses: actions/cache@v3
+      with:
+        path: |
+          ./samples
+          ./aspnet-samples
+        key: ${{ runner.os }}-${{ github.sha }}
+    - name: Build netcore projects
+      run: |
+        pushd samples
+        dotnet build
+        popd
+
+  build-advanced-chat-room:
+    runs-on: ubuntu-latest
+    needs: setup
+
+    steps:
+    - uses: actions/checkout@v4
+      if: steps.cache-repo.outputs.cache-hit != 'true'
+    - name: Restore repository cache
+      if: steps.cache-repo.outputs.cache-hit == 'true'
+      uses: actions/cache@v3
+      with:
+        path: |
+          ./samples
+          ./aspnet-samples
+        key: ${{ runner.os }}-${{ github.sha }}
+    - name: Build AdvancedChatRoom project
+      run: |
+        pushd aspnet-samples/AdvancedChatRoom
+        nuget restore
+        msbuild
+        popd
+
+  build-chat-room:
+    runs-on: ubuntu-latest
+    needs: setup
+
+    steps:
+    - uses: actions/checkout@v4
+      if: steps.cache-repo.outputs.cache-hit != 'true'
+    - name: Restore repository cache
+      if: steps.cache-repo.outputs.cache-hit == 'true'
+      uses: actions/cache@v3
+      with:
+        path: |
+          ./samples
+          ./aspnet-samples
+        key: ${{ runner.os }}-${{ github.sha }}
+    - name: Build ChatRoom project
+      run: |
+        pushd aspnet-samples/ChatRoom
+        nuget restore
+        msbuild
+        popd
+
+  build-chat-room-local:
+    runs-on: ubuntu-latest
+    needs: setup
+
+    steps:
+    - uses: actions/checkout@v4
+      if: steps.cache-repo.outputs.cache-hit != 'true'
+    - name: Restore repository cache
+      if: steps.cache-repo.outputs.cache-hit == 'true'
+      uses: actions/cache@v3
+      with:
+        path: |
+          ./samples
+          ./aspnet-samples
+        key: ${{ runner.os }}-${{ github.sha }}
+    - name: Build ChatRoomLocal project
+      run: |
+        pushd aspnet-samples/ChatRoomLocal
+        nuget restore
+        msbuild
+        popd
+
+  build-aspnet-form:
+    runs-on: ubuntu-latest
+    needs: setup
+
+    steps:
+    - uses: actions/checkout@v4
+      if: steps.cache-repo.outputs.cache-hit != 'true'
+    - name: Restore repository cache
+      if: steps.cache-repo.outputs.cache-hit == 'true'
+      uses: actions/cache@v3
+      with:
+        path: |
+          ./samples
+          ./aspnet-samples
+        key: ${{ runner.os }}-${{ github.sha }}
+    - name: Build AspnetForm project
+      run: |
+        pushd aspnet-samples/AspnetForm
+        nuget restore
+        msbuild
+        popd
