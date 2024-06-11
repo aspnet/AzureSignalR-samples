@@ -33,25 +33,7 @@ jobs:
       uses: microsoft/setup-msbuild@v2
     - name: Build AdvancedChatRoom project
       run: |
-        pushd aspnet-samples/AdvancedChatRoom
+        pushd aspnet-samples
         nuget restore
-        msbuild AdvancedChatRoom.sln
-        popd
-    - name: Build ChatRoom project
-      run: |
-        pushd aspnet-samples/ChatRoom
-        nuget restore
-        msbuild ChatRoom.sln
-        popd
-    - name: Build ChatRoomLocal project
-      run: |
-        pushd aspnet-samples/ChatRoomLocal
-        nuget restore
-        msbuild ChatRoom.sln
-        popd
-    - name: Build AspnetForm project
-      run: |
-        pushd aspnet-samples/AspnetForm
-        nuget restore
-        msbuild AspnetForm.sln
+        msbuild aspnet-samples.sln
         popd
