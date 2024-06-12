@@ -17,6 +17,6 @@
   },
   "homepage": "https://github.com/aspnet/AzureSignalR-samples#readme",
   "dependencies": {
-    "azure-storage": "^2.10.3"
+    "azure-storage": "^2.10.7"
   }
 }
