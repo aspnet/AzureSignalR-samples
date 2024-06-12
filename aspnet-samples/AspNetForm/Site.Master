@@ -62,7 +62,7 @@
         </div>
     </form>
     <asp:PlaceHolder runat="server">
-        <%: Scripts.Render("~/Scripts/bootstrap.js") %>
+        <%: Scripts.Render("~/Scripts/bootstrap.min.js") %>
     </asp:PlaceHolder>
 </body>
 </html>

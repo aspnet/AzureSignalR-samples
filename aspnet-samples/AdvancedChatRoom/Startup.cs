@@ -20,11 +20,11 @@ namespace ChatSample.AspNet
             app
                 .Map("/api", map =>
                 {
-                    HttpConfiguration config = new HttpConfiguration();
+                    System.Web.Http.HttpConfiguration config = new System.Web.Http.HttpConfiguration();
                     config.MapHttpAttributeRoutes();
                     map.UseWebApi(config);
                 })
-                // TODO: Add your ConnectionString here
+                // TODO: Add your ConnectionString here or configure in web.config
                 .MapAzureSignalR(this.GetType().FullName);
 
             // Turn tracing on programmatically
