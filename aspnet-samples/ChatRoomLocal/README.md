@@ -2,7 +2,7 @@
 
 In this sample you'll learn how to use ASP.NET SignalR to build a chat room application.
 
-> This tutorial is to give you a brief introduction about how ASP.NET SignalR works, if you're already familiar with it, you can skip this sample.
+> This tutorial is to give you a brief introduction about how ASP.NET SignalR works, if you're already familiar with it, you can skip this sample. ASP
 >
 > Please be noted this sample is based on the ASP.NET version. You can find detailed tutorials talking about ASP.NET SignalR in [SignalR Docs Site](https://docs.microsoft.com/en-us/aspnet/signalr/).
 
@@ -17,9 +17,9 @@ Then you can send a message and everyone in the room can see it:
 ![chat-room-2](../images/1.chat-room-2.png)
 
 > Prerequisites
-> * [Visual Studio 2017](https://visualstudio.microsoft.com/downloads/)
-> * .NET 4.6.1
-> * SignalR version 2.4.0
+> * [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/)
+> * .NET 4.7.2
+> * SignalR version 2.4.3
 
 Let's implement this feature step by step.
 

@@ -1,0 +1,39 @@
+name: build samples
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-aspnetcore-samples:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+    - name: Build netcore projects
+      run: |
+        pushd samples
+        dotnet build
+        popd
+
+  build-aspnet-samples:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install .NET Framework 4.6.1 Developer Pack
+      run: choco install netfx-4.6.1-devpack -y
+    - name: Setup MSBuild.exe
+      uses: microsoft/setup-msbuild@v2
+    - name: Build aspnet projects
+      run: |
+        pushd aspnet-samples
+        nuget restore
+        msbuild aspnet-samples.sln
+        popd
