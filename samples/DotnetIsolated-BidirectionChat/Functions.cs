@@ -25,10 +25,11 @@ namespace IsolatedModel_BidirectionChat
         }
 
         [Function("Negotiate")]
-        public SignalRConnectionInfo Negotiate([HttpTrigger(AuthorizationLevel.Anonymous)] HttpRequestData req,
-            [SignalRConnectionInfoInput(HubName = "Hub", UserId = "{query.userid}")] SignalRConnectionInfo signalRConnectionInfo)
+        public string Negotiate([HttpTrigger(AuthorizationLevel.Anonymous)] HttpRequestData req,
+            [SignalRConnectionInfoInput(HubName = "Hub", UserId = "{query.userid}")] string signalRConnectionInfo)
         {
             _logger.LogInformation("Executing negotiation.");
+            // The serialization of the connection info object is done by the framework. It should be camel case. The SignalR client respects the camel case response only.
             return signalRConnectionInfo;
         }
 
