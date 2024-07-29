@@ -28,6 +28,7 @@ namespace BlazorChat
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
+            services.AddSignalR().AddAzureSignalR("***REMOVED***");
             services.AddSingleton<WeatherForecastService>();
         }
 
