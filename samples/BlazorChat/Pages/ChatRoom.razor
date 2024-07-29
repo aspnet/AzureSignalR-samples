@@ -49,18 +49,20 @@ else
             else
             {
                 <div class="@item.CSS">
+                    <div class="user">From: @item.Username</div>
                     @if (!string.IsNullOrWhiteSpace(item.RecieverUsername))
                     {
-                        <div class="user">@item.RecieverUsername</div>
+                        <div class="user">To: @item.RecieverUsername</div>
                     }
-                    <div class="user">@item.Username</div>
                     <div class="msg">@item.Body</div>
                 </div>
             }
         }
         <hr />
-        <label for="recipientUsername">Send message to:</label>
-        <input type="text" id="recipientUsername" @bind="_recipientUsername" />
+        <div id="sentto">
+            <label for="recipientUsername">Send message to:</label>
+            <input type="text" id="recipientUsername" @bind="_recipientUsername" />
+        </div>
         <textarea class="input-lg" placeholder="enter your comment" @bind="@_newMessage"></textarea>
         <button class="btn btn-default" @onclick="@(() => SendAsync(_newMessage))">Send</button>
     </div>
@@ -118,13 +120,13 @@ else
                 .WithUrl($"{_hubUrl}?username={_username}")
                 .Build();
 
-            _hubConnection.On<IEnumerable<string>>("ReceiveConnectedUsers", (userList) =>
+            _hubConnection.On<IEnumerable<string>>("UpdateConnectedUsers", (userList) =>
             {
                 _connectedUsers = userList.ToList();
                 InvokeAsync(StateHasChanged);
             });
             _hubConnection.On<string, string>("Broadcast", BroadcastMessage);
-            _hubConnection.On<string, string, string>("SendUserToUser", SendUserToUser);
+            _hubConnection.On<string, string, string>("SendToUser", SendToUser);
 
             await _hubConnection.StartAsync();
 
@@ -137,22 +139,22 @@ else
         }
     }
 
-    private void SendUserToUser(string senderUsername, string recieverUsername, string message)
-    {
-        bool isMine = senderUsername.Equals(_username, StringComparison.OrdinalIgnoreCase);
-        var messageObj = new Message(senderUsername, message, isMine);
-        messageObj.RecieverUsername = recieverUsername;
-        _messages.Add(messageObj);
-
-        // Inform blazor the UI needs updating
-        InvokeAsync(StateHasChanged);
-    }
-
     private void BroadcastMessage(string name, string message)
     {
         bool isMine = name.Equals(_username, StringComparison.OrdinalIgnoreCase);
 
         _messages.Add(new Message(name, message, isMine));
+
+        // Inform blazor the UI needs updating
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void SendToUser(string senderUsername, string recieverUsername, string message)
+    {
+        bool isMine = senderUsername.Equals(_username, StringComparison.OrdinalIgnoreCase);
+        var messageObj = new Message(senderUsername, message, isMine);
+        messageObj.RecieverUsername = recieverUsername;
+        _messages.Add(messageObj);
 
         // Inform blazor the UI needs updating
         InvokeAsync(StateHasChanged);
@@ -176,14 +178,7 @@ else
     {
         if (_isChatting && !string.IsNullOrWhiteSpace(message))
         {
-            if (string.IsNullOrWhiteSpace(_recipientUsername))
-            {
-                await _hubConnection.SendAsync("Broadcast", _username, message);
-            }
-            else
-            {
-                await _hubConnection.SendAsync("SendUserToUser",_username, _recipientUsername, message);
-            }
+            await _hubConnection.SendAsync("Broadcast", _username, _recipientUsername, message);
             _newMessage = string.Empty;
         }
     }

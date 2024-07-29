@@ -11,42 +11,55 @@ namespace BlazorChat
     public class BlazorChatSampleHub : Hub
     {
         public const string HubUrl = "/chat";
-        private static ConcurrentDictionary<string, string> _connectedUsers = new ConcurrentDictionary<string, string>();
+        // cache with <UserName,ConnectionIds>
+        private static ConcurrentDictionary<string, List<string>> _connectedUsers = new ConcurrentDictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
 
-        public async Task Broadcast(string username, string message)
+        public async Task Broadcast(string username, string recipient, string message)
         {
-            await Clients.All.SendAsync("Broadcast", username, message);
-        }
-        public async Task SendUserToUser(string senderUsername, string recipientUsername, string message)
-        {
-            var recipientConnectionId = _connectedUsers.FirstOrDefault(u => u.Value == recipientUsername).Key;
-            if (!string.IsNullOrEmpty(recipientConnectionId))
+            if (string.IsNullOrEmpty(recipient))
             {
-                await Clients.Client(recipientConnectionId).SendAsync("SendUserToUser", senderUsername, recipientUsername, message);
+                await Clients.All.SendAsync("Broadcast", username, message);
+            }
+            else if (_connectedUsers.TryGetValue(recipient, out var connections) && connections.Count > 0)
+            {
+                await Clients.Clients(connections).SendAsync("SendToUser", username, recipient, message);
             }
         }
 
-        public override Task OnConnectedAsync()
+        public override async Task OnConnectedAsync()
         {
             var username = Context.GetHttpContext().Request.Query["username"];
-            _connectedUsers.TryAdd(Context.ConnectionId, username);
+            if (_connectedUsers.TryGetValue(username, out var connections))
+            {
+                connections.Add(Context.ConnectionId);
+            }
+            else
+            {
+                connections = new List<string>() { Context.ConnectionId };
+            }
+            _connectedUsers[username] = connections;
             Console.WriteLine($"{Context.ConnectionId}:${username} connected");
 
-            var userList = GetConnectedUsers();
-            Clients.Client(Context.ConnectionId).SendAsync("ReceiveConnectedUsers", userList);
-            return base.OnConnectedAsync();
+            await Clients.All.SendAsync("UpdateConnectedUsers", _connectedUsers.Keys);
+            await base.OnConnectedAsync();
         }
 
         public override async Task OnDisconnectedAsync(Exception e)
         {
-            string username;
-            _connectedUsers.TryRemove(Context.ConnectionId, out username);
+            var username = Context.GetHttpContext().Request.Query["username"];
+            if (_connectedUsers.TryGetValue(username, out var connections) && connections.Contains(Context.ConnectionId))
+            {
+                connections.Remove(Context.ConnectionId);
+                _connectedUsers[username] = connections;
+                if (connections.Count == 0)
+                {
+                    _connectedUsers.Remove(username, out var removed);
+                }
+            }
             Console.WriteLine($"Disconnected {e?.Message} {Context.ConnectionId}:${username}");
+
+            await Clients.All.SendAsync("UpdateConnectedUsers", _connectedUsers.Keys);
             await base.OnDisconnectedAsync(e);
-        }
-        public IEnumerable<string> GetConnectedUsers()
-        {
-            return _connectedUsers.Values.Distinct();
         }
     }
 }
