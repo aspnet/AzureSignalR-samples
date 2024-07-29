@@ -122,7 +122,6 @@ else
             {
                 _connectedUsers = userList.ToList();
                 InvokeAsync(StateHasChanged);
-                //StateHasChanged();
             });
             _hubConnection.On<string, string>("Broadcast", BroadcastMessage);
             _hubConnection.On<string, string, string>("SendUserToUser", SendUserToUser);
