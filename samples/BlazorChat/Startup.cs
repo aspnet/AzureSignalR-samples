@@ -28,7 +28,6 @@ namespace BlazorChat
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
-            services.AddSignalR().AddAzureSignalR("Endpoint=https://jixinaue.service.signalr.net;AccessKey=cOKNRVvika0bEO93RytJUUyPPZu9dUl+M8mD2LK461U=;Version=1.0;");
             services.AddSingleton<WeatherForecastService>();
         }
 
