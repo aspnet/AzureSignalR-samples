@@ -13,38 +13,48 @@ namespace NegotiationServer.Controllers
     public class NegotiateController : ControllerBase
     {
         private const string EnableDetailedErrors = "EnableDetailedErrors";
-        private readonly ServiceHubContext _messageHubContext;
-        private readonly ServiceHubContext _chatHubContext;
+        private readonly ServiceHubContext _hubContext;
+        private readonly ServiceHubContext<IMessageClient> _stronglyTypedHubContext;
         private readonly bool _enableDetailedErrors;
 
         public NegotiateController(IHubContextStore store, IConfiguration configuration)
         {
-            _messageHubContext = store.MessageHubContext;
-            _chatHubContext = store.ChatHubContext;
+            _hubContext = store.HubContext;
+            _stronglyTypedHubContext = store.StronglyTypedHubContext;
             _enableDetailedErrors = configuration.GetValue(EnableDetailedErrors, false);
         }
 
-        [HttpPost("message/negotiate")]
-        public Task<ActionResult> MessageHubNegotiate(string user)
-        {
-            return NegotiateBase(user, _messageHubContext);
-        }
-
-        //This API is not used. Just demonstrate a way to have multiple hubs.
-        [HttpPost("chat/negotiate")]
-        public Task<ActionResult> ChatHubNegotiate(string user)
-        {
-            return NegotiateBase(user, _chatHubContext);
-        }
-
-        private async Task<ActionResult> NegotiateBase(string user, ServiceHubContext serviceHubContext)
+        [HttpPost("hub/negotiate")]
+        public async Task<ActionResult> HubNegotiate(string user)
         {
             if (string.IsNullOrEmpty(user))
             {
                 return BadRequest("User ID is null or empty.");
             }
 
-            var negotiateResponse = await serviceHubContext.NegotiateAsync(new()
+            var negotiateResponse = await _hubContext.NegotiateAsync(new()
+            {
+                UserId = user,
+                EnableDetailedErrors = _enableDetailedErrors
+            });
+
+            return new JsonResult(new Dictionary<string, string>()
+            {
+                { "url", negotiateResponse.Url },
+                { "accessToken", negotiateResponse.AccessToken }
+            });
+        }
+
+        //The negotiation of strongly typed hub has little difference with untyped hub.
+        [HttpPost("stronglyTypedHub/negotiate")]
+        public async Task<ActionResult> StronglyTypedHubNegotiate(string user)
+        {
+            if (string.IsNullOrEmpty(user))
+            {
+                return BadRequest("User ID is null or empty.");
+            }
+
+            var negotiateResponse = await _stronglyTypedHubContext.NegotiateAsync(new()
             {
                 UserId = user,
                 EnableDetailedErrors = _enableDetailedErrors
