@@ -1,3 +1,14 @@
+---
+description: This is a chatroom sample that demonstrates bidirectional message pushing between Azure SignalR Service and Azure Functions in a serverless scenario using the Flex Consumption hosting plan and .NET.
+page_type: sample
+products:
+- azure-functions
+- azure-signalr-service
+- azure
+urlFragment: bidirectional-chatroom-sample-charp
+languages:
+- csharp
+---
 # Azure function bidirectional chatroom sample
 
 This is a chatroom sample that demonstrates bidirectional message pushing between Azure SignalR Service and Azure Functions in a serverless scenario using the Flex Consumption hosting plan. It leverages the [**upstream**](https://docs.microsoft.com/azure/azure-signalr/concept-upstream) provided by Azure SignalR Service that features proxying messages from client to upstream endpoints in serverless scenario. Azure Functions with SignalR trigger binding allows you to write code to receive and push messages in several languages, including JavaScript, Python, C#, etc.
