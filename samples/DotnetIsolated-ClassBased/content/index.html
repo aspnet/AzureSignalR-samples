@@ -203,9 +203,13 @@
             };
             function onNewConnection(message) {
                 data.myConnectionId = message.ConnectionId;
+                authEnabled = false;
+                if (message.Authentication) {
+                    authEnabled = true;
+                }
                 newConnectionMessage = {
                     id: counter++,
-                    text: `${message.ConnectionId} has connected.`
+                    text: `${message.ConnectionId} has connected, with Authorization: ${authEnabled.toString()}`
                 };
                 data.messages.unshift(newConnectionMessage);
             }

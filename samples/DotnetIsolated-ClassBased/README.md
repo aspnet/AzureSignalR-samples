@@ -55,7 +55,7 @@ You will create an Azure SignalR Service and an Azure Function app to host the s
 
     For more details about creating Azure SignalR Service, see the [tutorial](https://docs.microsoft.com/en-us/azure/azure-signalr/signalr-quickstart-azure-functions-javascript#create-an-azure-signalr-service-instance).
 
-### Deploy project to Azure Function
+### Deploy and configure project to Azure Function
 
 1. Deploy with Azure Functions Core Tools
     1. [Install Azure Functions Core Tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local?tabs=windows%2Ccsharp%2Cbash#install-the-azure-functions-core-tools)
@@ -83,8 +83,13 @@ You will create an Azure SignalR Service and an Azure Function app to host the s
         --resource-group $resourceGroup \
         --runtime dotnet-isolated
         ```
+    3. Update application settings
 
-    3. Publish the sample to the Azure Function you created before.
+        ```bash
+        az functionapp config appsettings set --resource-group $resourceGroup --name $functionAppName --setting AzureSignalRConnectionString=$connectionString
+        ```
+        
+    4. Publish the sample to the Azure Function you created before.
 
         ```bash
         cd <root>/samples/DotnetIsolated-ClassBased
@@ -92,13 +97,7 @@ You will create an Azure SignalR Service and an Azure Function app to host the s
         func azure functionapp publish $functionAppName --dotnet-isolated
         ```
 
-2. Update application settings
-
-    ```bash
-    az functionapp config appsettings set --resource-group $resourceGroup --name $functionAppName --setting AzureSignalRConnectionString=$connectionString
-    ```
-
-3. Update Azure SignalR Service Upstream settings
+2. Update Azure SignalR Service Upstream settings
 
     Open the Azure Portal and nevigate to the Function App created before. Find `signalr_extension` key in the **App keys** blade.
 
@@ -169,7 +168,7 @@ You can set **ManagedIdentity** as the **Auth** setting in upstream. After that,
 2. Click the asterisk in *Hub Rules* and a new page pops out as shown below.
     ![Upstream details](imgs/upstream-details-portal.png)
 
-3. Select *Use Managed Identity* under *Upstream Authentication* and *Use default value* under *Auth Resource ID*.
+3. Select *Use Managed Identity* under *Upstream Authentication* and choose the system identity created earlier for the SignalR service. 
 
 4. Use browser to visit `<function-app-url>/api/index` for the web page of the demo
 
