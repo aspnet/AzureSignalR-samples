@@ -11,7 +11,7 @@ languages:
 ---
 # Azure function bidirectional chatroom sample
 
-This is a chatroom sample that demonstrates bidirectional message pushing between Azure SignalR Service and Azure Functions in a serverless scenario using the Flex Consumption hosting plan. It leverages the [**upstream**](https://docs.microsoft.com/azure/azure-signalr/concept-upstream) provided by Azure SignalR Service that features proxying messages from client to upstream endpoints in serverless scenario. Azure Functions with SignalR trigger binding allows you to write code to receive and push messages in several languages, including JavaScript, Python, C#, etc.
+This is a chatroom sample that demonstrates bidirectional message pushing between Azure SignalR Service and Azure Functions in a serverless scenario. It leverages the [**upstream**](https://docs.microsoft.com/azure/azure-signalr/concept-upstream) provided by Azure SignalR Service that features proxying messages from client to upstream endpoints in serverless scenario. Azure Functions with SignalR trigger binding allows you to write code to receive and push messages in several languages, including JavaScript, Python, C#, etc.
 
   - [Prerequisites](#prerequisites)
   - [Run sample in Azure](#run-sample-in-azure)
@@ -59,7 +59,7 @@ You will create an Azure SignalR Service and an Azure Function app to host the s
 
 1. Deploy with Azure Functions Core Tools
     1. [Install Azure Functions Core Tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local?tabs=windows%2Ccsharp%2Cbash#install-the-azure-functions-core-tools)
-    2. [Create a Flex Consumption Azure Function App](https://learn.microsoft.com/en-us/azure/azure-functions/flex-consumption-how-to?tabs=azure-cli%2Cvs-code-publish&pivots=programming-language-csharp) (code snippet shown below)
+    2. [Create a Flex Consumption Azure Function App](https://learn.microsoft.com/en-us/azure/azure-functions/flex-consumption-how-to?tabs=azure-cli%2Cvs-code-publish&pivots=programming-language-csharp) (code snippet shown below). This sample can also be used with other Azure Functions hosting plans.
 
         ```bash
         #!/bin/bash
