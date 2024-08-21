@@ -99,7 +99,7 @@
         </div>
 
         <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@aspnet/signalr@1.0.3/dist/browser/signalr.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@aspnet/signalr@1.0.27/dist/browser/signalr.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/axios@0.18.0/dist/axios.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/crypto-js@3.1.9-1/crypto-js.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/crypto-js@3.1.9-1/enc-base64.js"></script>
@@ -203,9 +203,13 @@
             };
             function onNewConnection(message) {
                 data.myConnectionId = message.ConnectionId;
+                authEnabled = false;
+                if (message.Authentication) {
+                    authEnabled = true;
+                }
                 newConnectionMessage = {
                     id: counter++,
-                    text: `${message.ConnectionId} has connected.`
+                    text: `${message.ConnectionId} has connected, with Authorization: ${authEnabled.toString()}`
                 };
                 data.messages.unshift(newConnectionMessage);
             }

@@ -1,3 +1,4 @@
+using System;
 using System.Net;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -21,7 +22,9 @@ namespace DotnetIsolated_ClassBased
         public HttpResponseData GetWebPage([HttpTrigger(AuthorizationLevel.Anonymous)] HttpRequestData req)
         {
             var response = req.CreateResponse(HttpStatusCode.OK);
-            response.WriteString(File.ReadAllText("content/index.html"));
+            string home = Environment.GetEnvironmentVariable("HOME");
+            string htmlFilePath = Path.Combine(home, "site", "wwwroot", "content", "index.html");
+            response.WriteString(File.ReadAllText(htmlFilePath));
             response.Headers.Add("Content-Type", "text/html");
             return response;
         }
