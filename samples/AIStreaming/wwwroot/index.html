@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Chat</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Prompt for User Name -->
+    <div id="namePrompt" class="modal">
+        <div class="modal-content">
+            <h2>Welcome!</h2>
+            <p>Please enter your name:</p>
+            <input type="text" id="userName" placeholder="Your Name">
+            <button onclick="submitName()">Continue</button>
+        </div>
+    </div>
+
+    <!-- Group Selection Page -->
+    <div id="groupSelection" class="hidden modal">
+        <div class="modal-content">
+            <h2>Welcome, <span id="userNameDisplay"></span>!</h2>
+            <h3>Join or Create a Chat Group</h3>
+            <button onclick="createGroup()">Create New Chat Group</button>
+            <p>OR</p>
+            <input type="text" id="groupName" placeholder="Enter Group Name">
+            <button onclick="joinGroup()">Join Chat Group</button>
+        </div>
+    </div>
+
+    <!-- Chat Page -->
+    <div id="chatPage" class="chat-container hidden">
+        <header>
+            <h2 id="chatGroupName">Group Chat</h2>
+            <div class="user-info">
+                <span id="connectionStatus" class="status-disconnected"></span>
+            </div>
+        </header>
+        <div id="chatMessages" class="chat-messages"></div>
+        <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="Type your message here... Use @gpt to involve in a chatgpt robot">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@8.0.7/dist/browser/signalr.min.js"></script>
+    <script src="js/scripts.js"></script>
+</body>
+</html>
