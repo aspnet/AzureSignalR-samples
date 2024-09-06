@@ -12,7 +12,7 @@ namespace Microsoft.Azure.SignalR.Samples.SimpleEcho
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            services.AddSignalR().AddAzureSignalR();
+            services.AddSignalR().AddNamedAzureSignalR(ServiceConstants.SignalRServiceName);
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

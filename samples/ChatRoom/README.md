@@ -2,7 +2,37 @@
 
 In [ChatRoomLocal sample](../ChatRoomLocal) you have learned how to use SignalR to build a chat room application. In that sample, the SignalR runtime (which manages the client connections and message routing) is running on your local machine. As the number of the clients increases, you'll eventually hit a limit on your machine and you'll need to scale up your machine to handle more clients. This is usually not an easy task. In this tutorial, you'll learn how to use Azure SignalR Service to offload the connection management part to the service so that you don't need to worry about the scaling problem.
 
-## Provision a SignalR Service
+## Run with aspire ready in visual studio
+
+[.NET Aspire](https://learn.microsoft.com/dotnet/aspire/get-started/aspire-overview#orchestration) is used to orchestrate the samples.
+
+To work with .NET Aspire, you need the following installed locally:
+- [.NET 8.0](https://dotnet.microsoft.com/download/dotnet/8.0)
+- .NET Aspire workload:
+  - Installed with the [Visual Studio installer](../fundamentals/setup-tooling.md?tabs=visual-studio#install-net-aspire) or [the .NET CLI workload](../fundamentals/setup-tooling.md?tabs=dotnet-cli#install-net-aspire).
+- An OCI compliant container runtime, such as:
+  - [Docker Desktop](https://www.docker.com/products/docker-desktop) or [Podman](https://podman.io/).
+ 
+In Visual Studio, set **Samples.AppHost** project as the Startup Project. Right click **Connected Services** and select **Azure Resource Provisioning Settings** and select your Azure subscription, region and resource group to use.
+
+Alternatively, you could add Azure related configurations in the appsettings.json file:
+  ```json
+  {
+    "Azure": {
+      "SubscriptionId": "your subscription",
+      "Location": "your location"
+    }
+  }
+  ```
+
+Run the project and use Aspire dashboard to navigate to different samples:
+
+![Aspire Dashboard](./images/aspire-dashboard.png)
+
+## Run without aspire
+
+Aspire helps you to automatically provision a new Azure SignalR resource and set the connection strings for the sample to use automatically. You could still use the traditional way to provision and set the connection strings by yourself and run the sample directly. Samples now use named connection string `AddNamedAzureSignalR("asrs1")`. Set your connection string to `Azure:SignalR:asrs1:ConnectionString`, or `ConnectionStrings:asrs1`:
+### Provision a SignalR Service
 
 First let's provision a SignalR service on Azure.
 > If you don't have an Azure subscription, **[start now](https://azure.microsoft.com/en-us/free/)** to create a free account.
@@ -32,18 +62,18 @@ First let's provision a SignalR service on Azure.
 
 After your service is ready, go to the **Keys** page of your service instance and you'll get two connection strings that your application can use to connect to the service.
 
-## Update Chat Room to Use Azure SignalR Service
+### Update Chat Room to Use Azure SignalR Service
 
 Then, let's update the chat room sample to use the new service you just created.
 
 Let's look at the key changes:
 
-1.  In [Program.cs](Program.cs), call `AddAzureSignalR()` after `AddSignalR()` to make the application connect to the service instead of hosting SignalR by itself.
+1.  In [Program.cs](Program.cs), call `AddNamedAzureSignalR("asrs1")` after `AddSignalR()` to make the application connect to the service instead of hosting SignalR by itself.
 
     ```cs
     ...
     services.AddSignalR()
-            .AddAzureSignalR();
+            .AddNamedAzureSignalR("asrs1");
     ```
 
     You also need to reference the service SDK before using these APIs. This is how that would look in your ChatRoom.csproj file:
@@ -61,7 +91,7 @@ Now use [dotnet dev-certs](https://learn.microsoft.com/dotnet/core/tools/dotnet-
 
 ```
 dotnet dev-certs https --trust
-dotnet user-secrets set Azure:SignalR:ConnectionString "<your connection string>"
+dotnet user-secrets set ConnectionStrings_asrs1 "<your connection string>"
 dotnet run
 ```
 

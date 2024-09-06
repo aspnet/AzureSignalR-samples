@@ -18,7 +18,7 @@ Now the sample supports:
 Type the following commands to run this app.
 ```
 dotnet restore
-dotnet user-secrets set Azure:SignalR:ConnectionString "<your connection string>"
+dotnet user-secrets set ConnectionStrings_asrs1_ "<your connection string>"
 dotnet run
 ```
 

@@ -20,7 +20,7 @@ namespace Microsoft.Azure.SignalR.Samples.FlightMap
         {
             services.AddSingleton<IFlightControl, FlightControl>();
             services.AddControllers();
-            services.AddSignalR().AddAzureSignalR();
+            services.AddSignalR().AddNamedAzureSignalR(ServiceConstants.SignalRServiceName);
         }
 
         public void Configure(IApplicationBuilder app)

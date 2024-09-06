@@ -24,7 +24,7 @@ builder.Services
     });
 
 builder.Services.AddControllers();
-builder.Services.AddSignalR().AddAzureSignalR();
+builder.Services.AddSignalR().AddNamedAzureSignalR(ServiceConstants.SignalRServiceName);
 
 var app = builder.Build();
 
