@@ -5,6 +5,9 @@
     <UserSecretsId>2da0d60d-9962-455e-97af-f0d2668c4ea1</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\ServiceConstants.cs" Link="ServiceConstants.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.Azure.SignalR" Version="1.*" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.8" />
   </ItemGroup>

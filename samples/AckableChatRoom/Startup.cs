@@ -20,8 +20,8 @@ namespace Microsoft.Azure.SignalR.Samples.AckableChatRoom
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            services.AddSignalR()
-                    .AddAzureSignalR(options =>
+            services.AddSignalR().AddNamedAzureSignalR(ServiceConstants.SignalRServiceName);
+            services.Configure<ServiceOptions>(options =>
                     {
                         //  This is a tircky way to associate user name with connection for sample purpose.
                         //  For PROD, we suggest to use authentication and authorization, see here:

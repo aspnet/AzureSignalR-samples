@@ -56,8 +56,8 @@ namespace Microsoft.Azure.SignalR.Samples.AdvancedChatRoom
                 });
 
             services.AddControllers();
-            services.AddSignalR()
-                .AddAzureSignalR(options =>
+            services.AddSignalR().AddNamedAzureSignalR(ServiceConstants.SignalRServiceName);
+            services.Configure<ServiceOptions>(options =>
             {
                 options.ClaimsProvider = context => new[]
                 {

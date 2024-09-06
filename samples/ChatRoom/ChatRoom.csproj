@@ -5,6 +5,9 @@
     <UserSecretsId>chatroom</UserSecretsId>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\ServiceConstants.cs" Link="ServiceConstants.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.SignalR" Version="1.*" />

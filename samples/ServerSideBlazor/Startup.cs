@@ -31,7 +31,7 @@ namespace ServerSideBlazor
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
-            services.AddSignalR().AddAzureSignalR();
+            services.AddSignalR().AddNamedAzureSignalR(ServiceConstants.SignalRServiceName);
             services.AddSingleton<WeatherForecastService>();
         }
 

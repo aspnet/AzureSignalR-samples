@@ -4,6 +4,9 @@
     <UserSecretsId>ackablechatroom</UserSecretsId>
     <RootNamespace>Microsoft.Azure.SignalR.Samples.AckableChatRoom</RootNamespace>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\ServiceConstants.cs" Link="ServiceConstants.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <Folder Include="wwwroot\" />

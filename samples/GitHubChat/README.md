@@ -103,7 +103,7 @@ Now you can run the project and chat using your GitHub ID:
 
 ```
 dotnet restore
-dotnet user-secrets set Azure:SignalR:ConnectionString "<your connection string>"
+dotnet user-secrets set ConnectionStrings:asrs1 "<your connection string>"
 dotnet user-secrets set GitHubClientId "<client_id>"
 dotnet user-secrets set GitHubClientSecret "<client_secret>"
 dotnet run

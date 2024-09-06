@@ -45,7 +45,7 @@ Set the connection string in the [Secret Manager](https://docs.microsoft.com/en-
 
 ```
 dotnet restore
-dotnet user-secrets set Azure:SignalR:ConnectionString "<your connection string>"
+dotnet user-secrets set ConnectionStrings:asrs1_ "<your connection string>"
 dotnet run
 ```
 
@@ -119,7 +119,7 @@ public void ConfigureServices(IServiceCollection services)
 {
     ...
     services.AddServerSideBlazor();
-    services.AddSignalR().AddAzureSignalR();
+    services.AddSignalR().AddNamedAzureSignalR("asrs1");
     ...
 }
 ```
@@ -131,10 +131,10 @@ public void ConfigureServices(IServiceCollection services)
 > 1. Add configuration to turn on Azure SignalR Service in [appsetting.json](appsettings.json)
 > ```js
 >   "Azure": {
->     "SignalR": {
+>     "SignalR": {"asrs1":{
 >       "Enabled": true,
 >       "ConnectionString": <your-connection-string>
->     }
+>     }}
 >   }
 > ```
 > 
