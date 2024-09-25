@@ -12,7 +12,8 @@ namespace SignalRClient
 {
     class Program
     {
-        private const string MessageHubEndpoint = "http://localhost:5000/Message";
+        private const string HubEndpoint = "http://localhost:5000/Hub";
+        private const string StronglyTypedHubEndpoint = "http://localhost:5000/StronglyTypedHub";
         private const string Target = "Target";
         private const string DefaultUser = "TestUser";
 
@@ -25,13 +26,23 @@ namespace SignalRClient
             app.HelpOption("--help");
 
             var userIdOption = app.Option("-u|--userIdList", "Set user ID list", CommandOptionType.MultipleValue, true);
+            var stronglyTypedOption = app.Option("-s|--strongly-typed", "Use strongly typed hub.", CommandOptionType.NoValue);
 
             app.OnExecute(async () =>
             {
                 var userIds = userIdOption.Values != null && userIdOption.Values.Count > 0 ? userIdOption.Values : new List<string>() { DefaultUser };
 
+                string hubEndpointToConnect;
+                if (stronglyTypedOption.HasValue())
+                {
+                    hubEndpointToConnect = StronglyTypedHubEndpoint;
+                }
+                else
+                {
+                    hubEndpointToConnect = HubEndpoint;
+                }
                 var connections = (from userId in userIds
-                                   select CreateHubConnection(MessageHubEndpoint, userId)).ToList();
+                                   select CreateHubConnection(hubEndpointToConnect, userId)).ToList();
 
                 await Task.WhenAll(from conn in connections
                                    select conn.StartAsync());
