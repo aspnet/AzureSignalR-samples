@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Net;
 using Microsoft.Azure.Functions.Worker;
@@ -19,7 +20,28 @@ namespace IsolatedModel_BidirectionChat
         public HttpResponseData GetWebPage([HttpTrigger(AuthorizationLevel.Anonymous)] HttpRequestData req)
         {
             var response = req.CreateResponse(HttpStatusCode.OK);
-            response.WriteString(File.ReadAllText("content/index.html"));
+            string content;
+            string home = Environment.GetEnvironmentVariable("HOME");
+            if (!string.IsNullOrEmpty(home))
+            {
+                string htmlFilePath = Path.Combine(home, "site", "wwwroot", "content", "index.html");
+                if (File.Exists(htmlFilePath))
+                {
+                    // When running on Azure
+                    content = File.ReadAllText(htmlFilePath);
+                }
+                else
+                {
+                    // Assume the function is running locally with function core tools
+                    content = File.ReadAllText("content/index.html");
+                }
+            }
+            else
+            {
+                // Assume the function is running locally with function core tools
+                content = File.ReadAllText("content/index.html");
+            }
+            response.WriteString(content);
             response.Headers.Add("Content-Type", "text/html");
             return response;
         }
