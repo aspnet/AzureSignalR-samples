@@ -165,9 +165,6 @@
                 throw "No username entered";
             }
             getConnectionInfo().then(info => {
-                // make compatible with old and new SignalRConnectionInfo
-                info.accessToken = info.AccessToken || info.accessKey; // pay attention to the case
-                info.url = info.Url || info.endpoint; // pay attention to the case
                 data.ready = true;
                 const options = {
                     accessTokenFactory: () => info.accessToken
