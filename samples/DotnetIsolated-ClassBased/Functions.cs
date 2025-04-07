@@ -22,13 +22,31 @@ namespace DotnetIsolated_ClassBased
         public HttpResponseData GetWebPage([HttpTrigger(AuthorizationLevel.Anonymous)] HttpRequestData req)
         {
             var response = req.CreateResponse(HttpStatusCode.OK);
+            string content;
             string home = Environment.GetEnvironmentVariable("HOME");
-            string htmlFilePath = Path.Combine(home, "site", "wwwroot", "content", "index.html");
-            response.WriteString(File.ReadAllText(htmlFilePath));
+            if (!string.IsNullOrEmpty(home))
+            {
+                string htmlFilePath = Path.Combine(home, "site", "wwwroot", "content", "index.html");
+                if (File.Exists(htmlFilePath))
+                {
+                    // When running on Azure
+                    content = File.ReadAllText(htmlFilePath);
+                }
+                else
+                {
+                    // Assume the function is running locally with function core tools
+                    content = File.ReadAllText("content/index.html");
+                }
+            }
+            else
+            {
+                // Assume the function is running locally with function core tools
+                content = File.ReadAllText("content/index.html");
+            }
+            response.WriteString(content);
             response.Headers.Add("Content-Type", "text/html");
             return response;
         }
-
         [Function("negotiate")]
         public async Task<HttpResponseData> Negotiate([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequestData req)
         {
