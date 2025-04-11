@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.SignalR.Management;
@@ -12,19 +13,19 @@ namespace NegotiationServer
 {
     public interface IHubContextStore
     {
-        public ServiceHubContext MessageHubContext { get; }
-        public ServiceHubContext ChatHubContext { get; }
+        public ServiceHubContext HubContext { get; }
+        public ServiceHubContext<IMessageClient> StronglyTypedHubContext { get; }
     }
 
     public class SignalRService : IHostedService, IHubContextStore
     {
-        private const string ChatHub = "Chat";
-        private const string MessageHub = "Message";
+        private const string StronglyTypedHub = "StronglyTypedHub";
+        private const string Hub = "Hub";
         private readonly IConfiguration _configuration;
         private readonly ILoggerFactory _loggerFactory;
 
-        public ServiceHubContext MessageHubContext { get; private set; }
-        public ServiceHubContext ChatHubContext { get; private set; }
+        public ServiceHubContext HubContext { get; private set; }
+        public ServiceHubContext<IMessageClient> StronglyTypedHubContext { get; private set; }
 
         public SignalRService(IConfiguration configuration, ILoggerFactory loggerFactory)
         {
@@ -39,22 +40,15 @@ namespace NegotiationServer
                 //or .WithOptions(o=>o.ConnectionString = _configuration["Azure:SignalR:ConnectionString"]
                 .WithLoggerFactory(_loggerFactory)
                 .BuildServiceManager();
-            MessageHubContext = await serviceManager.CreateHubContextAsync(MessageHub, cancellationToken);
-            ChatHubContext = await serviceManager.CreateHubContextAsync(ChatHub, cancellationToken);
+            HubContext = await serviceManager.CreateHubContextAsync(Hub, cancellationToken);
+            StronglyTypedHubContext = await serviceManager.CreateHubContextAsync<IMessageClient>(StronglyTypedHub, cancellationToken);
         }
 
         Task IHostedService.StopAsync(CancellationToken cancellationToken)
         {
-            return Task.WhenAll(Dispose(MessageHubContext), Dispose(ChatHubContext));
-        }
-
-        private static Task Dispose(ServiceHubContext hubContext)
-        {
-            if (hubContext == null)
-            {
-                return Task.CompletedTask;
-            }
-            return hubContext.DisposeAsync();
+            HubContext.Dispose();
+            StronglyTypedHubContext.Dispose();
+            return Task.CompletedTask;
         }
     }
 }
