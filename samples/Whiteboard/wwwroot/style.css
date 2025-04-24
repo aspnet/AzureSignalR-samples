@@ -1,0 +1,72 @@
+.navbar-brand {
+  padding: 0;
+  margin: 0 10px 0 0;
+}
+
+.nav-logo-img {
+  width: 50px;
+}
+
+.disconnected {
+  -webkit-filter: grayscale(100%);
+  /* Safari 6.0 - 9.0 */
+  filter: grayscale(100%);
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  height: calc(100% - 120px);
+}
+
+#whiteboard {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  display: block;
+  margin-top: 66px;
+}
+
+svg {
+  display: block;
+}
+
+.toolbox {
+  width: 7rem;
+  height: 1.5rem;
+  display: inline-block;
+  vertical-align: middle;
+  border-radius: 0.3rem;
+  border: 1px solid black;
+}
+
+.selected {
+  width: 4rem;
+  border: 1px solid white;
+}
+
+.penbox {
+  background-color: white;
+}
+
+.message-log {
+  margin-bottom: 50px;
+  pointer-events: none;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px white;
+}
+
+.top-btn-group {
+  margin-right: 10px;
+}
+
+.hidden {
+  display: none;
+}
+
+.popover-body {
+  width: 240px;
+  height: 240px;
+}
