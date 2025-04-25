@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css"
+    integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
+  <title>Whiteboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div id="app">
+    <header>
+      <nav class="navbar navbar-expand-sm navbar-light bg-light fixed-top">
+        <div class="container-fluid">
+          <a href="#" class="navbar-brand" v-on:click.prevent="showSettings">
+            <img id="logo" src="images/signalr-logo.png" alt="logo"
+              v-bind:class="{ 'nav-logo-img': true, disconnected: !connected }">
+          </a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+            data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+            aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <button type="button" class="btn btn-lg btn-light" v-on:click="diagram.clear">
+                  <i class="far fa-file"></i>
+                </button>
+                <button type="button" class="btn btn-lg btn-light"
+                  onclick="document.querySelector('#file-selector').click()">
+                  <i class="far fa-image"></i>
+                </button>
+                <button type="button" v-bind:disabled="!hasUndo" class="btn btn-lg btn-light" v-on:click="diagram.undo">
+                  <i class="fas fa-undo"></i>
+                </button>
+                <button type="button" v-bind:disabled="!hasRedo" class="btn btn-lg btn-light" v-on:click="diagram.redo">
+                  <i class="fas fa-redo"></i>
+                </button>
+                <button type="button" class="btn btn-lg btn-light" v-on:click="zoomIn">
+                  <i class="fas fa-search-plus"></i>
+                </button>
+                <button type="button" class="btn btn-lg btn-light" v-on:click="zoomOut">
+                  <i class="fas fa-search-minus"></i>
+                </button>
+              </li>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                  aria-expanded="false">
+                  {{ tool }}
+                </a>
+                <div class="dropdown-menu">
+                  <a v-for="t in tools" v-bind:class="{ active: t === tool, 'dropdown-item': true }"
+                    v-on:click.prevent="tool = t" href="#">
+                    {{ t }}
+                  </a>
+                </div>
+              </li>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                  aria-expanded="false">
+                  <span class="toolbox selected" v-bind:style="{ 'background-color': color }"></span>
+                </a>
+                <div class="dropdown-menu">
+                  <a v-for="c in colors" v-bind:class="{ active: c === color, 'dropdown-item': true }"
+                    v-on:click.prevent="color = c" href="#">
+                    <span class="toolbox" v-bind:style="{ 'background-color': c }"></span>
+                  </a>
+                </div>
+              </li>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                  aria-expanded="false">
+                  <svg class="toolbox selected penbox">
+                    <line x1="0" y1="11" x2="61" y2="11" v-bind:stroke="color" v-bind:stroke-width="width" />
+                  </svg>
+                </a>
+                <div class="dropdown-menu">
+                  <a v-for="w in widths" v-bind:class="{ active: w === width, 'dropdown-item': true }"
+                    v-on:click.prevent="width = w" href="#">
+                    <svg class="toolbox penbox">
+                      <line x1="0" y1="11" x2="111" y2="11" v-bind:stroke="color" v-bind:stroke-width="w" />
+                    </svg>
+                  </a>
+                </div>
+              </li>
+            </ul>
+            {{ totalUsers }} Online
+            <form id="uploadForm" method="post" enctype="multipart/form-data">
+              <input id="file-selector" v-on:change="upload" type="file" name="file" hidden>
+            </form>
+          </div>
+        </div>
+      </nav>
+    </header>
+    <div id="message-log" v-bind:style="{ color: messageColor }" class="fixed-bottom message-log collapse show">
+      <p class="m-2" v-for="m in messages.slice(-10)">{{ m.name + ': ' + m.message }}</p>
+    </div>
+    <footer>
+      <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-bottom">
+        <div class="container-fluid">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <button class="btn btn-outline-info" data-bs-toggle="collapse" data-bs-target="#message-log">
+                <i class="far fa-file-alt"></i>
+              </button>
+            </div>
+            <input class="form-control" type="text" placeholder="Type here to chat..." v-model="draft"
+              v-on:keypress.enter="sendMessage">
+            <div class="input-group-append">
+              <button class="btn btn-outline-success" v-bind:disabled="!draft" v-on:click="sendMessage">
+                <i class="fas fa-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </footer>
+    <div class="modal fade" id="inputName" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Please input your name</h5>
+          </div>
+          <div class="modal-body">
+            <input id="username" class="form-control" type="text" placeholder="Your name" v-model="name"
+              v-on:keypress.enter="setName">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" v-bind:disabled="!name" data-bs-dismiss="modal">OK</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="settings" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Settings</h5>
+          </div>
+          <div class="modal-body container">
+            <div class="form-group">
+              <div class="mb-2">
+                <b>Your name</b>
+              </div>
+              <input class="form-control" type="text" placeholder="Your name" v-model="name">
+            </div>
+            <div class="form-group">
+              <div class="mb-2">
+                <b>Message color</b>
+              </div>
+              <div class="dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                  aria-expanded="false">
+                  <span class="toolbox selected" v-bind:style="{ 'background-color': messageColor }"></span>
+                </a>
+                <div class="dropdown-menu">
+                  <a v-for="c in colors" v-bind:class="{ active: c === messageColor, 'dropdown-item': true }"
+                    v-on:click.prevent="messageColor = c" href="#">
+                    <span class="toolbox" v-bind:style="{ 'background-color': c }"></span>
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="mb-2">
+                <b>Resize image before upload, if larger than</b>
+              </div>
+              <input class="form-control" type="text" placeholder="Do not resize" v-model="maxImageSize">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" v-bind:disabled="!name" data-bs-dismiss="modal">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="whiteboard"></div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq"
+    crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/vue@3"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@8.0.7/dist/browser/signalr.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/2.6.5/svg.min.js"></script>
+  <script src="script.js"></script>
+</body>
+
+</html>
