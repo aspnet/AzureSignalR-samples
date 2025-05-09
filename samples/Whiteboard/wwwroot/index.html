@@ -64,6 +64,7 @@
                   </a>
                 </div>
               </li>
+              <span class="navbar-text">Color</span>
               <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
                   aria-expanded="false">
@@ -72,6 +73,19 @@
                 <div class="dropdown-menu">
                   <a v-for="c in colors" v-bind:class="{ active: c === color, 'dropdown-item': true }"
                     v-on:click.prevent="color = c" href="#">
+                    <span class="toolbox" v-bind:style="{ 'background-color': c }"></span>
+                  </a>
+                </div>
+              </li>
+              <span class="navbar-text">Fill</span>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                  aria-expanded="false">
+                  <span class="toolbox selected" v-bind:style="{ 'background-color': fill }"></span>
+                </a>
+                <div class="dropdown-menu">
+                  <a v-for="c in colors" v-bind:class="{ active: c === fill, 'dropdown-item': true }"
+                    v-on:click.prevent="fill = c" href="#">
                     <span class="toolbox" v-bind:style="{ 'background-color': c }"></span>
                   </a>
                 </div>
