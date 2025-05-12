@@ -92,8 +92,8 @@ let Diagram = function (element, tools) {
     historyChangeCallback(past.length > 0, future.length > 0);
   }
 
-  function applyStyle(e, c, w) {
-    return e.fill('none').stroke({ color: c, width: w, linecap: 'round' });
+  function applyStyle(e, c, w, f) {
+    return e.fill(f).stroke({ color: c, width: w, linecap: 'round' });
   }
 
   function translate(x, y) {
@@ -105,20 +105,29 @@ let Diagram = function (element, tools) {
     return {
       color: m.color,
       width: m.width,
+      fill: m.fill,
       ...t.serialize(m.data)
     };
   }
 
-  function startShape(k, c, w, x, y) {
+  function arrangeShape(s) {
+    let m;
+    for (let i in shapes)
+      if ((!m || shapes[i].z < m.z) && shapes[i].z > s.z) m = shapes[i];
+    if (m) m.view.before(s.view);
+  }
+
+  async function startShape(k, c, w, f, x, y) {
     if (id) return;
     id = generateId();
     [x, y] = translate(x, y);
-    let m = { kind: k, color: c, width: w, data: tools[k].start(x, y) };
-    shapes[id] = { view: applyStyle(tools[k].draw(element, m.data), c, w), model: m };
+    let m = { kind: k, color: c, width: w, fill: f, data: tools[k].start(x, y) };
+    shapes[id] = { view: applyStyle(tools[k].draw(element, m.data), c, w, f), model: m };
     future = [];
     past.push(id);
     historyChange();
-    shapeUpdateCallback(id, k, serialize(m));
+    shapes[id].z = await shapeUpdateCallback(id, k, serialize(m));
+    arrangeShape(shapes[id]);
   }
 
   function drawShape(x, y) {
@@ -148,18 +157,21 @@ let Diagram = function (element, tools) {
     id = null;
   }
 
-  function updateShapeInternal(i, m) {
+  function updateShapeInternal(i, m, z) {
     if (shapes[i]) {
       shapes[i].model = m;
       tools[m.kind].update(shapes[i].view, m.data);
-      applyStyle(shapes[i].view, m.color, m.width);
-    } else shapes[i] = { view: applyStyle(tools[m.kind].draw(element, m.data), m.color, m.width), model: m };
+      applyStyle(shapes[i].view, m.color, m.width, m.fill);
+    } else {
+      shapes[i] = { view: applyStyle(tools[m.kind].draw(element, m.data), m.color, m.width, m.fill), model: m, z };
+      if (z !== undefined) arrangeShape(shapes[i]);
+    }
   }
 
-  function updateShape(i, k, d) {
+  function updateShape(i, k, d, z) {
     let t = tools[k];
-    let m = { color: d.color, width: d.width, kind: k, data: t.deserialize(d) };
-    updateShapeInternal(i, m);
+    let m = { color: d.color, width: d.width, fill: d.fill, kind: k, data: t.deserialize(d) };
+    updateShapeInternal(i, m, z);
   }
 
   function patchShape(i, d) {
@@ -168,9 +180,10 @@ let Diagram = function (element, tools) {
       let t = tools[m.kind];
       if (d.color) m.color = d.color;
       if (d.width) m.width = d.width;
+      if (d.fill) m.fill = d.fill;
       m.data = m.data.concat(t.deserialize(d));
       t.update(shapes[i].view, m.data);
-      applyStyle(shapes[i].view, m.color, m.width);
+      applyStyle(shapes[i].view, m.color, m.width, m.fill);
     }
   }
 
@@ -227,12 +240,13 @@ let Diagram = function (element, tools) {
     historyChange();
   }
 
-  function redo() {
+  async function redo() {
     let m = future.pop();
     if (!m) return;
     let i = generateId();
     updateShapeInternal(i, m);
-    shapeUpdateCallback(i, m.kind, serialize(m));
+    shapes[i].z = await shapeUpdateCallback(i, m.kind, serialize(m));
+    arrangeShape(shapes[i]);
     past.push(i);
     historyChange();
   }
@@ -274,7 +288,7 @@ let modes = {
     end: () => 0
   },
   draw: {
-    startOne: p => { if (appData.connected.value) diagram.startShape(appData.tool, appData.color, appData.width, p[0], p[1]); },
+    startOne: p => { if (appData.connected.value) diagram.startShape(appData.tool, appData.color, appData.width, appData.fill, p[0], p[1]); },
     moveOne: (p, pp) => { if (appData.connected.value) diagram.drawShape(p[0], p[1]); },
     startTwo: () => 0,
     moveTwo: () => 0,
@@ -342,13 +356,15 @@ let tools = {
   }
 };
 
-let connection = connect('/draw', () => {
-  appData.connected.value = true;
-  diagram.removeAll();
-}, () => appData.connected.value = false);
+let connection = connect('/draw',
+  () => appData.connected.value = true,
+  () => {
+    appData.connected.value = false;
+    diagram.removeAll();
+  });
 
 let diagram = new Diagram(SVG('whiteboard'), tools);
-diagram.onShapeUpdate((i, k, m) => connection.send(`addOrUpdate${k}`, i, m));
+diagram.onShapeUpdate(async (i, k, m) => await connection.invoke(`addOrUpdate${k}`, i, m));
 diagram.onShapePatch((i, k, m) => connection.send(`patch${k}`, i, m));
 diagram.onShapeRemove(i => connection.send('removeShape', i));
 diagram.onClear(() => connection.send('clear'));
@@ -372,8 +388,9 @@ let appData = {
   tool: 'Polyline',
   color: 'black',
   width: 1,
+  fill: 'none',
   tools: Object.keys(tools),
-  colors: ['black', 'grey', 'darkred', 'red', 'orange', 'yellow', 'green', 'deepskyblue', 'indigo', 'purple'],
+  colors: ['none', 'black', 'grey', 'darkred', 'red', 'orange', 'yellow', 'green', 'deepskyblue', 'indigo', 'purple'],
   widths: [1, 2, 4, 8],
   messages: reactive([]),
   messageColor: 'black',
@@ -459,9 +476,9 @@ let inputName = new bootstrap.Modal(inputNameElement, {
     for (let i = 0; i < ts.length; i++) ps.push(f(ts[i]));
     return ps;
   };
-
   const whiteboard = document.querySelector('#whiteboard');
   whiteboard.addEventListener('mousedown', e => {
+    if (e.button !== 0) return;
     mode = e.ctrlKey ? 'panAndZoom' : 'draw';
     start([[e.offsetX, e.offsetY]]);
   });

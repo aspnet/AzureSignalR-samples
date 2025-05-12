@@ -55,7 +55,7 @@ Open multiple windows on http://localhost:5000/, when you paint in one window, o
 2. Then use the following command to deploy it to Azure Web App:
 
    ```
-   az webapp deployment source config-zip --src <path_to_zip_file> -n <app_name> -g <resource_group_name>
+   az webapp deploy --src-path <path_to_zip_file> -n <app_name> -g <resource_group_name>
    ```
 
 3. Set Azure SignalR Service connection string in the application settings. You can do it through portal or using Azure CLI:
@@ -85,20 +85,37 @@ To install the MCP server:
    npm install
    ```
 
-2. The MCP server will by default connect to local server (http://localhost:5000). If your whiteboard is not running locally, set the endpoint in `WHITEBOARD_ENDPOINT` environment variable or `.env` file
-
-3. Configure the MCP server in your LLM app (like Claude Desktop or GitHub Copilot in VS Code):
+2. Configure the MCP server in your LLM app (like Claude Desktop or GitHub Copilot in VS Code):
 
    ```json
    "mcpServers": {
      "Whiteboard": {
        "command": "node",
-         "args": [
-           "<path-to-MCPServer-project>/index.js"
-         ]
-      }
-    }
+       "args": [
+         "<path_to_MCPServer_project>/index.js"
+       ]
+     }
+   }
    ```
+
+   > This will by default connect to local server (http://localhost:5000). If your whiteboard is not running locally, save the endpoint to a `.env` file
+   > ```
+   > WHITEBOARD_ENDPOINT=<endpoint-of-whiteboard>
+   > ```
+   >
+   > Change the config to the following:
+   > ```json
+   > "mcpServers": {
+   >   "Whiteboard": {
+   >     "command": "node",
+   >     "args": [
+   >       "--env-file",
+   >       "<path_to_MCPServer_project>/.env",
+   >       "<path_to_MCPServer_project>/index.js"
+   >     ]
+   >   }
+   > }
+   > ```
 
    > Change `mcpServers` to `mcp` if you're using VS Code
 

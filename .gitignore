@@ -10,3 +10,4 @@ asrs.log.txt
 PublishProfiles/
 **.log.txt
 **.log
+.env

@@ -2,9 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.AspNetCore.SignalR;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Linq;
 using System;
 
 namespace Microsoft.Azure.SignalR.Samples.Whiteboard;
@@ -13,17 +11,19 @@ public class DrawHub(Diagram diagram) : Hub
 {
     private readonly Diagram diagram = diagram;
 
-    private async Task UpdateShape(string id, Shape shape)
+    private async Task<int> UpdateShape(string id, Shape shape)
     {
-        diagram.Shapes[id] = shape;
-        await Clients.Others.SendAsync("ShapeUpdated", id, shape.GetType().Name, shape);
+        var z = diagram.AddOrUpdateShape(id, shape);
+        await Clients.Others.SendAsync("ShapeUpdated", id, shape.GetType().Name, shape, z);
+        return z;
     }
 
-    public override Task OnConnectedAsync()
+    public override async Task OnConnectedAsync()
     {
-        var t = Task.WhenAll(diagram.Shapes.AsEnumerable().Select(l => Clients.Client(Context.ConnectionId).SendAsync("ShapeUpdated", l.Key, l.Value.GetType().Name, l.Value)));
-        if (diagram.Background != null) t = t.ContinueWith(_ => Clients.Client(Context.ConnectionId).SendAsync("BackgroundUpdated", diagram.BackgroundId));
-        return t.ContinueWith(_ => Clients.All.SendAsync("UserUpdated", diagram.UserEnter()));
+        await Clients.All.SendAsync("UserUpdated", diagram.UserEnter());
+        if (diagram.Background != null) await Clients.Client(Context.ConnectionId).SendAsync("BackgroundUpdated", diagram.BackgroundId);
+        foreach (var s in diagram.GetShapes())
+            await Clients.Caller.SendAsync("ShapeUpdated", s.Item1, s.Item3.GetType().Name, s.Item3, s.Item2);
     }
 
     public override Task OnDisconnectedAsync(Exception exception)
@@ -33,47 +33,47 @@ public class DrawHub(Diagram diagram) : Hub
 
     public async Task RemoveShape(string id)
     {
-        diagram.Shapes.Remove(id, out _);
+        diagram.RemoveShape(id);
         await Clients.Others.SendAsync("ShapeRemoved", id);
     }
 
-    public async Task AddOrUpdatePolyline(string id, Polyline polyline)
+    public async Task<int> AddOrUpdatePolyline(string id, Polyline polyline)
     {
-        await this.UpdateShape(id, polyline);
+        return await this.UpdateShape(id, polyline);
     }
 
     public async Task PatchPolyline(string id, Polyline polyline)
     {
-        if (diagram.Shapes[id] is not Polyline p) throw new InvalidOperationException($"Shape {id} does not exist or is not a polyline.");
+        if (diagram.GetShape(id) is not Polyline p) throw new InvalidOperationException($"Shape {id} does not exist or is not a polyline.");
         if (polyline.Color != null) p.Color = polyline.Color;
         if (polyline.Width != 0) p.Width = polyline.Width;
         p.Points.AddRange(polyline.Points);
         await Clients.Others.SendAsync("ShapePatched", id, polyline);
     }
 
-    public async Task AddOrUpdateLine(string id, Line line)
+    public async Task<int> AddOrUpdateLine(string id, Line line)
     {
-        await this.UpdateShape(id, line);
+        return await this.UpdateShape(id, line);
     }
 
-    public async Task AddOrUpdateCircle(string id, Circle circle)
+    public async Task<int> AddOrUpdateCircle(string id, Circle circle)
     {
-        await this.UpdateShape(id, circle);
+        return await this.UpdateShape(id, circle);
     }
 
-    public async Task AddOrUpdateRect(string id, Rect rect)
+    public async Task<int> AddOrUpdateRect(string id, Rect rect)
     {
-        await this.UpdateShape(id, rect);
+        return await this.UpdateShape(id, rect);
     }
 
-    public async Task AddOrUpdateEllipse(string id, Ellipse ellipse)
+    public async Task<int> AddOrUpdateEllipse(string id, Ellipse ellipse)
     {
-        await this.UpdateShape(id, ellipse);
+        return await this.UpdateShape(id, ellipse);
     }
 
     public async Task Clear()
     {
-        diagram.Shapes.Clear();
+        diagram.ClearShapes();
         diagram.Background = null;
         await Clients.Others.SendAsync("Clear");
     }
