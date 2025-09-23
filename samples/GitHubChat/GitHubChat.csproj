@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="AspNet.Security.OAuth.GitHub" Version="7.0.4" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.13" />
     <PackageReference Include="Microsoft.Azure.SignalR" Version="1.*" />
   </ItemGroup>
 </Project>
