@@ -13,7 +13,7 @@ Because ESM support is still in [preview for Azure Functions](https://learn.micr
 
 ## Setup and run locally
 
-1. Start local storage emulator in terminal.
+1. Start local storage emulator in terminal. The script uses [npx](https://docs.npmjs.com/cli/commands/npx) to fetch [Azurite](https://learn.microsoft.com/azure/storage/common/storage-use-azurite) on demand, so no extra install is required (you can also install it globally with `npm install -g azurite`).
 
     ```bash
     npm run start:azurite

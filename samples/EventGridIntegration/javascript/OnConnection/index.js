@@ -1,17 +1,25 @@
-const azure = require('azure-storage');
+const { TableClient } = require('@azure/data-tables');
 
-const tableService = azure.createTableService();
 const tableName = 'connection';
+const tableClient = TableClient.fromConnectionString(process.env.AZURE_STORAGE_CONNECTION_STRING, tableName);
 
-tableService.createTableIfNotExists(tableName, function(error, result, response){
-    if(result.created){
-        context.log(`Table ${tableName} created`);
+// Create the table once per process. createTable does not throw if it already exists.
+let ensureTablePromise;
+const ensureTable = () => {
+    if (!ensureTablePromise) {
+        ensureTablePromise = tableClient.createTable().catch((error) => {
+            ensureTablePromise = undefined;
+            throw error;
+        });
     }
-});
+    return ensureTablePromise;
+};
 
 module.exports = async function (context, eventGridEvent) {
     context.log(typeof eventGridEvent);
     context.log(eventGridEvent);
+
+    await ensureTable();
 
     // Use resource name and hub as partition key and row key separately
     let partitionKey = getLastPart(eventGridEvent.topic);
@@ -24,7 +32,7 @@ module.exports = async function (context, eventGridEvent) {
         try {
             let entity;
             try {
-                entity = await getEntry(partitionKey, rowKey);
+                entity = await tableClient.getEntity(partitionKey, rowKey);
                 operation = 'replace';
             } catch (error) {
                 context.log(error);
@@ -32,19 +40,20 @@ module.exports = async function (context, eventGridEvent) {
             }
 
             if (operation === 'replace') {
-                newConnectionCount = parseInt(entity.Count._) + (eventGridEvent.eventType == 'Microsoft.SignalRService.ClientConnectionConnected' ? 1 : -1);
-                entity.Count._ = newConnectionCount;
-                await replaceEntity(entity);
+                newConnectionCount = parseInt(entity.Count, 10) + (eventGridEvent.eventType == 'Microsoft.SignalRService.ClientConnectionConnected' ? 1 : -1);
+                await tableClient.updateEntity({
+                    partitionKey: partitionKey,
+                    rowKey: rowKey,
+                    Count: newConnectionCount,
+                }, 'Replace', { etag: entity.etag });
                 token = false;
             } else if (operation === 'insert') {
                 newConnectionCount = eventGridEvent.eventType == 'Microsoft.SignalRService.ClientConnectionConnected' ? 1 : 0;
-                let entryGen = azure.TableUtilities.entityGenerator;
-                entity = {
-                    PartitionKey: entryGen.String(partitionKey),
-                    RowKey: entryGen.String(rowKey),
-                    Count: entryGen.Int32(newConnectionCount),
-                };
-                await insertEntity(entity);
+                await tableClient.createEntity({
+                    partitionKey: partitionKey,
+                    rowKey: rowKey,
+                    Count: newConnectionCount,
+                });
                 token = false;
             }
         } catch (error) {
@@ -68,36 +77,6 @@ module.exports = async function (context, eventGridEvent) {
         "arguments": [ newConnectionCount ]
     }];
 };
-
-const getEntry = (partitionKey, rowKey) => new Promise((resolve, reject) => {
-    tableService.retrieveEntity(tableName, partitionKey, rowKey, (error, result, response) => {
-        if (error) {
-            reject(error);
-        } else {
-            resolve(result);
-        }
-    });
-});
-
-const replaceEntity = (entry) => new Promise((resolve, reject) => {
-    tableService.replaceEntity(tableName, entry, (error, result, response) => {
-        if (error) {
-            reject(error);
-        } else {
-            resolve(result);
-        }
-    });
-});
-
-const insertEntity = (entry) => new Promise((resolve, reject) => {
-    tableService.insertEntity(tableName, entry, (error, result, response) => {
-        if (error) {
-            reject(error);
-        } else {
-            resolve(result);
-        }
-    });
-});
 
 const getLastPart = (data) => {
     let n = data.lastIndexOf('/');
