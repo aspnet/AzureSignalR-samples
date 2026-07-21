@@ -56,7 +56,6 @@ Then start the shared client in another terminal:
 dotnet run --project Client -- http://localhost:5000/chat alice user
 ```
 
-Leave the client connected. It refreshes authentication approximately 30 seconds before each two-minute application token expires, without changing the connection ID.
+Leave the client connected. The application token is valid for two minutes, and the client is configured to refresh 30 seconds before expiration. The first automatic refresh therefore occurs about 90 seconds after connecting, and another is scheduled about 90 seconds after each successful refresh. The connection ID does not change.
 
-> [!NOTE]
-> The client's interactive `Broadcast` command requires the hosted hub in Default mode. In Serverless mode, client-to-server messages require an Azure SignalR upstream. Authentication refresh itself uses the same client in both modes.
+Type `/refresh` to refresh authentication immediately. A successful manual refresh resets the next automatic-refresh schedule using the lifetime returned by the server.

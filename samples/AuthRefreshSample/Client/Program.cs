@@ -65,12 +65,9 @@ var connection = new HubConnectionBuilder()
     .WithAutomaticReconnect()
     .Build();
 
-connection.On<string, string>("ReceiveMessage", (user, message) =>
-    Console.WriteLine($"{user}: {message}"));
-
 Console.WriteLine($"Connecting to {hubUrl} as '{userId}' (role '{role}')...");
 await connection.StartAsync();
-Console.WriteLine("Connected. Type /refresh to refresh authentication, or a message to broadcast (empty line to quit).");
+Console.WriteLine("Connected. Type /refresh to refresh authentication (empty line to quit).");
 
 while (true)
 {
@@ -87,7 +84,7 @@ while (true)
         continue;
     }
 
-    await connection.InvokeAsync("Broadcast", line);
+    Console.WriteLine("Unknown command. Type /refresh or press Enter to quit.");
 }
 
 await connection.DisposeAsync();
