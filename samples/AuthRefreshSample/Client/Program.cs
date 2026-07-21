@@ -8,7 +8,6 @@ using System.Text;
 using AuthRefreshSample;
 
 using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
 // Usage: dotnet run [hubUrl] [userId] [role]
@@ -71,7 +70,7 @@ connection.On<string, string>("ReceiveMessage", (user, message) =>
 
 Console.WriteLine($"Connecting to {hubUrl} as '{userId}' (role '{role}')...");
 await connection.StartAsync();
-Console.WriteLine("Connected. Type a message and press Enter to broadcast (empty line to quit).");
+Console.WriteLine("Connected. Type /refresh to refresh authentication, or a message to broadcast (empty line to quit).");
 
 while (true)
 {
@@ -79,6 +78,13 @@ while (true)
     if (string.IsNullOrEmpty(line))
     {
         break;
+    }
+
+    if (string.Equals(line, "/refresh", StringComparison.OrdinalIgnoreCase))
+    {
+        var newTokenLifetime = await connection.RefreshAuthenticationAsync();
+        Console.WriteLine($"[refresh] manually completed; next lifetime = {newTokenLifetime}");
+        continue;
     }
 
     await connection.InvokeAsync("Broadcast", line);

@@ -1,106 +1,62 @@
-# Auth Refresh Sample (Default mode)
+# Azure SignalR Authentication Refresh Sample
 
-A minimal ASP.NET Core **server** + .NET console **client** that demonstrate Azure SignalR
-**Authentication Refresh** — refreshing an expiring SignalR auth token on a schedule **without
-reconnecting** the client.
+This sample shows how a .NET SignalR client can refresh authentication for an existing Azure SignalR connection without reconnecting.
 
-- The client connects with a short-lived **app token** (a demo JWT it mints itself).
-- The server opts the hub into refresh (`EnableAuthenticationRefresh`) and tears the connection down
-  when auth expires (`CloseOnAuthenticationExpiration`).
-- Before the token expires, the client's `WithAuthenticationRefresh` auto-scheduler re-mints a fresh
-  app token and POSTs `{hubUrl}/refresh`; Azure SignalR extends the live connection's deadline and the
-  client adopts the refreshed **service** access token — the connection stays open the whole time.
+The client uses a short-lived application token. Before it expires `WithAuthenticationRefresh` obtains a new application token and posts it to `{hubUrl}/refresh`. The server updates the connection's authentication expiration and returns a new Azure SignalR service access token. The connection remains active throughout the refresh.
 
-> [!IMPORTANT]
-> Authentication Refresh is a **preview** feature. It requires the **.NET 11 preview SDK** and preview
-> builds of ASP.NET Core SignalR and `Microsoft.Azure.SignalR`.
+## Modes
 
-## Layout
+### Default mode
 
-| Path | What |
-| --- | --- |
-| `Server/` | ASP.NET Core app server: JWT auth, `AddAzureSignalR()`, `ChatHub` with refresh enabled. |
-| `Client/` | .NET console client using `WithAuthenticationRefresh`. |
+`DefaultMode/` hosts a SignalR hub with `Microsoft.Azure.SignalR`. The server enables `EnableAuthenticationRefresh` and `CloseOnAuthenticationExpiration`; the Azure SignalR SDK handles the negotiate and refresh endpoints.
 
-Both share `DemoAuth.cs` (issuer/audience/HS256 key) so the client can mint tokens the server validates.
-This is **demo-only**; a real app gets its app token from an identity provider.
+### Serverless mode
+
+`Serverless/Management/` implements the negotiate and refresh endpoints directly. It uses `ServiceHubContext.NegotiateWithTokenLifetimeAsync` to negotiate and `ServiceHubContext.RefreshConnectionAuthenticationAsync` to refresh the live connection.
+
+Both modes expose the same client-facing contract, so they reuse the client in `Client/`.
 
 ## Prerequisites
 
-- .NET 11 preview SDK.
-- An Azure SignalR Service resource (connection string).
+- .NET 11 preview SDK
+- An Azure SignalR Service resource
+- Preview SignalR and Azure SignalR SDK packages
 
-## Configure the connection string (server)
+Until a preview SignalR client package containing authentication refresh is published, clone `aspnetcore` beside this sample repository. The client project automatically references `aspnetcore/src/SignalR`; for another location, pass `-p:AspNetCoreSignalRSourceRoot=<path>`.
 
-Set `Azure:SignalR:ConnectionString` — for local dev, user secrets or an environment variable:
+Use an Azure SignalR resource in Default mode with `DefaultMode/`, or in Serverless mode with `Serverless/Management/`.
 
-```bash
-cd Server
-dotnet user-secrets init
-dotnet user-secrets set "Azure:SignalR:ConnectionString" "<your-asrs-connection-string>"
-# or:  setx Azure__SignalR__ConnectionString "<your-asrs-connection-string>"
+## Configure
+
+Set the connection string in the terminal where you will run the server:
+
+```powershell
+$env:Azure__SignalR__ConnectionString = "<your-connection-string>"
 ```
 
 ## Run
 
-In one terminal:
+Start one server from the `AuthRefreshSample` directory.
+
+Default mode:
 
 ```bash
-cd Server
-dotnet run
+dotnet run --project DefaultMode
 ```
 
-In another:
+Serverless mode with the Management SDK:
 
 ```bash
-cd Client
-dotnet run
-# optional args:  dotnet run -- http://localhost:5000/chat alice user
+dotnet run --project Serverless/Management
 ```
 
-Type messages in the client to broadcast them. Roughly every ~90s (2 min token, refresh 30s before
-expiry) you'll see:
-
-```
-[refresh] succeeded; next lifetime = 00:02:00
-system: auth refreshed for alice
-```
-
-...while the connection never drops.
-
-## Try the accept/reject gate
-
-The server rejects a refresh whose new token carries role `blocked`:
-
-```csharp
-options.OnAuthenticationRefresh = context =>
-    ValueTask.FromResult(!context.NewUser.IsInRole("blocked"));
-```
-
-Start the client with the `blocked` role to see the refresh fail with `403 permission_change_rejected`
-(the existing connection is left open, unchanged, until its deadline):
+Then start the shared client in another terminal:
 
 ```bash
-cd Client
-dotnet run -- http://localhost:5000/chat alice blocked
+dotnet run --project Client -- http://localhost:5000/chat alice user
 ```
 
-```
-[refresh] FAILED: ...permission_change_rejected...
-```
-
-## How it works
-
-1. **Negotiate.** The client sends its app token to `/chat/negotiate`; the server validates it, and
-   because refresh is enabled for an authenticated principal with an expiry, advertises
-   `tokenLifetimeSeconds`.
-2. **Connect.** The client connects to Azure SignalR with the returned service access token.
-3. **Schedule.** `WithAuthenticationRefresh` schedules a refresh before `tokenLifetimeSeconds` elapses.
-4. **Refresh.** The client re-mints a fresh app token (`AccessTokenProvider`) and POSTs
-   `/chat/refresh?id={connectionToken}`. The server runs the optional `OnAuthenticationRefresh` gate,
-   then asks Azure SignalR to extend the live connection's auth deadline and apply the refreshed claims.
-5. **Adopt.** The server returns `{ accessToken, tokenLifetimeSeconds }`; the client adopts the new
-   service token and schedules the next refresh. The connection is never reconnected.
+Leave the client connected. It refreshes authentication approximately 30 seconds before each two-minute application token expires, without changing the connection ID.
 
 > [!NOTE]
-> The demo surfaces the app token's `exp` as the auth ticket's `ExpiresUtc` in `OnTokenValidated`(JwtBearer doesn't do this by default), which is what lets negotiate advertise `tokenLifetimeSeconds`.
+> The client's interactive `Broadcast` command requires the hosted hub in Default mode. In Serverless mode, client-to-server messages require an Azure SignalR upstream. Authentication refresh itself uses the same client in both modes.
