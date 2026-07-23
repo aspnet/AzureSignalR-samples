@@ -17,6 +17,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.WebHost.UseUrls("http://localhost:5000");
 
+var serviceTokenLifetime = TimeSpan.FromHours(1);
 var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(DemoAuth.SigningKey));
 
 builder.Services
@@ -63,7 +64,7 @@ app.MapPost("/chat/negotiate", async (HttpContext httpContext, SignalRService si
     var authentication = await httpContext.AuthenticateAsync();
     var expiresAt = authentication.Properties?.ExpiresUtc;
     var userId = GetUserId(httpContext.User);
-    if (expiresAt is null || expiresAt <= DateTimeOffset.UtcNow || string.IsNullOrEmpty(userId))
+    if (expiresAt <= DateTimeOffset.UtcNow || string.IsNullOrEmpty(userId))
     {
         return Results.Unauthorized();
     }
@@ -74,7 +75,9 @@ app.MapPost("/chat/negotiate", async (HttpContext httpContext, SignalRService si
             HttpContext = httpContext,
             UserId = userId,
             Claims = BuildClaims(userId),
-            TokenLifetime = expiresAt.Value - DateTimeOffset.UtcNow,
+            TokenLifetime = serviceTokenLifetime,
+            AuthenticationExpiresOn = expiresAt,
+            EnableAuthenticationRefresh = true,
             CloseOnAuthenticationExpiration = true,
         },
         httpContext.RequestAborted);
@@ -98,14 +101,14 @@ app.MapPost("/chat/refresh", async (HttpContext httpContext, SignalRService sign
     var authentication = await httpContext.AuthenticateAsync();
     var expiresAt = authentication.Properties?.ExpiresUtc;
     var userId = GetUserId(httpContext.User);
-    if (expiresAt is null || expiresAt <= DateTimeOffset.UtcNow || string.IsNullOrEmpty(userId))
+    if (expiresAt <= DateTimeOffset.UtcNow || string.IsNullOrEmpty(userId))
     {
         return Results.Unauthorized();
     }
 
     var result = await signalR.HubContext.RefreshConnectionAuthenticationAsync(
         connectionToken,
-        expiresAt.Value,
+        expiresAt,
         BuildClaims(userId),
         httpContext.RequestAborted);
 

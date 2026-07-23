@@ -39,6 +39,8 @@ dotnet run -- http://localhost:5000/chat alice user
 
 Leave the client connected. Approximately every 90 seconds, it obtains a new application token and posts it to `/chat/refresh`; the Management SDK updates the existing connection and returns a new service access token. The connection ID does not change.
 
+The sample enables authentication refresh through `NegotiationOptions.EnableAuthenticationRefresh`, configures a one-hour maximum service-token lifetime, and passes the application ticket's absolute expiration separately through `NegotiationOptions.AuthenticationExpiresOn`. Because the demo application token expires in two minutes, the Management SDK mints the service token with the shorter remaining application-authentication lifetime.
+
 Type `/refresh` in the client to refresh authentication manually.
 
 ## Endpoints
