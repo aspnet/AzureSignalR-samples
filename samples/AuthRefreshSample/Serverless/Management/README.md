@@ -1,6 +1,6 @@
 # Authentication Refresh in Serverless Mode with the Management SDK
 
-This ASP.NET Core app is the serverless authentication boundary for Azure SignalR Service. It uses the Management SDK to negotiate a connection and refresh its authentication without reconnecting. The existing `Default/Client` is used unchanged.
+This ASP.NET Core app is the serverless authentication boundary for Azure SignalR Service. It uses the Management SDK to negotiate a connection and refresh its authentication without reconnecting. The shared `Client/` is used unchanged.
 
 ## Prerequisites
 
@@ -39,7 +39,11 @@ dotnet run -- http://localhost:5000/chat alice user
 
 Leave the client connected. Approximately every 90 seconds, it obtains a new application token and posts it to `/chat/refresh`; the Management SDK updates the existing connection and returns a new service access token. The connection ID does not change.
 
-The sample enables authentication refresh through `NegotiationOptions.EnableAuthenticationRefresh`, configures a one-hour maximum service-token lifetime, and passes the application ticket's absolute expiration separately through `NegotiationOptions.AuthenticationExpiresOn`. Because the demo application token expires in two minutes, the Management SDK mints the service token with the shorter remaining application-authentication lifetime.
+The sample enables authentication refresh through `NegotiationOptions.EnableAuthenticationRefresh`, configures a one-hour maximum service-token lifetime, and passes the application ticket's absolute expiration separately through `NegotiationOptions.AuthenticationExpiresOn`. Refresh uses `RefreshConnectionAuthenticationOptions` to provide the new expiration, projected user and role claims, and the same one-hour service-token maximum. Because the demo application token expires in two minutes, the Management SDK mints the service token with the shorter remaining application-authentication lifetime.
+
+The refresh endpoint maps an unknown connection to `404 connection_not_found`, a blocked or
+different user to `403 permission_change_rejected`, invalid expiration to `400 invalid_expiration`,
+and unexpected service failures to `500 internal_server_error`.
 
 Type `/refresh` in the client to refresh authentication manually.
 

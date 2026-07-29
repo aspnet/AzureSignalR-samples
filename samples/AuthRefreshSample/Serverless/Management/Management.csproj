@@ -16,6 +16,7 @@
 
   <ItemGroup Condition="'$(UseAzureSignalRSource)' == 'true'">
     <ProjectReference Include="$(AzureSignalRSourceRoot)\src\Microsoft.Azure.SignalR.Management\Microsoft.Azure.SignalR.Management.csproj" />
+    <ProjectReference Include="$(AzureSignalRSourceRoot)\src\Microsoft.Azure.SignalR.Common\Microsoft.Azure.SignalR.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(UseAzureSignalRSource)' != 'true'">
