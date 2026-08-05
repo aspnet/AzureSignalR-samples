@@ -14,5 +14,8 @@
   "devDependencies": {
     "azure-functions-core-tools": "^4.12.0"
   },
-  "main": "src/functions/*.js"
+  "main": "src/functions/*.js",
+  "overrides": {
+    "brace-expansion": "https://github.com/juliangruber/brace-expansion/archive/refs/tags/v5.0.9.tar.gz"
+  }
 }
