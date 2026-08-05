@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net11.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>AuthRefreshSample</RootNamespace>
+    <AspNetCoreSignalRSourceRoot Condition="'$(AspNetCoreSignalRSourceRoot)' == ''">$(MSBuildThisFileDirectory)..\..\..\..\aspnetcore\src\SignalR</AspNetCoreSignalRSourceRoot>
+    <UseAspNetCoreSignalRSource Condition="Exists('$(AspNetCoreSignalRSourceRoot)\clients\csharp\Client\src\Microsoft.AspNetCore.SignalR.Client.csproj')">true</UseAspNetCoreSignalRSource>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(UseAspNetCoreSignalRSource)' != 'true'">
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="11.0.0-*" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UseAspNetCoreSignalRSource)' == 'true'">
+    <ProjectReference Include="$(AspNetCoreSignalRSourceRoot)\clients\csharp\Client\src\Microsoft.AspNetCore.SignalR.Client.csproj" />
+    <ProjectReference Include="$(AspNetCoreSignalRSourceRoot)\clients\csharp\Client.Core\src\Microsoft.AspNetCore.SignalR.Client.Core.csproj" />
+    <ProjectReference Include="$(AspNetCoreSignalRSourceRoot)\clients\csharp\Http.Connections.Client\src\Microsoft.AspNetCore.Http.Connections.Client.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Shared\DemoAuth.cs" Link="DemoAuth.cs" />
+  </ItemGroup>
+
+</Project>
