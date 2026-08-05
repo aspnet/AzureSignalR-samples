@@ -14,5 +14,11 @@
     "@microsoft/signalr": "^8.0.7",
     "@modelcontextprotocol/sdk": "^1.25.2",
     "dotenv": "^16.4.7"
+  },
+  "overrides": {
+    "fast-uri": "https://github.com/fastify/fast-uri/archive/refs/tags/v3.1.5.tar.gz",
+    "@hono/node-server": "2.0.12",
+    "ip-address": "https://github.com/beaugunderson/ip-address/archive/refs/tags/v10.4.0.tar.gz",
+    "hono": "https://github.com/honojs/hono/archive/refs/tags/v4.13.0.tar.gz"
   }
 }
