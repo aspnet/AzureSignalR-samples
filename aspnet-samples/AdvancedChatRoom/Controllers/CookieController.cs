@@ -19,11 +19,11 @@ namespace ChatSample.AspNet
     {
         [Route("cookie/login")]
         [HttpGet()]
-        public IHttpActionResult Login(string username, string role)
+        public IHttpActionResult Login(string username)
         {
-            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(role))
+            if (string.IsNullOrEmpty(username))
             {
-                return BadRequest("Username and role is required.");
+                return BadRequest("Username is required.");
             }
 
             if (!IsExistingUser(username))
@@ -34,7 +34,7 @@ namespace ChatSample.AspNet
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, username),
-                new Claim(ClaimTypes.Role, role)
+                new Claim(ClaimTypes.Role, "User")
             };
 
             var claimsIdentity = new ClaimsIdentity(claims, DefaultAuthenticationTypes.ApplicationCookie);
