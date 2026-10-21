@@ -1,4 +1,5 @@
-﻿using Microsoft.Owin;
+﻿using System.Threading.Tasks;
+using Microsoft.Owin;
 using Microsoft.Owin.Cors;
 using Owin;
 
@@ -11,7 +12,20 @@ namespace AspNetForm
         public void Configuration(IAppBuilder app)
         {
             // app.MapSignalR();
-            app.UseCors(CorsOptions.AllowAll);
+            var corsPolicy = new CorsPolicy
+            {
+                AllowAnyMethod = true,
+                AllowAnyHeader = true
+            };
+            corsPolicy.Origins.Add("https://localhost:44300");
+            var corsOptions = new CorsOptions
+            {
+                PolicyProvider = new CorsPolicyProvider
+                {
+                    PolicyResolver = context => Task.FromResult<CorsPolicy>(corsPolicy)
+                }
+            };
+            app.UseCors(corsOptions);
             app.MapAzureSignalR(GetType().FullName);
         }
     }
