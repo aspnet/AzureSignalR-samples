@@ -51,23 +51,27 @@ var connection = new HubConnectionBuilder()
     {
         refresh.EnableAutoRefresh = true; // schedule refresh off tokenLifetimeSeconds
         refresh.RefreshBeforeExpiration = TimeSpan.FromSeconds(30);
-        refresh.OnAuthenticationRefreshed = ctx =>
-        {
-            Console.WriteLine($"[refresh] succeeded; next lifetime = {ctx.NewTokenLifetime}");
-            return Task.CompletedTask;
-        };
-        refresh.OnAuthenticationRefreshFailed = ctx =>
-        {
-            Console.WriteLine($"[refresh] FAILED: {ctx.Exception?.Message}");
-            return Task.CompletedTask;
-        };
     })
     .WithAutomaticReconnect()
     .Build();
 
+connection.AuthenticationRefreshed += ctx =>
+{
+    Console.WriteLine($"[refresh] succeeded; connection ID = {ctx.HubConnection.ConnectionId}; next lifetime = {ctx.NewTokenLifetime}");
+    return Task.CompletedTask;
+};
+connection.AuthenticationRefreshFailed += ctx =>
+{
+    Console.WriteLine($"[refresh] FAILED: {ctx.Exception.Message}");
+    return Task.CompletedTask;
+};
+
+connection.On<string, string>("ReceiveMessage", (sender, message) =>
+    Console.WriteLine($"[{sender}] {message}"));
+
 Console.WriteLine($"Connecting to {hubUrl} as '{userId}' (role '{role}')...");
 await connection.StartAsync();
-Console.WriteLine("Connected. Type /refresh to refresh authentication (empty line to quit).");
+Console.WriteLine($"Connected. Connection ID = {connection.ConnectionId}. Type /refresh to refresh authentication (empty line to quit).");
 
 while (true)
 {

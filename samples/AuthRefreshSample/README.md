@@ -18,11 +18,10 @@ Both modes expose the same client-facing contract, so they reuse the client in `
 
 ## Prerequisites
 
-- .NET 11 preview SDK
+- .NET 11 GA SDK (11.0.100 or later)
 - An Azure SignalR Service resource
-- Preview SignalR and Azure SignalR SDK packages
-
-Until a preview SignalR client package containing authentication refresh is published, clone `aspnetcore` beside this sample repository. The client project automatically references `aspnetcore/src/SignalR`; for another location, pass `-p:AspNetCoreSignalRSourceRoot=<path>`.
+- `Microsoft.AspNetCore.SignalR.Client` 11.0.0
+- Azure SignalR SDK packages 1.34.0
 
 Use an Azure SignalR resource in Default mode with `DefaultMode/`, or in Serverless mode with `Serverless/Management/`.
 

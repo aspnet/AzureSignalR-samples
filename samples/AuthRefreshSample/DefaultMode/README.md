@@ -4,9 +4,10 @@ This ASP.NET Core app hosts a SignalR hub through Azure SignalR Service in Defau
 
 ## Prerequisites
 
-- .NET 11 preview SDK.
-- An Azure SignalR Service resource in Default mode.
-- Preview builds of the SignalR client and `Microsoft.Azure.SignalR`.
+- .NET 11 GA SDK (11.0.100 or later)
+- An Azure SignalR Service resource
+- `Microsoft.AspNetCore.SignalR.Client` 11.0.0
+- Azure SignalR SDK packages 1.34.0
 
 ## Configure
 

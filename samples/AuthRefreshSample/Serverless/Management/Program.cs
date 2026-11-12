@@ -79,7 +79,6 @@ app.MapPost("/chat/negotiate", async (HttpContext httpContext, SignalRService si
             Claims = BuildClaims(userId, role),
             TokenLifetime = serviceTokenLifetime,
             AuthenticationExpiresOn = expiresAt,
-            EnableAuthenticationRefresh = true,
             CloseOnAuthenticationExpiration = true,
         },
         httpContext.RequestAborted);
@@ -94,7 +93,7 @@ app.MapPost("/chat/negotiate", async (HttpContext httpContext, SignalRService si
 
 app.MapPost("/chat/refresh", async (HttpContext httpContext, SignalRService signalR) =>
 {
-    var connectionToken = httpContext.Request.Query["id"].FirstOrDefault();
+    var connectionToken = httpContext.Request.Headers["X-SignalR-Connection-Token"].ToString();
     if (string.IsNullOrEmpty(connectionToken))
     {
         return Results.BadRequest(new { error = "missing_connection_token" });

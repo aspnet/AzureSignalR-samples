@@ -62,7 +62,7 @@ app.MapHub<ChatHub>("/chat", options =>
     options.EnableAuthenticationRefresh = true;
     // Optional accept/reject gate, run before Azure SignalR mutates anything.
     options.OnAuthenticationRefresh = context =>
-        ValueTask.FromResult(!context.NewUser.IsInRole("blocked"));
+        Task.FromResult(!context.NewUser.IsInRole("blocked"));
 }).RequireAuthorization();
 
 app.Run();
