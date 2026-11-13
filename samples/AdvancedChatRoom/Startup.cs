@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace Microsoft.Azure.SignalR.Samples.AdvancedChatRoom
 {
@@ -53,6 +54,18 @@ namespace Microsoft.Azure.SignalR.Samples.AdvancedChatRoom
                         ValidAudience = JwtController.Audience,
                         IssuerSigningKey = JwtController.SigningCreds.Key
                     };
+                    option.Events = new JwtBearerEvents
+                    {
+                        OnTokenValidated = context =>
+                        {
+                            if (context.SecurityToken is JsonWebToken jwt)
+                            {
+                                context.Properties.ExpiresUtc = new DateTimeOffset(jwt.ValidTo, TimeSpan.Zero);
+                            }
+
+                            return Task.CompletedTask;
+                        }
+                    };
                 });
 
             services.AddControllers();
@@ -75,7 +88,11 @@ namespace Microsoft.Azure.SignalR.Samples.AdvancedChatRoom
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapHub<ChatJwtSampleHub>("/chatjwt");
+                endpoints.MapHub<ChatJwtSampleHub>("/chatjwt", options =>
+                {
+                    options.EnableAuthenticationRefresh = true;
+                    options.CloseOnAuthenticationExpiration = true;
+                });
                 endpoints.MapHub<ChatCookieSampleHub>("/chatcookie");
             });
         }

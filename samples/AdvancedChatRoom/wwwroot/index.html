@@ -13,6 +13,10 @@
     <h2 class="text-center" style="margin-top: 0; padding-top: 30px; padding-bottom: 30px;">Azure SignalR Group Chat</h2>
 
     <div class="container" style="height: calc(100% - 110px);">
+        <div id="authinfo" hidden>
+            <div>Connection ID: <span id="connectionid"></span></div>
+            <div>App JWT expires at (UTC): <span id="jwtexpires"></span></div>
+        </div>
         <div id="messages" style="background-color: whitesmoke; "></div>
 
         <div class="input-prepend input-append" style="padding-bottom: 5px; padding-top: 5px;">
@@ -20,6 +24,7 @@
                    placeholder="Type message and press Enter to send...">
             <button class="btn-success" id="echo">Echo</button>
             <button class="btn-success" id="sendmessage">Broadcast</button>
+            <button class="btn-info" id="refreshauth" hidden disabled>Refresh Authentication</button>
         </div>
 
         <div class="input-prepend input-append" style="padding-bottom: 5px; padding-top: 5px;">
@@ -58,7 +63,7 @@
     </div>
 
     <!--Reference the SignalR library. -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@11.0.0/dist/browser/signalr.min.js"></script>
 
     <!--Add script to update the page and send messages.-->
     <script type="text/javascript">
@@ -261,6 +266,7 @@
             }
 
             function onConnectionError(error) {
+                document.getElementById('refreshauth').disabled = true;
                 if (error && error.message) {
                     console.error(error.message);
                 }
@@ -269,22 +275,67 @@
                 modal.style = 'display: block;';
             }
 
-            var jwtToken = '';
-            var connection = new signalR.HubConnectionBuilder()
-                .withUrl(`/chat${authType}?username=${username}`,
-                    {
-                        accessTokenFactory: () => jwtToken
-                    })
-                .build();
+            var url = `/${authType}/login?username=${encodeURIComponent(username)}&role=${encodeURIComponent(role)}`;
+            var jwtExpiresAt;
+            function updateAuthenticationInfo() {
+                document.getElementById('connectionid').textContent = connection.connectionId;
+                document.getElementById('jwtexpires').textContent = jwtExpiresAt.toISOString();
+                document.getElementById('authinfo').hidden = false;
+            }
 
-            var url = `/${authType}/login?username=${username}&role=${role}`;
-            get(url).then((token) => {
-                jwtToken = token;
+            var connectionBuilder = new signalR.HubConnectionBuilder()
+                .withUrl(`/chat${authType}?username=${encodeURIComponent(username)}`,
+                    {
+                        accessTokenFactory: authType === "jwt" ? async () => {
+                            var token = await get(url);
+                            var payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+                            if (typeof payload.exp !== "number" || !Number.isFinite(payload.exp)) {
+                                throw new Error("The application JWT is missing a valid expiration.");
+                            }
+                            jwtExpiresAt = new Date(payload.exp * 1000);
+                            return token;
+                        } : undefined
+                    });
+
+            if (authType === "jwt") {
+                connectionBuilder.withAuthenticationRefresh();
+            }
+
+            var connection = connectionBuilder.build();
+            var refreshButton = document.getElementById('refreshauth');
+            if (authType === "jwt") {
+                refreshButton.hidden = false;
+                connection.onAuthenticationRefreshed(function () {
+                    updateAuthenticationInfo();
+                    appendMessage('_SYSTEM_', 'Authentication refreshed without reconnecting.');
+                });
+                connection.onAuthenticationRefreshFailed(function (context) {
+                    console.error(context.error);
+                    appendMessage('_SYSTEM_', 'Authentication refresh failed.');
+                });
+                refreshButton.addEventListener('click', async function () {
+                    refreshButton.disabled = true;
+                    try {
+                        await connection.refreshAuthentication();
+                    } catch (error) {
+                        console.error(error);
+                    } finally {
+                        refreshButton.disabled = connection.state !== signalR.HubConnectionState.Connected;
+                    }
+                });
+            }
+
+            var login = authType === "cookie" ? get(url) : Promise.resolve();
+            login.then(() => {
                 bindConnectionMessage(connection);
                 return connection.start();
             })
                 .then(function () {
                     onConnected(connection);
+                    if (authType === "jwt") {
+                        updateAuthenticationInfo();
+                    }
+                    refreshButton.disabled = false;
                 })
                 .catch(function (error) {
                     if (error.message) {

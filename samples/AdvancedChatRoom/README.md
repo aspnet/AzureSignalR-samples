@@ -12,22 +12,26 @@ Now the sample supports:
 * Send to User / Users
 * Cookie / JWT based Authentication
 * Role / Claim / Policy based Authrization
+* JWT authentication refresh without reconnecting
 
 ## Run the sample locally
 
+Requires the .NET 11 SDK. The sample uses Azure SignalR SDK 1.34.0 and JavaScript client 11.0.0.
+
 Type the following commands to run this app.
-```
+```powershell
 dotnet restore
-dotnet user-secrets set Azure:SignalR:ConnectionString "<your connection string>"
+$env:Azure__SignalR__ConnectionString = "<your connection string>"
 dotnet run
 ```
 
-## Quick Deploy via Docker image
-You can also deploy this sample via existing docker image
+## Run via Docker
+Build the image from this sample directory:
 
 ```
+docker build -t advancedchatroom .
 docker run -e Azure__SignalR__ConnectionString="<signalr-connection-string>" \
-           -p 5000:80 mcr.microsoft.com/signalrsamples/advancedchatroom:latest
+           -p 5000:80 advancedchatroom
 ```
 
 Open the broswer with url `localhost:5000`, you can see the sample just like Chat Sample but has more operations. 
