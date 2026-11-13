@@ -58,3 +58,5 @@ dotnet run --project Client -- http://localhost:5000/chat alice user
 Leave the client connected. The application token is valid for two minutes, and the client is configured to refresh 30 seconds before expiration. The first automatic refresh therefore occurs about 90 seconds after connecting, and another is scheduled about 90 seconds after each successful refresh. The connection ID does not change.
 
 Type `/refresh` to refresh authentication immediately. A successful manual refresh resets the next automatic-refresh schedule using the lifetime returned by the server.
+
+A failed manual refresh is reported without exiting the client. You can enter another command or press Enter to quit. A failed refresh does not extend the connection's authentication lifetime.

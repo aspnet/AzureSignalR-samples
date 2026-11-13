@@ -11,10 +11,10 @@ This ASP.NET Core app is the serverless authentication boundary for Azure Signal
 
 ## Configure
 
-Set the Azure SignalR connection string with user secrets:
+Set the connection string in the terminal where you will run the server:
 
-```bash
-dotnet user-secrets set "Azure:SignalR:ConnectionString" "<your-asrs-connection-string>"
+```powershell
+$env:Azure__SignalR__ConnectionString = "<your-connection-string>"
 ```
 
 `ServiceTransportType` defaults to `Transient`. Change it to `Persistent` in `appsettings.json` to exercise the persistent Management SDK transport; the application code is the same for both.
@@ -38,9 +38,7 @@ Leave the client connected. Approximately every 90 seconds, it obtains a new app
 
 The sample advertises the refresh lifetime through `NegotiateWithTokenLifetimeAsync`, configures a one-hour maximum service-token lifetime, and passes the application ticket's absolute expiration separately through `NegotiationOptions.AuthenticationExpiresOn`. Refresh uses `RefreshConnectionAuthenticationOptions` to provide the new expiration, projected user and role claims, and the same one-hour service-token maximum. Because the demo application token expires in two minutes, the Management SDK mints the service token with the shorter remaining application-authentication lifetime.
 
-The refresh endpoint maps an unknown connection to `404 connection_not_found`, a blocked or
-different user to `403 permission_change_rejected`, invalid expiration to `400 invalid_expiration`,
-and unexpected service failures to `500 internal_server_error`.
+The refresh endpoint rejects a missing connection token with `400 missing_connection_token`, invalid application authentication with `401`, and a blocked role with `403 permission_change_rejected`. SDK failures caught as `AzureSignalRException` or `ArgumentOutOfRangeException` are logged and returned as `500 internal_server_error`.
 
 Type `/refresh` in the client to refresh authentication manually.
 

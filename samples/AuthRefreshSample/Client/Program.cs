@@ -42,7 +42,7 @@ string MintAppToken()
     return new JwtSecurityTokenHandler().WriteToken(token);
 }
 
-var connection = new HubConnectionBuilder()
+await using var connection = new HubConnectionBuilder()
     .WithUrl(hubUrl, options =>
     {
         options.AccessTokenProvider = () => Task.FromResult<string?>(MintAppToken());
@@ -83,12 +83,17 @@ while (true)
 
     if (string.Equals(line, "/refresh", StringComparison.OrdinalIgnoreCase))
     {
-        var newTokenLifetime = await connection.RefreshAuthenticationAsync();
-        Console.WriteLine($"[refresh] manually completed; next lifetime = {newTokenLifetime}");
+        try
+        {
+            var newTokenLifetime = await connection.RefreshAuthenticationAsync();
+            Console.WriteLine($"[refresh] manually completed; next lifetime = {newTokenLifetime}");
+        }
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or OperationCanceledException)
+        {
+            Console.WriteLine($"[refresh] manual refresh failed: {ex.Message}");
+        }
         continue;
     }
 
     Console.WriteLine("Unknown command. Type /refresh or press Enter to quit.");
 }
-
-await connection.DisposeAsync();

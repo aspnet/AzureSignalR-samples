@@ -91,7 +91,7 @@ app.MapPost("/chat/negotiate", async (HttpContext httpContext, SignalRService si
     });
 }).RequireAuthorization();
 
-app.MapPost("/chat/refresh", async (HttpContext httpContext, SignalRService signalR) =>
+app.MapPost("/chat/refresh", async (HttpContext httpContext, SignalRService signalR, ILogger<SignalRService> logger) =>
 {
     var connectionToken = httpContext.Request.Headers["X-SignalR-Connection-Token"].ToString();
     if (string.IsNullOrEmpty(connectionToken))
@@ -133,22 +133,9 @@ app.MapPost("/chat/refresh", async (HttpContext httpContext, SignalRService sign
             tokenLifetimeSeconds = result.TokenLifetimeSeconds,
         });
     }
-    catch (AzureSignalRException ex) when (ex.Message.Contains("not found", StringComparison.OrdinalIgnoreCase))
+    catch (Exception ex) when (ex is AzureSignalRException or ArgumentOutOfRangeException)
     {
-        return Results.NotFound(new { error = "connection_not_found" });
-    }
-    catch (AzureSignalRException ex) when (ex.Message.Contains("different user", StringComparison.OrdinalIgnoreCase))
-    {
-        return Results.Json(
-            new { error = "permission_change_rejected" },
-            statusCode: StatusCodes.Status403Forbidden);
-    }
-    catch (ArgumentOutOfRangeException)
-    {
-        return Results.BadRequest(new { error = "invalid_expiration" });
-    }
-    catch (AzureSignalRException)
-    {
+        logger.LogError(ex, "Failed to refresh connection authentication.");
         return Results.Json(
             new { error = "internal_server_error" },
             statusCode: StatusCodes.Status500InternalServerError);

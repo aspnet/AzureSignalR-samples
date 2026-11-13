@@ -11,10 +11,10 @@ This ASP.NET Core app hosts a SignalR hub through Azure SignalR Service in Defau
 
 ## Configure
 
-Set the Azure SignalR connection string with user secrets:
+Set the connection string in the terminal where you will run the server:
 
-```bash
-dotnet user-secrets set "Azure:SignalR:ConnectionString" "<your-asrs-connection-string>"
+```powershell
+$env:Azure__SignalR__ConnectionString = "<your-connection-string>"
 ```
 
 ## Run
