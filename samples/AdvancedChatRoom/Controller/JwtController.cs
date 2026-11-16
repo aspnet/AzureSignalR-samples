@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 
@@ -14,7 +15,7 @@ namespace Microsoft.Azure.SignalR.Samples.AdvancedChatRoom
     [Route("jwt")]
     public class JwtController : Controller
     {
-        private static readonly SecurityKey SigningKey = new SymmetricSecurityKey(Guid.NewGuid().ToByteArray());
+        private static readonly SecurityKey SigningKey = new SymmetricSecurityKey(RandomNumberGenerator.GetBytes(32));
 
         private static readonly JwtSecurityTokenHandler JwtTokenHandler = new JwtSecurityTokenHandler();
 
