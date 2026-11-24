@@ -1,5 +1,8 @@
 # Realtime Sign-in Example using Azure SignalR Service
 
+> [!IMPORTANT]
+> Support for the Azure Functions .NET in-process model ended on November 10, 2026 ([retirement notice](https://azure.microsoft.com/en-us/updates?id=retirement-support-for-the-inprocess-model-for-net-apps-in-azure-functions-ends-10-november-2026)). This sample preserves the in-process model for reference only; for supported deployments, use the [.NET isolated worker model](https://learn.microsoft.com/azure/azure-functions/migrate-dotnet-to-isolated-model).
+
 This sample application shows how to build a realtime application using Azure SignalR Service and serverless architecture. When you open the homepage of the application, you will see how many people have visited this page (and their OS and browser distribution) and the page will automatically update when others open the same page.
 
 A live demo can be found [here](https://signalr-signin-demo.azurewebsites.net/).
@@ -16,6 +19,12 @@ Here is a diagram that illustrates the structure of this appliaction:
 2. This API also returns a url and token for browser to connect to Azure SignalR Service.
 3. Then the API calculate statistics information (number of visits, OS and browser distribution) and use Azure SignalR Service to broadcast to all clients so browser can do a realtime update without need to do a refresh.
 4. The static content (homepage, scripts) are stored in Azure blob storage and exposed to user through Azure Function proxy.
+
+## Prerequisites
+
+* [.NET SDK](https://dotnet.microsoft.com/download) (Version 8.0)
+* [Azure Functions Core Tools](https://learn.microsoft.com/azure/azure-functions/functions-run-local) (Version 4)
+* [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli)
 
 ## Deploy to Azure
 
@@ -63,47 +72,35 @@ Here is a diagram that illustrates the structure of this appliaction:
    az storage account create --resource-group <resource_group_name> --name <storage_account_name> \
       --location CentralUS --sku Standard_LRS
    az functionapp create --resource-group <resource_group_name> --name <function_name> \
-      --consumption-plan-location CentralUS --storage-account <storage_account_name>
+      --consumption-plan-location CentralUS --storage-account <storage_account_name> \
+      --runtime dotnet --functions-version 4
    ```
 
    > Please provide a unique name for ```function_name```
 
-3. Navigate to the ```/function``` folder and configure the deployment credentials
+3. Update application settings and configure .NET 8 in-process
 
    ```
-   az functionapp deployment source config-local-git --resource-group <resource_group_name> --name <function_name>
-   az functionapp deployment user set --user-name <user_name> --password <password>
+   az functionapp config appsettings set --resource-group <resource_group_name> --name <function_name> \
+      --settings TableConnectionString=<table_connection_string> \
+      BlobHost=<blob_host> \
+      AzureSignalRConnectionString=<signalr_connection_string> \
+      FUNCTIONS_INPROC_NET8_ENABLED=1 \
+      AzureWebJobsFeatureFlags=EnableProxies
+   az functionapp config set --resource-group <resource_group_name> --name <function_name> \
+      --net-framework-version v8.0
    ```
 
-   > Please take note of the Git url returned as you will need it later on.
+   > ```table_connection_string``` can be located in the Azure Portal from the Access Key section of the created storage account. ```blob_host``` is the blob service endpoint hostname (without https://), which you can find in the Blob Service Containers section. ```signalr_connection_string``` refers to the connection string you used before in the Chatroom sample.
+   >
+   > Note: Azure Functions Proxies is legacy; `AzureWebJobsFeatureFlags=EnableProxies` is a temporary compatibility option for `proxies.json`. See [Azure Functions legacy proxies](https://learn.microsoft.com/azure/azure-functions/legacy-proxies).
 
-4. Build and deploy Azure function
-
-   ```
-   nuget restore
-   msbuild /p:Configuration=Release
-
-   cd bin/Release/net461
-   git init
-   git remote add origin <deploy_git_url>
-   git add -A
-   git commit -m "init commit"
-   git push origin master
-   ```
-
-5. Update application settings
+4. Publish the Azure function from the ```/function``` folder
 
    ```
-   az functionapp config appsettings set --resource-group <resource_group_name> --name <app_name> \
-      --setting TableConnectionString=<table_connection_string>
-   az functionapp config appsettings set --resource-group <resource_group_name> --name <app_name> \
-      --setting BlobHost=<blob_host>
-   az functionapp config appsettings set --resource-group <resource_group_name> --name <app_name> \
-      --setting AzureSignalRConnectionString=<signalr_connection_string>
-
+   cd function
+   func azure functionapp publish <function_name>
    ```
-
-> ```table_connection_string``` can be located in the Azure Portal from the Access Key section of the created storage account. ```blob_host``` is the blob service endpoint hostname (without https://), which you can find in the Blob Service Containers section. ```signalr_connection_string``` refers to the connection string you used before in the Chatroom sample.
 
 ## Run the application
 

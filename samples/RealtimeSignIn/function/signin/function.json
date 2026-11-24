@@ -12,6 +12,6 @@
     }
   ],
   "disabled": false,
-  "scriptFile": "../RealtimeSignIn.dll",
+  "scriptFile": "../bin/RealtimeSignIn.dll",
   "entryPoint": "RealtimeSignIn.SignInFunction.Run"
 }

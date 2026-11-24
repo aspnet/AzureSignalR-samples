@@ -3,6 +3,7 @@
     "Values": {
         "AzureSignalRConnectionString": "<signalr-connection-string>",
         "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+        "FUNCTIONS_INPROC_NET8_ENABLED": "1",
         "AzureWebJobsStorage": "<Azure-storage-connection-string>",
         "AZURE_STORAGE_CONNECTION_STRING": "<Azure-storage-connection-string>"
     },

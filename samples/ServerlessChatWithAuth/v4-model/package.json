@@ -8,10 +8,10 @@
     "test": "echo \"No tests yet...\""
   },
   "dependencies": {
-    "@azure/functions": "^4.0.0"
+    "@azure/functions": "^4.17.1"
   },
   "devDependencies": {
-    "azure-functions-core-tools": "^4.12.0"
+    "azure-functions-core-tools": "^4.16.1"
   },
   "overrides": {
     "brace-expansion": "https://github.com/juliangruber/brace-expansion/archive/refs/tags/v5.0.9.tar.gz"

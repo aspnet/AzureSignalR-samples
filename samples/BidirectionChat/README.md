@@ -1,5 +1,8 @@
 # Azure function bidirectional chatroom sample
 
+> [!IMPORTANT]
+> Support for the Azure Functions .NET in-process model ended on November 10, 2026 ([retirement notice](https://azure.microsoft.com/en-us/updates?id=retirement-support-for-the-inprocess-model-for-net-apps-in-azure-functions-ends-10-november-2026)). This sample preserves the in-process model for reference only; for supported deployments, use the [.NET isolated worker model](https://learn.microsoft.com/azure/azure-functions/migrate-dotnet-to-isolated-model) (see [DotnetIsolated-BidirectionChat](../DotnetIsolated-BidirectionChat) or [DotnetIsolated-ClassBased](../DotnetIsolated-ClassBased)).
+
 This is a chatroom sample that demonstrates bidirectional message pushing between Azure SignalR Service and Azure Function in serverless scenario. It leverages the [**upstream**](https://docs.microsoft.com/azure/azure-signalr/concept-upstream) provided by Azure SignalR Service that features proxying messages from client to upstream endpoints in serverless scenario. Azure Functions with SignalR trigger binding allows you to write code to receive and push messages in several languages, including JavaScript, Python, C#, etc.
 
 - [Prerequisites](#prerequisites)
@@ -12,8 +15,8 @@ This is a chatroom sample that demonstrates bidirectional message pushing betwee
 ## Prerequisites
 
 The following softwares are required to build this tutorial.
-* [.NET SDK](https://dotnet.microsoft.com/download) (Version 3.1, required for Functions extensions)
-* [Azure Functions Core Tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local?tabs=windows%2Ccsharp%2Cbash#install-the-azure-functions-core-tools) (Version 3)
+* [.NET SDK](https://dotnet.microsoft.com/download) (Version 8.0, required for Functions extensions)
+* [Azure Functions Core Tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local?tabs=windows%2Ccsharp%2Cbash#install-the-azure-functions-core-tools) (Version 4)
 * [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
 
 <a name="run-sample-in-azure"></a>
@@ -67,10 +70,18 @@ It's a quick try of this sample. You will create an Azure SignalR Service and an
         --storage-account $storageName \
         --consumption-plan-location $region \
         --resource-group $resourceGroup \
-        --functions-version 3
+        --runtime dotnet \
+        --functions-version 4
         ```
 
-    3. Publish the sample to the Azure Function you created before.
+    3. Update application settings and configure .NET 8 in-process
+
+        ```bash
+        az functionapp config appsettings set --resource-group $resourceGroup --name $functionAppName --settings AzureSignalRConnectionString=$connectionString FUNCTIONS_INPROC_NET8_ENABLED=1
+        az functionapp config set --resource-group $resourceGroup --name $functionAppName --net-framework-version v8.0
+        ```
+
+    4. Publish the sample to the Azure Function you created before.
 
         ```bash
         cd <root>/samples/BidirectionChat/csharp
@@ -78,13 +89,7 @@ It's a quick try of this sample. You will create an Azure SignalR Service and an
         func azure functionapp publish $functionAppName
         ```
 
-2. Update application settings
-
-    ```bash
-    az functionapp config appsettings set --resource-group $resourceGroup --name $functionAppName --setting AzureSignalRConnectionString=$connectionString
-    ```
-
-3. Update Azure SignalR Service Upstream settings
+2. Update Azure SignalR Service Upstream settings
 
     Open the Azure Portal and navigate to the Function App created before. Find `signalr_extension` key in the **App keys** blade.
 

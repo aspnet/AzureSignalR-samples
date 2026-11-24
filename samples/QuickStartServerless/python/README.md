@@ -4,8 +4,8 @@ In this sample, we demonstrate how to broadcast messages with SignalR Service an
 
 ## Prerequisites
 
-* [Azure Function Core Tools](https://review.docs.microsoft.com/azure/azure-functions/functions-run-local?tabs=windows%2Ccsharp%2Cbash&branch=pr-en-us-162554#v2)
-* [Python 3.6+](https://www.python.org/downloads/)
+* [Azure Functions Core Tools](https://learn.microsoft.com/azure/azure-functions/functions-run-local) (Version 4)
+* [Python 3.11+](https://www.python.org/downloads/)
 
 ## Setup and run locally
 

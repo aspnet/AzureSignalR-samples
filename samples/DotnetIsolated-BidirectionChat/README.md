@@ -49,7 +49,7 @@ It's a quick try of this sample. You will create an Azure SignalR Service and an
 
 1. Deploy with Azure Functions Core Tools
     1. [Install Azure Functions Core Tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local?tabs=windows%2Ccsharp%2Cbash#install-the-azure-functions-core-tools)
-    2. [Create Azure Function App](https://docs.microsoft.com/en-us/azure/azure-functions/scripts/functions-cli-create-serverless#sample-script) (code snippet shown below)
+    2. [Create a Flex Consumption Azure Function App](https://learn.microsoft.com/en-us/azure/azure-functions/flex-consumption-how-to?tabs=azure-cli&pivots=programming-language-csharp) (code snippet shown below)
 
         ```bash
         #!/bin/bash
@@ -69,9 +69,10 @@ It's a quick try of this sample. You will create an Azure SignalR Service and an
         az functionapp create \
         --name $functionAppName \
         --storage-account $storageName \
-        --consumption-plan-location $region \
+        --flexconsumption-location $region \
         --resource-group $resourceGroup \
-        --functions-version 4
+        --runtime dotnet-isolated \
+        --runtime-version 10.0
         ```
 
     3. Publish the sample to the Azure Function you created before.
@@ -85,7 +86,7 @@ It's a quick try of this sample. You will create an Azure SignalR Service and an
 2. Update application settings
 
     ```bash
-    az functionapp config appsettings set --resource-group $resourceGroup --name $functionAppName --setting AzureSignalRConnectionString=$connectionString
+    az functionapp config appsettings set --resource-group $resourceGroup --name $functionAppName --settings AzureSignalRConnectionString=$connectionString
     ```
 
 3. Update Azure SignalR Service Upstream settings

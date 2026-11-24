@@ -4,7 +4,7 @@ In this sample, we demonstrate how to broadcast messages with SignalR Service an
 
 ## Prerequisites
 
-* [Azure Function Core Tools](https://review.docs.microsoft.com/azure/azure-functions/functions-run-local?tabs=windows%2Ccsharp%2Cbash&branch=pr-en-us-162554#v2)
+* [Azure Functions Core Tools](https://learn.microsoft.com/azure/azure-functions/functions-run-local) (Version 4)
 * [Node.js](https://nodejs.org/en/download/)
 
 ## Setup and run locally

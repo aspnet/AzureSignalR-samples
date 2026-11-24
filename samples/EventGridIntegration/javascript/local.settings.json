@@ -2,7 +2,7 @@
   "IsEncrypted": false,
   "Values": {
     "AzureSignalRConnectionString": "<signalr-connection-string>",
-    "WEBSITE_NODE_DEFAULT_VERSION": "10.14.1",
+    "WEBSITE_NODE_DEFAULT_VERSION": "~22",
     "FUNCTIONS_WORKER_RUNTIME": "node",
     "AzureWebJobsStorage": "<Azure-storage-connection-string>",
     "AZURE_STORAGE_CONNECTION_STRING": "<Azure-storage-connection-string>"
