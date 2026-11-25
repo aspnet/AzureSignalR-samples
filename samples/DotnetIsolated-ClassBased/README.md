@@ -26,8 +26,8 @@ This is a chatroom sample that demonstrates bidirectional message pushing betwee
 ## Prerequisites
 
 The following are required to build this tutorial.
-* [.NET SDK](https://dotnet.microsoft.com/download) (Version 8.0, required for Functions extensions)
-* [Azure Functions Core Tools](https://docs.microsoft.com/azure/azure-functions/functions-run-local?tabs=windows%2Ccsharp%2Cbash#install-the-azure-functions-core-tools) (Version 4.0.5907 or newer)
+* [.NET SDK](https://dotnet.microsoft.com/download) (Version 10.0, required for Functions extensions)
+* [Azure Functions Core Tools](https://docs.microsoft.com/azure/azure-functions/functions-run-local?tabs=windows%2Ccsharp%2Cbash#install-the-azure-functions-core-tools) (Version 4, latest)
 * [Azure CLI](https://docs.microsoft.com/cli/azure/install-azure-cli?view=azure-cli-latest) (Version 2.63.0 or newer)
 
 <a name="run-sample-in-azure"></a>
@@ -81,7 +81,8 @@ You will create an Azure SignalR Service and an Azure Function app to host the s
         --storage-account $storageName \
         --flexconsumption-location $region \
         --resource-group $resourceGroup \
-        --runtime dotnet-isolated
+        --runtime dotnet-isolated \
+        --runtime-version 10.0
         ```
     3. Update application settings
 

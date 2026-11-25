@@ -1,17 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
+    <AzureFunctionsVersion>v4</AzureFunctionsVersion>
   </PropertyGroup>
   <ItemGroup>    
-    <PackageReference Include="Microsoft.Azure.WebJobs" Version="3.0.9" />
-    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions" Version="3.0.2" />
-    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Http" Version="3.0.2" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.7.0" />
-    <PackageReference Include="UAParser" Version="3.1.38" />
+    <PackageReference Include="Microsoft.Azure.WebJobs" Version="3.0.48" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions" Version="5.2.1" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Http" Version="3.2.1" />
+    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.6.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.23.0" />
+    <PackageReference Include="UAParser" Version="3.1.47" />
     <PackageReference Include="WindowsAzure.Storage" Version="9.3.3" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.CSharp" />
+    <FunctionsPreservedDependencies Include="System.IdentityModel.Tokens.Jwt.dll" />
+    <FunctionsPreservedDependencies Include="Microsoft.IdentityModel.Tokens.dll" />
+    <FunctionsPreservedDependencies Include="Microsoft.IdentityModel.Logging.dll" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">

@@ -13,8 +13,8 @@ A step by step tutorial to build a chat room with real-time online counting usin
 
 The following softwares are required to build this tutorial.
 
-* [Node.js](https://nodejs.org/en/download/) (Version 10.x, required for JavaScript sample)
-* [.NET SDK](https://www.microsoft.com/net/download) (Version 6.0, required for Functions extensions)
+* [Node.js](https://nodejs.org/en/download/) (Version 22.x or 24.x, required for JavaScript sample)
+* [.NET SDK](https://www.microsoft.com/net/download) (Version 8.0, required for Functions extensions)
 * [Azure Functions Core Tools](https://github.com/Azure/azure-functions-core-tools) (Version 4)
 * [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
 
@@ -76,7 +76,7 @@ When running and debugging the Azure Functions runtime locally, application sett
       "IsEncrypted": false,
       "Values": {
         "AzureSignalRConnectionString": "<signalr-connection-string>",
-        "WEBSITE_NODE_DEFAULT_VERSION": "10.14.1",
+        "WEBSITE_NODE_DEFAULT_VERSION": "~22",
         "FUNCTIONS_WORKER_RUNTIME": "node",
         "AzureWebJobsStorage": "<Azure-storage-connection-string>",
         "AZURE_STORAGE_CONNECTION_STRING": "<Azure-storage-connection-string>"
@@ -98,6 +98,8 @@ When running and debugging the Azure Functions runtime locally, application sett
 1. Save the file.
 
 1. Open the VS Code command palette (`Ctrl-Shift-P`, macOS: `Cmd-Shift-P`) and select **Azure Functions: Initialize Project for Use with VSCode**.
+
+1. For the JavaScript sample, open the terminal in `samples/EventGridIntegration/javascript` and run `npm ci` to install npm packages.
 
 1. Open the terminal and run `func extensions install` to install all the dependencies.
 
@@ -138,6 +140,14 @@ When running and debugging the Azure Functions runtime locally, application sett
     | Function app | Select the previously deployed function app |
 
     Local settings are uploaded to the function app in Azure. If prompted to overwrite existing settings, select **Yes to all**.
+
+    > [!NOTE]
+    > For the C# sample (.NET 8 in-process) only: support for the Azure Functions .NET in-process model ended on November 10, 2026 ([retirement notice](https://azure.microsoft.com/en-us/updates?id=retirement-support-for-the-inprocess-model-for-net-apps-in-azure-functions-ends-10-november-2026)); use the [.NET isolated worker model](https://learn.microsoft.com/azure/azure-functions/migrate-dotnet-to-isolated-model) for supported deployments. When running this C# sample, ensure the Azure Function App has `FUNCTIONS_INPROC_NET8_ENABLED=1` set in application settings (included when uploading `csharp/local.settings.json`) and is configured for .NET 8:
+    > ```bash
+    > az functionapp config appsettings set --resource-group <resource-group-name> --name <function-app-name> --settings FUNCTIONS_INPROC_NET8_ENABLED=1
+    > az functionapp config set --resource-group <resource-group-name> --name <function-app-name> --net-framework-version v8.0
+    > ```
+    > The JavaScript sample is not affected by the .NET in-process retirement and does not require `FUNCTIONS_INPROC_NET8_ENABLED`.
 
 ### Configure static websites
 

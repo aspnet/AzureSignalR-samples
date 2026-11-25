@@ -5,7 +5,7 @@ In this sample, we demonstrate how to broadcast messages with SignalR Service an
 ## Prerequisites
 
 * [Azure Function Core Tools](https://www.npmjs.com/package/azure-functions-core-tools)
-* [Node.js LTS](https://nodejs.org/en/download/)
+* [Node.js](https://nodejs.org/en/download/) (Version 22.x or 24.x)
 
 ## Azure Functions with CommonJS 
 

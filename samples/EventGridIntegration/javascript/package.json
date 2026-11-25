@@ -2,7 +2,6 @@
   "name": "signalr-event-grid",
   "version": "1.0.0",
   "description": "Azure SignalR integrate with Event Grid",
-  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

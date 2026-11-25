@@ -6,6 +6,7 @@ using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace RealtimeSignIn
 {
@@ -57,25 +58,31 @@ namespace RealtimeSignIn
             table = client.GetTableReference("SignInInfo");
         }
 
-        public void Add(string os, string browser)
+        public async Task AddAsync(string os, string browser)
         {
             var newInfo = new SignInInfo(os, browser);
             var insert = TableOperation.Insert(newInfo);
-            table.Execute(insert);
+            await table.ExecuteAsync(insert);
         }
 
-        public SignInStats GetStats()
+        public async Task<SignInStats> GetStatsAsync()
         {
             var query = new TableQuery<SignInInfo>();
             var stats = new SignInStats();
-            foreach (var info in table.ExecuteQuery(query))
+            TableContinuationToken continuationToken = null;
+            do
             {
-                stats.TotalNumber++;
-                if (!stats.ByBrowser.ContainsKey(info.Browser)) stats.ByBrowser[info.Browser] = 0;
-                if (!stats.ByOS.ContainsKey(info.OS)) stats.ByOS[info.OS] = 0;
-                stats.ByBrowser[info.Browser]++;
-                stats.ByOS[info.OS]++;
-            }
+                var segment = await table.ExecuteQuerySegmentedAsync(query, continuationToken);
+                foreach (var info in segment.Results)
+                {
+                    stats.TotalNumber++;
+                    if (!stats.ByBrowser.ContainsKey(info.Browser)) stats.ByBrowser[info.Browser] = 0;
+                    if (!stats.ByOS.ContainsKey(info.OS)) stats.ByOS[info.OS] = 0;
+                    stats.ByBrowser[info.Browser]++;
+                    stats.ByOS[info.OS]++;
+                }
+                continuationToken = segment.ContinuationToken;
+            } while (continuationToken != null);
             return stats;
         }
     }
