@@ -2,6 +2,8 @@
 
 This sample shows how to use SignalR clients to connect Azure SignalR Service without using a web server that host a SignalR hub.
 
+Requires the .NET 11 SDK. Authentication refresh requires SignalR .NET client SDK 11.0.0 or later.
+
 ## Build from scratch
 
 
@@ -9,8 +11,16 @@ This sample shows how to use SignalR clients to connect Azure SignalR Service wi
 
 ```C#
 var url = $"{hubEndpoint.TrimEnd('/')}?user={<User ID>}";
-var connection = new HubConnectionBuilder().WithUrl(url).Build();
+var connection = new HubConnectionBuilder()
+    .WithUrl(url)
+    .WithAuthenticationRefresh(options => options.EnableAutoRefresh = true)
+    .Build();
 ```
+
+The client automatically refreshes authentication based on `tokenLifetimeSeconds`
+returned by the negotiation server, and logs refresh success or failure for each user.
+The paired negotiation server renews the service access token while preserving
+the connection's existing identity. Press Enter to stop the clients as before.
 
 ### Handle connection closed event
 
