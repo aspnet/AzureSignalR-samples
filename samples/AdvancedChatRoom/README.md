@@ -16,7 +16,7 @@ Now the sample supports:
 
 ## Run the sample locally
 
-Requires the .NET 11 SDK. The sample uses Azure SignalR SDK 1.34.0 and JavaScript client 11.0.0.
+Authentication refresh requires SignalR JavaScript client 11.0.0 or later and Azure SignalR SDK 1.34.0 or later.
 
 Type the following commands to run this app.
 ```powershell

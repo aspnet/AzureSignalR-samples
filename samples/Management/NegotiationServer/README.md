@@ -1,6 +1,6 @@
 # Negotiation Server
 
-This sample shows how to use [Microsoft.Azure.SignalR.Management](https://www.nuget.org/packages/Microsoft.Azure.SignalR.Management) (version>=1.10.0) to host negotiation endpoint for SignalR clients.
+This sample shows how to use [Microsoft.Azure.SignalR.Management](https://www.nuget.org/packages/Microsoft.Azure.SignalR.Management) to host negotiation and authentication refresh endpoints for SignalR clients. Authentication refresh requires version 1.34.0 or later.
 
 > You can use [Azure Functions](<https://azure.microsoft.com/en-us/services/functions/>) or other similar product instead to provide a totally serverless environment.
 >
@@ -17,7 +17,7 @@ dotnet new webapi
 ### Add Management SDK to your project
 
 ```
-dotnet add package Microsoft.Azure.SignalR.Management -v 1.*
+dotnet add package Microsoft.Azure.SignalR.Management -v "1.*"
 ```
 
 ### Create a controller for negotiation
@@ -92,6 +92,43 @@ var negotiateResponse = await serviceHubContext.NegotiateAsync(new()
 });
 ```
 > `EnableDetailedErrors` defaults to false because these exception messages can contain sensitive information.
+
+### Refresh an existing connection
+
+Client-side authentication refresh requires SignalR client SDK 11.0.0 or later.
+
+The sample uses `NegotiateWithTokenLifetimeAsync` to return `tokenLifetimeSeconds`,
+which the client SDK uses to schedule automatic authentication refresh.
+
+Refresh-aware clients can post to `/message/refresh` or `/chat/refresh`, passing the
+connection token (not the public connection ID) in the `X-SignalR-Connection-Token`
+header. The response contains `accessToken` and `tokenLifetimeSeconds`.
+
+For example, a .NET SignalR client 11.0.0 or later can enable automatic refresh when building
+the connection:
+
+```csharp
+var connection = new HubConnectionBuilder()
+    .WithUrl("http://localhost:5000/message?user=alice")
+    .WithAuthenticationRefresh(options => options.EnableAutoRefresh = true)
+    .Build();
+
+await connection.StartAsync();
+await connection.RefreshAuthenticationAsync(); // Optional immediate refresh.
+```
+
+The SDK sends the connection-token header automatically. Refresh renews the service
+token while preserving the existing user and claims, without reconnecting. This
+sample does not authenticate application users; the query-string user ID is for
+demonstration only. In production, authenticate and authorize both negotiate and
+refresh requests, and derive user identity and authentication expiration from the
+validated application identity.
+
+Missing connection tokens return HTTP 400. SDK refresh failures are logged and
+return HTTP 500 without exposing exception details. No cross-origin browser access
+is enabled; a browser client on another origin requires an explicit trusted-origin
+CORS policy allowing `POST` and `X-SignalR-Connection-Token`.
+
 ## Full Sample
 
 The full negotiation server sample can be found [here](.). The usage of this sample can be found [here](<https://github.com/aspnet/AzureSignalR-samples/tree/master/samples/Management#start-the-negotiation-server>).

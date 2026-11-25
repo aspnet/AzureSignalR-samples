@@ -53,7 +53,22 @@ namespace SignalRClient
         static HubConnection CreateHubConnection(string hubEndpoint, string userId)
         {
             var url = hubEndpoint.TrimEnd('/') + $"?user={userId}";
-            var connection = new HubConnectionBuilder().WithUrl(url).Build();
+            var connection = new HubConnectionBuilder()
+                .WithUrl(url)
+                .WithAuthenticationRefresh(options => options.EnableAutoRefresh = true)
+                .Build();
+
+            connection.AuthenticationRefreshed += context =>
+            {
+                Console.WriteLine($"{userId}: authentication refreshed; connection id '{context.HubConnection.ConnectionId}', next token lifetime: {context.NewTokenLifetime}.");
+                return Task.CompletedTask;
+            };
+            connection.AuthenticationRefreshFailed += context =>
+            {
+                Console.WriteLine($"{userId}: authentication refresh failed: {context.Exception.Message}");
+                return Task.CompletedTask;
+            };
+
             connection.On(Target, (string message) =>
             {
                 Console.WriteLine($"{userId}: gets message from service: '{message}'");

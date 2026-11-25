@@ -1,0 +1,19 @@
+@baseUrl = http://localhost:5000
+@connectionToken = replace-with-live-connection-token
+
+### Negotiate a Message connection
+POST {{baseUrl}}/message/negotiate?user=alice
+
+### Refresh the live Message connection
+POST {{baseUrl}}/message/refresh
+X-SignalR-Connection-Token: {{connectionToken}}
+
+### Negotiate a Chat connection
+POST {{baseUrl}}/chat/negotiate?user=alice
+
+### Refresh the live Chat connection
+POST {{baseUrl}}/chat/refresh
+X-SignalR-Connection-Token: {{connectionToken}}
+
+### Missing connection token returns HTTP 400
+POST {{baseUrl}}/message/refresh
